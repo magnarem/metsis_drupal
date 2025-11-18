@@ -1,0 +1,101 @@
+views.field.leaflet_geometry_field:
+  type: views_field
+  label: "Location Lat/Lon search field"
+  mapping:
+    link_to_item:
+      type: boolean
+      label: "Link to item"
+    use_highlighting:
+      type: boolean
+      label: "Use highlighted field data"
+    display_as_leaflet:
+      type: boolean
+      label: "Display as Leaflet map"
+
+views.area.metsis_map:
+  type: views_area
+  label: "Placeholder for Metsis search map"
+  mapping:
+    map_app_settings:
+      type: string
+      label: "Map App Settings"
+
+views.filter.metsis_filter_date_range:
+  type: views_filter
+  label: "Solr DateRange filter"
+  mapping:
+    operator:
+      type: string
+      label: "Operator"
+    value:
+      type: mapping
+      label: "Date Range"
+      mapping:
+        min:
+          type: string
+          label: "Start Date"
+        max:
+          type: string
+          label: "End Date"
+        type:
+          type: string
+          label: "Date offset type"
+    expose:
+      type: mapping
+      label: "Expose settings"
+      mapping:
+        identifier:
+          type: string
+          label: "Expose identifier"
+        date_format:
+          type: string
+          label: "Date format"
+        placeholder:
+          type: string
+          label: "Placeholder date"
+        min_placeholder:
+          type: string
+          label: "Placeholder start date"
+        max_placeholder:
+          type: string
+          label: "Placeholder end date"
+
+views.filter.metsis_filter_bbox:
+  type: views_filter
+  label: "Solr Bbox filter"
+  mapping:
+    operator:
+      type: string
+      label: "Operator"
+    value:
+      type: mapping
+      label: "Coordinates"
+      mapping:
+        minX:
+          type: string
+          label: "minX"
+        maxX:
+          type: string
+          label: "maxX"
+        minY:
+          type: string
+          label: "minY"
+        maxY:
+          type: string
+          label: "maxY"
+    expose:
+      type: mapping
+      label: "Expose settings"
+      mapping:
+        identifier:
+          type: string
+          label: "Expose identifier"
+        map_input:
+          type: integer
+          label: "Use OL Map as input widget"
+        user_input:
+          type: integer
+          label: "Provide manual input fields for coordinates alosing with map"
+        user_input_collapsed:
+          type: integer
+          label: "Manual input fields collapsed by default"

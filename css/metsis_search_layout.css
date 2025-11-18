@@ -1,0 +1,143 @@
+/* Scoped styles for the search-layout container */
+/*.grid-full {
+  display: unset !important;
+}*/
+/* Override grid-template-columns for .metsis-search-layout inside .grid-full */
+.metsis-search-layout {
+  display: grid;
+  grid-template-columns: 2fr 10fr; /* First column (aside) adjusts to content, second column takes remaining space */
+  grid-template-rows: auto auto; /* Two rows: one for messages, one for content */
+  gap: 20px; /* Add spacing between grid items */
+  padding: 20px;
+}
+
+.metsis-search-layout .metsis-messages-container {
+  grid-column: 1 / -1; /* Span both columns */
+  max-width: 100%;
+}
+
+.metsis-search-layout .metsis-filters {
+  grid-column: 1; /* Place in the first column */
+  grid-row: 2; /* Place it in the second row */
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.metsis-search-layout .metsis-search-main-content {
+  grid-column: 2; /* Place in the second column */
+  grid-row: 2; /* Place it in the second row */
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.metsis-search-layout .metsis-search-bar {
+  gap: 10px;
+  align-items: center;
+}
+
+.metsis-search-layout .metsis-search-box {
+  grid-column: 1 / -1; /* Span both columns */
+  max-width: 100%;
+
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.metsis-search-layout .metsis-map-container-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #eaeaea;
+}
+
+.metsis-search-layout .metsis-results-header {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.metsis-search-layout .metsis-results-content {
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.metsis-search-layout .bbox-exposed-filter-wrapper {
+  padding-bottom: 1.5em;
+}
+
+.metsis-search-layout .metsis-result-item {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1em;
+}
+
+/* Basic styling for the fieldset and legend */
+.metsis-search-layout .accordion {
+  border: 1px solid #ccc;
+  padding: 0;
+  margin: 10px 0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.metsis-search-layout .accordion legend {
+  font-weight: bold;
+  cursor: pointer;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  margin: 0;
+}
+
+/* Hide the accordion content by default */
+.metsis-search-layout .accordion-content {
+  display: none;
+  padding: 10px;
+}
+
+/* Open the accordion content when the fieldset has the "data-open=true" attribute */
+.metsis-search-layout .accordion[data-open="true"] .accordion-content {
+  display: block;
+}
+
+/* Optional: Add hover effect to the header */
+.metsis-search-layout .accordion legend:hover {
+  background-color: #e0e0e0;
+}
+
+.metsis-search-layout aside.leaflet-row {
+  float: right;
+  /* Full width */
+  min-width: 200px;
+  /* Move below filters */
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+  .metsis-search-layout {
+    grid-template-columns: 1fr; /* Single column layout */
+    grid-template-rows: auto auto auto; /* Add an extra row for filters */
+  }
+
+  .metsis-search-layout .metsis-filters {
+    grid-column: 1; /* Full width */
+    grid-row: 2; /* Move below messages */
+  }
+
+  .metsis-search-layout .metsis-main-content {
+    grid-column: 1; /* Full width */
+    grid-row: 3; /* Move below filters */
+  }
+}
+
+#bbox-map-filter-container {
+  max-width: 100%;
+  min-width: 360px;
+  height: 250px;
+  margin-bottom: 2em;
+}

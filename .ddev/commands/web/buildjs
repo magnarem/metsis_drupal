@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+## Description: Builds the metsis javascript assets
+## Usage: buildjs
+## Example: ddev buildjs
+
+cd js/metsis && npm run build

@@ -1,0 +1,518 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.server.metsis_solr
+  module:
+    - metsis_drupal
+    - search_api_solr
+  enforced:
+    module:
+      - metsis_drupal
+third_party_settings:
+  search_api_solr:
+    finalize: false
+    commit_before_finalize: false
+    commit_after_finalize: false
+    debug_finalize: false
+    highlighter:
+      maxAnalyzedChars: 51200
+      fragmenter: gap
+      usePhraseHighlighter: true
+      highlightMultiTerm: true
+      preserveMulti: true
+      regex:
+        slop: 0.5
+        pattern: blank
+        maxAnalyzedChars: 10000
+      highlight:
+        mergeContiguous: false
+        requireFieldMatch: false
+        snippets: 3
+        fragsize: 0
+    mlt:
+      mintf: 1
+      mindf: 1
+      maxdf: 0
+      maxdfpct: 0
+      minwl: 0
+      maxwl: 0
+      maxqt: 100
+      maxntp: 2000
+      boost: false
+      interestingTerms: details
+    term_modifiers:
+      slop: 3
+      fuzzy: 1
+      fuzzy_analyzer: true
+    advanced:
+      index_prefix: ""
+      collection: ""
+      timezone: UTC
+    multilingual:
+      limit_to_content_language: false
+      include_language_independent: false
+      use_language_undefined_as_fallback_language: false
+      specific_languages:
+        en: "0"
+      use_universal_collation: false
+id: metsis
+name: metsis
+description: "ADC Metadata Index"
+read_only: true
+field_settings:
+  abstract:
+    label: Abstract
+    datasource_id: solr_document
+    property_path: abstract
+    type: string
+  abstract_en:
+    label: "Abstract en"
+    datasource_id: solr_document
+    property_path: abstract_en
+    type: text
+  access_constraint:
+    label: "Access constraint"
+    datasource_id: solr_document
+    property_path: access_constraint
+    type: string
+  activity_type:
+    label: "Activity type"
+    datasource_id: solr_document
+    property_path: activity_type
+    type: string
+  bbox:
+    label: Bbox
+    datasource_id: solr_document
+    property_path: bbox
+    type: solr_bbox
+  center:
+    label: "The center coordinates of the geographic extent"
+    datasource_id: solr_document
+    property_path: center
+    type: location
+  collection:
+    label: Collection
+    datasource_id: solr_document
+    property_path: collection
+    type: string
+  data_access_url_http:
+    label: "Data access url http"
+    datasource_id: solr_document
+    property_path: data_access_url_http
+    type: string
+  data_access_url_http_desc:
+    label: "Data access url http desc"
+    datasource_id: solr_document
+    property_path: data_access_url_http_desc
+    type: string
+  data_access_url_ogc_wms:
+    label: "Data access url ogc wms"
+    datasource_id: solr_document
+    property_path: data_access_url_ogc_wms
+    type: string
+  data_access_url_ogc_wms_desc:
+    label: "Data access url ogc wms desc"
+    datasource_id: solr_document
+    property_path: data_access_url_ogc_wms_desc
+    type: string
+  data_access_url_opendap:
+    label: "Data access url opendap"
+    datasource_id: solr_document
+    property_path: data_access_url_opendap
+    type: string
+  data_access_url_opendap_desc:
+    label: "Data access url opendap desc"
+    datasource_id: solr_document
+    property_path: data_access_url_opendap_desc
+    type: string
+  data_access_wms_layers:
+    label: "Data access_wms layers"
+    datasource_id: solr_document
+    property_path: data_access_wms_layers
+    type: string
+  data_center_long_name:
+    label: "Data center_long name"
+    datasource_id: solr_document
+    property_path: data_center_long_name
+    type: string
+  data_center_short_name:
+    label: "Data center_short name"
+    datasource_id: solr_document
+    property_path: data_center_short_name
+    type: string
+  data_center_url:
+    label: "Data center_url"
+    datasource_id: solr_document
+    property_path: data_center_url
+    type: string
+  dataset_citation_author:
+    label: "Dataset citation author"
+    datasource_id: solr_document
+    property_path: dataset_citation_author
+    type: string
+    boost: 3.0
+  dataset_citation_doi:
+    label: "Dataset citation doi"
+    datasource_id: solr_document
+    property_path: dataset_citation_doi
+    type: date
+  dataset_citation_publication_date:
+    label: "Dataset citation publication date"
+    datasource_id: solr_document
+    property_path: dataset_citation_publication_date
+    type: string
+  dataset_citation_url:
+    label: "Dataset citation url"
+    datasource_id: solr_document
+    property_path: dataset_citation_url
+    type: string
+  dataset_production_status:
+    label: "Dataset production status"
+    datasource_id: solr_document
+    property_path: dataset_production_status
+    type: string
+  feature_type:
+    label: "Feature type"
+    datasource_id: solr_document
+    property_path: feature_type
+    type: string
+  full_text:
+    label: "Full text"
+    datasource_id: solr_document
+    property_path: full_text
+    type: text
+    boost: 1.3
+  geographic_extent_ectangle_east:
+    label: "Geographic extent_rectangle_east"
+    datasource_id: solr_document
+    property_path: geographic_extent_rectangle_east
+    type: decimal
+  geographic_extent_rectangle_north:
+    label: "Geographic extent_rectangle_north"
+    datasource_id: solr_document
+    property_path: geographic_extent_rectangle_north
+    type: decimal
+  geographic_extent_rectangle_south:
+    label: "Geographic extent_rectangle_south"
+    datasource_id: solr_document
+    property_path: geographic_extent_rectangle_south
+    type: decimal
+  geographic_extent_rectangle_srs:
+    label: "Geographic extent rectangle srsName"
+    datasource_id: solr_document
+    property_path: geographic_extent_rectangle_srsName
+    type: string
+  geographic_extent_rectangle_west:
+    label: "Geographic extent_rectangle_west"
+    datasource_id: solr_document
+    property_path: geographic_extent_rectangle_west
+    type: decimal
+  geometry_geojson:
+    label: "Geometry geojson"
+    datasource_id: solr_document
+    property_path: geometry_geojson
+    type: geojson
+  geometry_wkt:
+    label: "Geometry wkt"
+    datasource_id: solr_document
+    property_path: geometry_wkt
+    type: wkt
+  geospatial_bounds3d:
+    label: "Geospatial bounds3d"
+    datasource_id: solr_document
+    property_path: geospatial_bounds3d
+    type: rpt
+  id:
+    label: Id
+    datasource_id: solr_document
+    property_path: id
+    type: string
+  is_child:
+    label: IsChild
+    datasource_id: solr_document
+    property_path: isChild
+    type: boolean
+  is_parent:
+    label: IsParent
+    datasource_id: solr_document
+    property_path: isParent
+    type: boolean
+    boost: 1.3
+  iso_topic_category:
+    label: "Iso topic category"
+    datasource_id: solr_document
+    property_path: iso_topic_category
+    type: boolean
+  keywords_cfstdn:
+    label: "Keywords cfstdn"
+    datasource_id: solr_document
+    property_path: keywords_cfstdn
+    type: string
+  keywords_gcmd:
+    label: "Keywords gcmd"
+    datasource_id: solr_document
+    property_path: keywords_gcmd
+    type: string
+  keywords_keyword:
+    label: Keywords_keyword
+    datasource_id: solr_document
+    property_path: keywords_keyword
+    type: string
+  keywords_vocabulary:
+    label: "Keywords vocabulary"
+    datasource_id: solr_document
+    property_path: keywords_vocabulary
+    type: string
+    boost: 1.3
+  last_metadata_update_datetime:
+    label: "Last metadata update_datetime"
+    datasource_id: solr_document
+    property_path: last_metadata_update_datetime
+    type: string
+  metadata_identifier:
+    label: "Metadata identifier"
+    datasource_id: solr_document
+    property_path: metadata_identifier
+    type: string
+  metadata_status:
+    label: "Metadata status"
+    datasource_id: solr_document
+    property_path: metadata_status
+    type: string
+  mmd_xml_file:
+    label: "Mmd xml file"
+    datasource_id: solr_document
+    property_path: mmd_xml_file
+    type: solr_string_storage
+  operational_status:
+    label: "Operational status"
+    datasource_id: solr_document
+    property_path: operational_status
+    type: string
+    boost: 2.0
+  phrase_suggester:
+    label: "Phrase suggester"
+    datasource_id: solr_document
+    property_path: phrase_suggester
+    type: solr_text_suggester
+  platform_ancillary_cloud_coverage:
+    label: "Platform ancillary cloud coverage"
+    datasource_id: solr_document
+    property_path: platform_ancillary_cloud_coverage
+    type: decimal
+  platform_ancillary_scene_coverage:
+    label: "Platform ancillary scene coverage"
+    datasource_id: solr_document
+    property_path: platform_ancillary_scene_coverage
+    type: string
+  platform_instrument_long_name:
+    label: "Platform instrument long name"
+    datasource_id: solr_document
+    property_path: platform_instrument_long_name
+    type: string
+  platform_instrument_mode:
+    label: "Platform instrument mode"
+    datasource_id: solr_document
+    property_path: platform_instrument_mode
+    type: string
+  platform_instrument_polarisation:
+    label: "Platform instrument polarisation"
+    datasource_id: solr_document
+    property_path: platform_instrument_polarisation
+    type: string
+  platform_instrument_product_type:
+    label: "Platform instrument product type"
+    datasource_id: solr_document
+    property_path: platform_instrument_product_type
+    type: string
+  platform_instrument_short_name:
+    label: "Platform instrument short name"
+    datasource_id: solr_document
+    property_path: platform_instrument_short_name
+    type: integer
+  platform_long_name:
+    label: "Platform_long name"
+    datasource_id: solr_document
+    property_path: platform_long_name
+    type: string
+  platform_orbit_absolute:
+    label: "Platform orbit absolute"
+    datasource_id: solr_document
+    property_path: platform_orbit_absolute
+    type: string
+  platform_orbit_direction:
+    label: "Platform orbit direction"
+    datasource_id: solr_document
+    property_path: platform_orbit_direction
+    type: integer
+  platform_orbit_relative:
+    label: "Platform orbit relative"
+    datasource_id: solr_document
+    property_path: platform_orbit_relative
+    type: string
+  platform_short_name:
+    label: "Platform short name"
+    datasource_id: solr_document
+    property_path: platform_short_name
+    type: string
+  project_long_name:
+    label: "Project_long name"
+    datasource_id: solr_document
+    property_path: project_long_name
+    type: string
+  project_short_name:
+    label: "Project_short name"
+    datasource_id: solr_document
+    property_path: project_short_name
+    type: string
+  quality_control:
+    label: "Quality control"
+    datasource_id: solr_document
+    property_path: quality_control
+    type: string
+  related_dataset:
+    label: "Related dataset"
+    datasource_id: solr_document
+    property_path: related_dataset
+    type: string
+  related_dataset_id:
+    label: "Related dataset id"
+    datasource_id: solr_document
+    property_path: related_dataset_id
+    type: string
+  related_url_data_server_landing_page:
+    label: "Related url data server landing page"
+    datasource_id: solr_document
+    property_path: related_url_data_server_landing_page
+    type: string
+  related_url_data_server_landing_page_desc:
+    label: "Related url data server landing page desc"
+    datasource_id: solr_document
+    property_path: related_url_data_server_landing_page_desc
+    type: string
+  related_url_landing_page:
+    label: "Related url landing page"
+    datasource_id: solr_document
+    property_path: related_url_landing_page
+    type: string
+  related_url_landing_page_desc:
+    label: "Related url landing page desc"
+    datasource_id: solr_document
+    property_path: related_url_landing_page_desc
+    type: string
+  storage_information_file_format:
+    label: "Storage information file format"
+    datasource_id: solr_document
+    property_path: storage_information_file_format
+    type: string
+  temporal_extent_end_date:
+    label: "Temporal extent_end date"
+    datasource_id: solr_document
+    property_path: temporal_extent_end_date
+    type: date
+    boost: 1.4
+  temporal_extent_period_dr:
+    label: "Temporal extent period dr"
+    datasource_id: solr_document
+    property_path: temporal_extent_period_dr
+    type: solr_date_range
+  temporal_extent_start_date:
+    label: "Temporal extent_start date"
+    datasource_id: solr_document
+    property_path: temporal_extent_start_date
+    type: date
+    boost: 1.3
+  text_keywords_stemmed:
+    label: "Keywords stemmed"
+    datasource_id: solr_document
+    property_path: text_keywords_stemmed
+    type: text
+  text_suggester:
+    label: "Text suggester"
+    datasource_id: solr_document
+    property_path: text_suggester
+    type: solr_text_suggester
+  thumbnail_url:
+    label: "Thumbnail URL"
+    datasource_id: solr_document
+    property_path: thumbnail_url
+    type: string
+    boost: 1.5
+  timestamp:
+    label: Timestamp
+    datasource_id: solr_document
+    property_path: timestamp
+    type: date
+    boost: 1.5
+  title:
+    label: Title
+    datasource_id: solr_document
+    property_path: title
+    type: string
+    boost: 1.5
+  title_en:
+    label: "Title en"
+    datasource_id: solr_document
+    property_path: title_en
+    type: text
+  use_constraint_identifier:
+    label: "Use constraint_identifier"
+    datasource_id: solr_document
+    property_path: use_constraint_identifier
+    type: string
+  use_constraint_license_text:
+    label: "Use constraint license text"
+    datasource_id: solr_document
+    property_path: use_constraint_license_text
+    type: string
+  use_constraint_resource:
+    label: "Use constraint resource"
+    datasource_id: solr_document
+    property_path: use_constraint_resource
+    type: string
+datasource_settings:
+  solr_document:
+    id_field: id
+    request_handler: ""
+    default_query: "*:*"
+    label_field: title
+    language_field: ""
+    url_field: related_url_landing_page
+processor_settings:
+  add_url: {}
+  aggregated_field: {}
+  auto_aggregated_fulltext_field: {}
+  custom_value: {}
+  entity_type: {}
+  geojson_transformer: {}
+  highlight:
+    weights:
+      postprocess_query: 0
+    prefix: "<em><strong>"
+    suffix: "</strong></em>"
+    excerpt: true
+    excerpt_always: false
+    excerpt_length: 320
+    exclude_fields:
+      - text_suggester
+    highlight: server
+    highlight_partial: true
+  language_with_fallback: {}
+  rendered_item: {}
+  solr_date_range:
+    weights:
+      preprocess_index: 0
+  solr_geojson_field_transformer:
+    weights:
+      postprocess_query: 0
+      preprocess_query: 0
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 50
+  delete_on_fail: true
+  index_directly: false
+  track_changes_in_references: false
+server: metsis_solr

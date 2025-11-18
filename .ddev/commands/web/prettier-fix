@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+## Description: Runs prettier and fix formatting errors
+## Usage: prettier-fix
+## Example: ddev prettier-fix
+
+npx prettier . --write

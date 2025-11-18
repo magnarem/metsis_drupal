@@ -1,0 +1,5 @@
+metsis_drupal.settings:
+  solr_url: ""
+  search_limit: 10
+  map_api_key: ""
+  bbox_default: ""

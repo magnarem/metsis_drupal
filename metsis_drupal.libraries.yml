@@ -1,0 +1,38 @@
+metsis_map:
+  vite:
+    enabled: true
+    viteRoot: "/modules/custom/metsis_drupal/js/metsis"
+    version: 1.x
+  js:
+    js/metsis/metsis-map-app/src/index.jsx: { attributes: { type: module } }
+
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+
+bbox_map_filter:
+  vite:
+    enabled: true
+    viteRoot: "/modules/custom/metsis_drupal/js/metsis"
+    version: 1.x
+  js:
+    js/metsis/bbox-map-filter/src/main.js: { attributes: { type: module } }
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+
+metsis_search_layout:
+  version: 1.x
+  css:
+    component:
+      css/metsis_search_layout.css: {}
+
+metsis_search_ajax:
+  version: 1.x
+  js:
+    js/metsis-search-behaviours.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/jquery
+    - core/drupalSettings

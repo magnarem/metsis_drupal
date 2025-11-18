@@ -1,0 +1,102 @@
+{
+ "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnType": false, // required
+      "editor.formatOnPaste": true, // optional
+      "editor.formatOnSave": true, // optional
+      "editor.formatOnSaveMode": "file", // required to format on save
+      "files.autoSave": "onFocusChange", // optional but recommended
+
+
+    },
+    "[php]": {
+      "editor.defaultFormatter": "valeryanm.vscode-phpsab"
+    },
+    "emmet.excludeLanguages": [
+      "markdown",
+      "php"
+    ],
+    "emmet.includeLanguages": {
+      "twig": "html"
+    },
+
+    "eslint.format.enable": true,
+    "eslint.run": "onSave",
+
+    "files.associations": {
+      "*.php": "php",
+      "*.engine": "php",
+      "*.theme": "php",
+      "*.install": "php",
+      "*.inc": "php",
+      "*.make": "php",
+      "*.module": "php",
+      "*.profile": "php",
+      "*.test": "php",
+      "*.info": "ini"
+    },
+
+    "php-docblocker.defaultType": "mixed",
+    "php-docblocker.paramDescription": "@todo Describe this parameter.",
+    "php-docblocker.qualifyClassNames": true,
+    "php-docblocker.returnDescription": "@todo Describe this return output.",
+    "php-docblocker.returnGap": true,
+    "php-docblocker.useShortNames": true,
+
+    "php.completion.docblock": false,
+    "php.format.codeStyle": "Drupal",
+    "php.validate.executablePath": "/usr/bin/php",
+    "php.version": "8.4",
+    "php.files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "**/core/tests/**": true,
+    },
+
+    "phpsab.standard": "Drupal,DrupalPractice",
+
+
+    "twigcs.executablePath": "/var/www/html/vendor/bin/twigcs",
+  "phpsab.snifferArguments": [
+    "--extensions=php,module,inc,install,test,profile,theme"
+  ],
+  "twigcs.enabled": true,
+
+   "phpsab.executablePathCS": "/var/www/html/vendor/bin/phpcs",
+   "phpsab.executablePathCBF": "/var/www/html/vendor/bin/phpcbf",
+   "phpsab.snifferEnable": true,
+   "phpsab.fixerEnable": true,
+   "phpsab.snifferMode": "onType",
+   "phpsab.debug": false,
+   "phpsab.fixerArguments": [
+      "--extensions=php,module,inc,install,profile,theme",
+      "--standard=Drupal,DrupalPractice",
+      "--ignore=vendor,web/core,sites,web/modules/contrib,profiles/contrib,themes/contrib"
+   ],
+
+   "phpstan.binPath": "vendor/bin/phpstan",
+		"phpstan.binCommand": [],
+		"phpstan.configFile": "/var/www/html/phpstan.neon",
+		"phpstan.paths": {},
+		"phpstan.dockerContainerName": "",
+		"phpstan.rootDir": "",
+		"phpstan.options": [],
+		"phpstan.enableStatusBar": true,
+		"phpstan.memoryLimit": "1G",
+		"phpstan.enabled": true,
+		"phpstan.projectTimeout": 300000,
+		"phpstan.timeout": 300000,
+		"phpstan.suppressTimeoutMessage": false,
+		"phpstan.showProgress": false,
+    "phpstan.showTypeOnHover": false,
+		"phpstan.ignoreErrors": [
+			"Xdebug: .*"
+		],
+		"phpstan.suppressWorkspaceMessage": false,
+		"phpstan.pro": false,
+		"phpstan.tmpDir": "",
+		"phpstan.checkValidity": false
+}

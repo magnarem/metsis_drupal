@@ -1,0 +1,206 @@
+<?php
+
+/**
+ * @file
+ * METSIS module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\views\Plugin\views\filter\FilterPluginBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\cache\CachePluginBase;
+use Drupal\metsis_drupal\MetsisConstants;
+
+/**
+ * Implements hook_help().
+ */
+function metsis_drupal_help($route_name, RouteMatchInterface $route_match): string {
+  switch ($route_name) {
+    case 'help.page.metsis_drupal':
+      $text = file_get_contents(__DIR__ . '/README.md');
+      if ($text === FALSE) {
+        return '';
+      }
+
+      if (!\Drupal::moduleHandler()->moduleExists('markdown')) {
+        return '<pre>' . Html::escape($text) . '</pre>';
+      }
+      else {
+        // Use the Markdown filter to render the README.
+        $filter_manager = \Drupal::service('plugin.manager.filter');
+        $settings = \Drupal::configFactory()->get('markdown.settings')->getRawData();
+        $config = ['settings' => $settings];
+        /** @var \Drupal\filter\Plugin\FilterInterface */
+        $filter = $filter_manager->createInstance('markdown', $config);
+        return (string) $filter->process($text, 'en');
+      }
+  }
+  return '';
+}
+
+/**
+ * Implements hook_theme().
+ */
+function metsis_drupal_theme($existing, $type, $theme, $path) {
+  return [
+    'views_view__metsis_search__results' => [
+      'template' => 'views-view--metsis-search--results',
+      // 'render element' => 'elements',
+      'base hook' => 'views view',
+      'path' => $path = \Drupal::service('extension.path.resolver')->getPath('module', 'metsis_drupal') . '/templates',
+    ],
+    // 'views_exposed_form__metsis_search__results' => [
+    // 'render element' => 'form',
+    // 'template' => 'form--views-exposed-form--metsis-search--results',
+    // ],
+  ];
+}
+
+/**
+ * Implements hook_views_filters_summary_info_alter().
+ */
+function metsis_drupal_views_filters_summary_info_alter(array &$info, FilterPluginBase $filter) {
+  // Handle custom summary for custom bbox filter.
+  if ($filter->getPluginId() === 'metsis_filter_bbox' && !empty($filter->value)) {
+    if (!$filter->value['minX'] == '') {
+      // Format each value: 3 decimals for floats, as-is for ints.
+      $formatted_values = array_map(function ($v) {
+        return is_float($v + 0) ? number_format((float) $v, 3, '.', '') : (string) $v;
+      }, $filter->value);
+
+      $info['value'][0] = [
+        'id' => 0,
+        'raw' => ucfirst($filter->operator) . '(' . implode(', ', $formatted_values) . ')',
+        'value' => ucfirst($filter->operator) . '(' . implode(', ', $formatted_values) . ')',
+      ];
+    }
+  }
+}
+
+/**
+ * Implements hook_views_filters_summary_filter_value_alter().
+ */
+function metsis_drupal_views_filters_summary_filter_value_alter(
+  mixed &$value,
+  FilterPluginBase $filter,
+) {
+
+  // For some reason, the User Permissions plugin does not properly
+  // populate the filter value.
+  if ($filter->getPluginId() === 'metsis_filter_bbox') {
+    $inputs = $filter->view->getExposedInput();
+    $value = $inputs[$filter->options['id']];
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ */
+function metsis_drupal_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  $view = $form_state->get('view');
+
+  if ($view->id() == MetsisConstants::METSIS_SEARCH_VIEW_ID && $view->current_display == 'results' && $view->built) {
+    // Modify our exposed form for better rendering.
+    // $form['collection']['#attributes']['class'][] = 'accordion';
+    // $form['keywords']['#attributes']['class'][] = 'accordion';
+    // $form['keywords']['#attributes']['data-open'] = 'false';.
+    // $form['search_box']['#info'] = $form['#info'];
+    // $form['search_box']['#action'] = $form['#action'];
+    // $form['search_box']['actions'] = $form['actions'];
+    // $form['search_box']['#theme'] = $form['#theme'];
+    // $form['search_box']['#id'] = $form['#id'];
+    // $form['search_box']['#disable_inline_form_errors'] = $form['#disable_inline_form_errors'];
+    // $form['search_box']['#context'] = $form['#context'];
+    // $form['search_box']['#attached'] = $form['#attached'];
+    // $form['search_box']['#form_id'] = $form['#form_id'];
+    // $form['search_box']['#type'] = $form['#type'];
+    // $form['search_box']['#method'] = $form['#method'];
+    // $form['search_box']['#build_id'] = $form['#build_id'];
+    // // $form['search_box']['form_build_id'] = $form['form_build_id'];
+    // $form['search_box']['#theme_wrappers'] = $form['#theme_wrappers'];
+    // $form['search_box']['#defaults_loaded'] = $form['#defaults_loaded'];
+    // $form['search_box']['#tree'] = $form['#tree'];
+    // $form['search_box']['#parents'] = $form['#parents'];
+    // $form['search_box']['#validate'] = $form['#validate'];
+    // // $form['search_box']['#submit'] = $form['#submit'];
+    // $form['search_box']['#cache'] = $form['#cache'];
+    // $form['search_box']['text'] = $form['text'];
+    // $form['search_box']['#attributes']['class'][] = 'metsis-search-box-form';
+    // $form['search_box']['#attributes']['data-bef-auto-submit-exclude'] = '';
+    // unset($form['text']);
+    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-full-form"]);
+    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-delay"]);
+    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-minimum-length"]);
+    // // = '';
+    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-click"]);.
+    if (isset($form['text'])) {
+      $form['text']['#attributes']['form'] = $form['#id'];
+      $form['text']['#attributes']['data-form'] = $form['#id'];
+      $form['text']['#attributes']['class'][] = "search-box";
+      $form['text']['#attributes']['data-bef-auto-submit-exclude'] = "";
+    }
+    // If (isset($form['bbox_wrapper'])) {
+    // $form['bbox_wrapper']['bbox_op']['#attributes']['form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox_op']['#attributes']['data-form'] = $form['#id'];.
+    // $form['bbox_wrapper']['bbox']['minX']['#attributes']['form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['minX']['#attributes']['data-form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['maxX']['#attributes']['form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['maxX']['#attributes']['data-form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['maxY']['#attributes']['form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['maxY']['#attributes']['data-form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['minY']['#attributes']['form'] = $form['#id'];
+    // $form['bbox_wrapper']['bbox']['minY']['#attributes']['data-form'] = $form['#id'];
+    // }.
+  }
+  // dpm($form, __FUNCTION__);.
+}
+
+/**
+ * Implements hook_views_pre_build().
+ */
+function metsis_drupal_views_pre_build(ViewExecutable $view) {
+  $id = $view->id();
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function metsis_drupal_views_pre_render(ViewExecutable $view) {
+  $id = $view->id();
+}
+
+/**
+ * Implements hook_views_post_render().
+ */
+function metsis_drupal_views_post_render(ViewExecutable $view, array &$output, CachePluginBase $cache): void {
+  // When using full pager, disable any time-based caching if there are fewer
+  // than 10 results.
+  $foo = $output;
+  // Add the GeoJSON to drupalSettings for the AJAX response.
+  // If (\Drupal::request()->isXmlHttpRequest()) {
+  // $response = new AjaxResponse();
+  // // Modify the replacement content to exclude the map-app div.
+  // $replacement_content = $output;
+  // $replacement_content = preg_replace(
+  // '/<div id="#metsis-map" class="map-container.*?<\/div>/s',
+  // '',
+  // $replacement_content
+  // );
+  // // Add the modified replacement content to the AJAX response.
+  // $response->addCommand(new ReplaceCommand('#view-container', $replacement_content));
+  // $response->send();
+  // exit;
+  // }
+}
+
+/**
+ * Implements hook_search_api_field_type_mapping_alter().
+ */
+function metsis_drupal_search_api_field_type_mapping_alter(array &$mapping) {
+
+  // $mapping['location'] = 'geofield';
+}

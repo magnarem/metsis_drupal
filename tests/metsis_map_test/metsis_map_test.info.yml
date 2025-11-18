@@ -1,0 +1,8 @@
+name: Metsis Map Test
+description: "Provides a test endpoint for the Metsis Map JS library."
+core_version_requirement: ^9 || ^10 || ^11
+type: module
+package: METNO
+version: VERSION
+dependencies:
+  - metsis_drupal

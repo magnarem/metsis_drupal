@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "DDEV: Enable Xdebug",
+            "type": "shell",
+            "command": "xdebug on"
+        },
+        {
+            "label": "DDEV: Disable Xdebug",
+            "type": "shell",
+            "command": "xdebug off"
+        },
+        {
+        "label": "Display the version of the installed PHP binary",
+        "type": "shell",
+        "command": "php -v"
+      }
+    ]
+}

@@ -1,0 +1,7 @@
+search_api.property_configuration.metsis_drupal_geojson_field:
+  type: mapping
+  label: "GeoJSON field transformer"
+  mapping:
+    geojson_field_value:
+      type: string
+      label: "Default feild for GeoJSON transformer"

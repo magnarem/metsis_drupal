@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a 'form' element.
+ *
+ * Available variables
+ * - attributes: A list of HTML attributes for the wrapper element.
+ * - children: The child elements of the form.
+ *
+ * @see template_preprocess_form()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="metsis-messages-container">
+{{ dump(attributes)}}
+{{ dump(form)}}
+
+</div>
+{# <aside class="metsis-filters">
+  {% if header.views_filters_summary %}
+    <header>
+    {% if header.views_filters_summary['#markup'] is not empty %}
+    <h4>Active filters:</h4>
+    {% endif %}
+      {{ header.views_filters_summary }}
+    </header>
+  {% endif %}
+  {{ exposed.collection}}
+  {{ exposed.keywords }}
+  </aside>
+
+  {{ attachment_before }}
+  <div class="metsis-search-box">
+  {{ exposed|without('collection','keywords') }}
+  </div> #}

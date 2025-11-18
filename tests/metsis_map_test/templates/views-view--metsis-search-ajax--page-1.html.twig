@@ -1,0 +1,147 @@
+{#
+/**
+ * @file
+ * Theme override for a main view template.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes for the element.
+ * - css_name: A CSS-safe version of the view name.
+ * - css_class: The user-specified classes names, if any.
+ * - header: The optional header.
+ * - footer: The optional footer.
+ * - rows: The results of the view query, if any.
+ * - empty: The content to display if there are no rows.
+ * - pager: The optional pager next/prev links to display.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Optional feed icons to display.
+ * - more: An optional link to the next page of results.
+ * - title: Title of the view, only used when displaying in the admin preview.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the view title.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the view title.
+ * - attachment_before: An optional attachment view to be displayed before the
+ *   view content.
+ * - attachment_after: An optional attachment view to be displayed after the
+ *   view content.
+ * - dom_id: Unique id for every view being printed to give unique class for
+ *   Javascript.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+{# Attach metsis search custom layout #}
+{{ attach_library('metsis_drupal/metsis_search_layout') }}
+{# Attach my map app #}
+{{ attach_library('metsis_drupal/metsis_map') }}
+
+{{ dump() }}
+{% set metsis_view_classes = [
+    'view',
+    'view-content',
+    'view-' ~ id|clean_class,
+    'view-id-' ~ id,
+    'view-display-id-' ~ display_id,
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+
+{% set metsis_search_layout_classes = [
+    'metsis-search-layout',
+    'view',
+    'view-' ~ id|clean_class,
+    'view-id-' ~ id,
+    'view-display-id-' ~ display_id,
+    dom_id ? 'js-layout-dom-id-' ~ dom_id,
+  ]
+%}
+{# Metsis search layout wrapper #}
+<div{{ attributes.addClass(metsis_search_layout_classes) }}>
+    {{ title_prefix }}
+	{% if title %}
+		{{ title }}
+	{% endif %}
+	{{ title_suffix }}
+
+
+  <!-- Left Column: Facet Filters and Filter Summary -->
+  <aside class="filters">
+    <div class="filter-summary">
+      <!-- Filter Summary -->
+      <h3>Active Filters</h3>
+      <!-- Add your active filter summary here -->
+       {% if header.views_filters_summary %}
+        {# Render the filter summary #}
+        {{ header.views_filters_summary }}
+      {% endif %}
+    </div>
+    <div class="facet-filters">
+      <!-- Facet Filters -->
+      <h3>Filters</h3>
+      {% if exposed %}
+        <div>
+          {{ exposed|without('search_api_fulltext') }}
+        </div>
+      {% endif %}
+    </div>
+
+  </aside>
+
+  <!-- Right Column: Search Bar, Map, and Results -->
+  <main class="metsis-search-main-content">
+    <div class="search-bar">
+      <!-- Search Bar and Exposed Filters -->
+    {{ exposed|without('collection', 'keywords') }}
+    {#    <form>
+        {{ exposed.search_api_fulltext }}
+
+       {{ exposed.form_token }}
+     {{ exposed.form_build_id }}
+     {{ exposed.form_id }}
+
+     {{exposed.actions }}
+    </form>
+    #}
+    </div>
+
+    <div class="map-container">
+      <!-- Map -->
+      <div id="metsis-map-app" class="metsis-map-container"></div>
+    </div>
+
+    <div class="results-header">
+
+      <!-- Results Header -->
+    <!--  rwmoved pager for testing -->
+      <!-- Add additional results information here -->
+    </div>
+
+    <div class="results-content">
+      <!-- Views Results Content -->
+      <!-- Add your search results here -->
+      {% if rows %}
+		<div class="view-content">
+			{{ rows }}
+		</div>
+	{% elseif empty %}
+		<div class="view-empty">
+			{{ empty }}
+		</div>
+	{% endif %}
+    </div>
+    {% if pager %}
+		{{ pager }}
+	{% endif %}
+    {% if footer %}
+		<div class="view-footer">
+			{{ footer }}
+		</div>
+	{% endif %}
+	{% if feed_icons %}
+		<div class="feed-icons">
+			{{ feed_icons }}
+		</div>
+	{% endif %}
+
+  </main>
+</div>

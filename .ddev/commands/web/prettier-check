@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+## Description: Runs prettier to check formatting on prettier files
+## Usage: prettier-check
+## Example: ddev prettier-check
+
+npx prettier . --check

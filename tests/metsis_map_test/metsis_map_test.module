@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Module for testing metsis_map library.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function metsis_map_test_theme($existing, $type, $theme, $path) {
+  return [
+    'metsis_map_test_page' => [
+      'render element' => 'elements',
+      'template' => 'metsis-map-test-page',
+      'path' => $path = \Drupal::service('extension.path.resolver')->getPath('module', 'metsis_map_test') . '/templates',
+    ],
+    'views_view__metsis_search_ajax__page_1' => [
+      'template' => 'views-view--metsis-search-ajax--page-1',
+      // 'render element' => 'elements',
+      'base hook' => 'views view',
+      'path' => $path = \Drupal::service('extension.path.resolver')->getPath('module', 'metsis_map_test') . '/templates',
+    ],
+
+  ];
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+
+/*function metsis_map_test_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+if (strpos($form_id, 'views_exposed_form') !== FALSE) {
+// Check if this is the specific view we want to modify.
+if ($form['#id'] === 'views-exposed-form-movies-page-1') {
+// Render the map block and add it to the form.
+$block_manager = \Drupal::service('plugin.manager.block');
+$map_block = $block_manager->createInstance('metsis_map_test_block', []);
+$map_block_render = $map_block->build();
+
+// Add the map block to the exposed form.
+$form['map_block'] = $map_block_render;
+$form['#attached']['library'][] = 'metsis_map_test/metsis_map_test_behaviours';
+}
+}
+}*/

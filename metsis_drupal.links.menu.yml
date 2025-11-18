@@ -1,0 +1,18 @@
+metsis_drupal.admin_config_metno:
+  route_name: metsis_drupal.admin_config_metno
+  parent: system.admin_config
+  title: Media
+  weight: -10
+
+metsis_drupal.settings:
+  title: "METSIS settings"
+  description: "Configure METSIS module settings."
+  parent: metsis_drupal.admin_config_metno
+  route_name: metsis_drupal.settings
+  weight: 10
+
+metsis_drupal.status_report:
+  title: "METSIS status"
+  parent: system.admin_reports
+  description: "Metsis status report"
+  route_name: metsis_drupal.status_report

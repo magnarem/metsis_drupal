@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the METISIS module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\metsis_drupal\MetsisConstants;
+
+/**
+ * Implements hook_install().
+ */
+function metsis_drupal_install(): void {
+  module_set_weight('metsis_drupal', 1);
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Deletes Search API server and index configurations created by this module.
+ */
+function metsis_drupal_uninstall() {
+
+  // Delete the metsis solr index configuration.
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable("search_api.index." . MetsisConstants::METSIS_SOLR_INDEX_ID);
+  $config->delete();
+
+  // Delete the metsis_solr Search API Solr server configuration.
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable("search_api.server." . MetsisConstants::METSIS_SOLR_SERVER_ID);
+  $config->delete();
+
+  // Delete the Search API index if it exists.
+  // if ($index = $index_storage->load($custom_index_id)) {
+  // $index->delete();
+  // }
+}

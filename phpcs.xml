@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="metsis_drupal">
+  <description>PHP CodeSniffer configuratio for metsis_drupal</description>
+<rule ref="Drupal">
+   <!-- <exclude name="Drupal.CSS.ClassDefinitionNameSpacing"/>
+    <exclude name="Drupal.CSS.ColourDefinition"/>
+    <exclude name="Squiz.CSS.Indentation"/>
+    <exclude name="Squiz.CSS.MissingColon"/>
+    <exclude name="Squiz.CSS.SemicolonSpacing"/>
+    <exclude name="Squiz.CSS.ColonSpacing"/>
+    <exclude name="Squiz.CSS.ClassDefinitionOpeningBraceSpace"/>
+    <exclude name="Squiz.CSS.ClassDefinitionClosingBraceSpace"/>
+    <exclude name="Squiz.CSS.EmptyClassDefinition"/>
+    <exclude name="Squiz.CSS.EmptyStyleDefinition"/>
+    <exclude name="Squiz.CSS.DisallowMultipleStyleDefinitions"/>
+    <exclude name="Squiz.WhiteSpace.LanguageConstructSpacing"/>
+    <exclude name="MySource.Debug.DebugCode"/> -->
+  </rule>
+  <rule ref="DrupalPractice"/>
+  <file>./web/modules/custom/</file>
+  <file>./web/themes/custom/</file>
+  <file>./web/profiles/custom/</file>
+  <file>./web/sites/default/settings.php</file>
+  <file>./web/sites/default/settings.local.php</file>
+  <exclude-pattern>*/.git/*</exclude-pattern>
+  <exclude-pattern>*/config/*</exclude-pattern>
+  <exclude-pattern>*/css/*</exclude-pattern>
+  <exclude-pattern>*/js/*</exclude-pattern>
+  <exclude-pattern>*/icons/*</exclude-pattern>
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+  <exclude-pattern>*rules_export.txt</exclude-pattern>
+  <arg name="extensions" value="php,module,inc,install,test,profile,theme,info,twig" />
+  <arg name="cache" value=".phpcs-cache" />
+  <arg name="colors"/>
+  <arg value="sp"/>
+</ruleset>

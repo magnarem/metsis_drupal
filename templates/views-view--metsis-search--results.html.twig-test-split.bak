@@ -1,0 +1,235 @@
+{#
+/**
+ * @file
+ * Theme override for a main view template.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes for the element.
+ * - css_name: A CSS-safe version of the view name.
+ * - css_class: The user-specified classes names, if any.
+ * - header: The optional header.
+ * - footer: The optional footer.
+ * - rows: The results of the view query, if any.
+ * - empty: The content to display if there are no rows.
+ * - pager: The optional pager next/prev links to display.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Optional feed icons to display.
+ * - more: An optional link to the next page of results.
+ * - title: Title of the view, only used when displaying in the admin preview.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the view title.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the view title.
+ * - attachment_before: An optional attachment view to be displayed before the
+ *   view content.
+ * - attachment_after: An optional attachment view to be displayed after the
+ *   view content.
+ * - dom_id: Unique id for every view being printed to give unique class for
+ *   Javascript.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+{# Attach metsis search custom layout #}
+{{ attach_library('metsis_drupal/metsis_search_layout') }}
+{{ attach_library('metsis_drupal/metsis_search_ajax') }}
+{# Attach my map app #}
+{#{ attach_library('metsis_drupal/metsis_map') }#}
+
+{{ dump(exposed) }}
+
+
+{# Define some default css classes for the metsis search components #}
+{%
+  set metsisSearchLayoutClasses = [
+    'view',
+    'view-' ~ id|clean_class,
+    'view-id-' ~ id,
+    'view-display-id-' ~ display_id,
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+
+{%
+  set metsisSearchBarClasses = [
+    'metsis-search-bar',
+    dom_id ? 'js-search-bar-dom-id-' ~ dom_id,
+  ]
+%}
+
+{%
+  set metsisFiltersClasses = [
+    'metsis-facet-filters',
+    dom_id ? 'js-facet-filters-dom-id-' ~ dom_id,
+  ]
+%}
+
+{%
+  set metsisFiltersSummaryClasses = [
+    'metsis-filter-summary',
+    dom_id ? 'js-filters-summary-dom-id-' ~ dom_id,
+  ]
+%}
+{%
+  set classes = [
+    'metsis-search-layout',
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+ <!-- Messages -->
+  <div class="metsis-messages-container">
+  </div>
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {{ title }}
+  {{ title_suffix }}
+  <!-- We wrap the exposed form element here. Need to extract some info -->
+  {% set exposedFormClasses = exposed['#attributes'].class %}
+  {% set exsposedFormAttributes = exposed['#attributes']|without('class') %}
+  {% set exposedFormId = exposed['#id'] %}
+  <form id="{{ exposed['#id'] }}" class="{{ exposed['#attributes'].class|join(' ') }}" {% for key, value in exsposedFormAttributes %}
+    {{ key }}="{{ value }}"{% endfor %} action="{{ exposed['#action'] }}" method="{{ exposed['#method'] }}" accept-charset="UTF-8">
+
+  <div class="metsis-filters">
+  {% if header.views_filters_summary %}
+    <div>
+    {% if header.views_filters_summary['#markup'] is not empty %}
+    <h4>Active filters:</h4>
+    {% endif %}
+      {{ header.views_filters_summary }}
+    </div>
+  {% endif %}
+  {{ exposed.collection}}
+  {{ exposed.keywords }}
+  </div>
+  <div class="metsis-search-main-content">
+  {{ attachment_before }}
+  <div class="metsis-search-box">
+  {{ exposed.text }} {{ exposed.actions.reset }}
+  </div>
+  {# Render hidden form properties #}
+  {{ exposed.form_build_id }}
+  {{ exposed.form_token }}
+  {{ exposed.form_id }}
+  {{ exposed.actions|without('reset') }}
+  </form>
+
+  {% if header.result %}
+  <div class="metsis-results-summary">
+  {{ header.result }}
+  </div>
+  {% endif %}
+  {{ pager }}
+  {% if rows -%}
+    {{ rows }}
+  {% elseif empty -%}
+    {{ empty }}
+  {% endif %}
+  {{ pager }}
+
+  {{ attachment_after }}
+  {{ more }}
+  </div>
+  {% if footer %}
+    <footer>
+      {{ footer }}
+    </footer>
+  {% endif %}
+
+  {{ feed_icons }}
+</div>
+
+
+{# Metsis search layout wrapper #}
+{# <div{{attributes.addClass(metsisSearchLayoutClasses)}}>
+    {{ title_prefix }}
+	{% if title %}
+		{{ title }}
+	{% endif %}
+	{{ title_suffix }}
+
+
+  <!-- Left Column: Facet Filters and Filter Summary -->
+  <aside class="metsis-filters">
+    <div class="{{ metsisFiltersSummaryClasses|join(' ') }}">
+      <!-- Filter Summary -->
+      <h3>Active Filters</h3>
+      <!-- Add your active filter summary here -->
+       {% if header %}
+
+        {{ header }}
+      {% endif %}
+    </div>
+    <div class="{{ metsisFiltersClasses|join(' ') }}">
+      <!-- Facet Filters -->
+      <h3>Filters</h3>
+      {% if exposed %}
+          {{ exposed }}
+      {% endif %}
+    </div>
+
+  </aside>
+
+  <!-- Right Column: Search Bar, Map, and Results -->
+  <div class="metsis-search-main-content">
+    <div class="{{ metsisSearchBarClasses|join(' ') }}">
+      <!-- Search Bar and Exposed Filters -->
+
+
+<!--
+        <form>
+        {{ exposed.search_api_fulltext }}
+
+       {{ exposed.form_token }}
+     {{ exposed.form_build_id }}
+     {{ exposed.form_id }}
+
+     {{exposed.actions }}
+    </form>
+
+    </div>
+-->
+    <div class="metsis-map-container-wrapper">
+      <!-- Map -->
+      <div id="metsis-map-app" class="metsis-map-container"></div>
+    </div>
+
+    <div class="metsis-results-header">
+
+      <!-- Results Header -->
+      {% if pager %}
+		{{ pager }}
+	    {% endif %}
+
+      <!-- Add additional results information here -->
+    </div>
+
+    <div class="metsis-results-content">
+      <!-- Views Results Content -->
+      <!-- Add your search results here -->
+      {% if rows %}
+		<div class="metsis-view-content">
+			{{ rows }}
+		</div>
+	{% elseif empty %}
+		<div class="view-empty">
+			{{ empty }}
+		</div>
+	{% endif %}
+    </div>
+    {% if pager %}
+		{{ pager }}
+	{% endif %}
+    {% if footer %}
+		<div class="view-footer">
+			{{ footer }}
+		</div>
+	{% endif %}
+	{% if feed_icons %}
+		<div class="feed-icons">
+			{{ feed_icons }}
+		</div>
+	{% endif %}
+
+  </div>
+</div> #}

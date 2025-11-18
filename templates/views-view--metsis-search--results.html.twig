@@ -1,0 +1,135 @@
+{#
+/**
+ * @file
+ * Theme override for a main view template.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes for the element.
+ * - css_name: A CSS-safe version of the view name.
+ * - css_class: The user-specified classes names, if any.
+ * - header: The optional header.
+ * - footer: The optional footer.
+ * - rows: The results of the view query, if any.
+ * - empty: The content to display if there are no rows.
+ * - pager: The optional pager next/prev links to display.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Optional feed icons to display.
+ * - more: An optional link to the next page of results.
+ * - title: Title of the view, only used when displaying in the admin preview.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the view title.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the view title.
+ * - attachment_before: An optional attachment view to be displayed before the
+ *   view content.
+ * - attachment_after: An optional attachment view to be displayed after the
+ *   view content.
+ * - dom_id: Unique id for every view being printed to give unique class for
+ *   Javascript.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+{# Attach metsis search custom layout #}
+{{ attach_library('metsis_drupal/metsis_search_layout') }}
+{{ attach_library('metsis_drupal/metsis_search_ajax') }}
+{# Attach my map app #}
+{{ attach_library('metsis_drupal/metsis_map') }}
+
+{# { dump(exposed) } #}
+
+{# Define some default css classes for the metsis search components #}
+{% set metsis_search_layout = [
+	'view',
+	'view-' ~ (id|clean_class),
+	'view-id-' ~ id,
+	'view-display-id-' ~ display_id,
+	dom_id ? 'js-view-dom-id-' ~ dom_id
+] %}
+
+{% set metsis_search_box = ['metsis-search-bar', dom_id ? 'js-search-bar-dom-id-' ~ dom_id] %}
+
+{% set metsis_filters_classes = ['metsis-facet-filters', dom_id ? 'js-facet-filters-dom-id-' ~ dom_id] %}
+
+{% set metsis_filter_summary_classes = ['metsis-filter-summary', dom_id ? 'js-filters-summary-dom-id-' ~ dom_id] %}
+
+{% set classes = ['metsis-search-layout', dom_id ? 'js-view-dom-id-' ~ dom_id] %}
+{# Messages #}
+<div class="metsis-messages-container"></div>
+
+{# View main div #}
+<div{{ attributes.addClass(classes) }}>
+	{{ title_prefix }}
+	{{ title }}
+	{{ title_suffix }}
+
+	{# Left aside column Exposed form wrapper #}
+	<aside id="exposed-form-wrapper-{{ dom_id }}" class="metsis-filters">
+		{# { exposed.bbox_wrapper } #}
+    <h4>Filters:</h4>
+		{{ exposed|without('text') }}
+	</aside>
+  {# end left aside column #}
+
+	{# Main content to the right of the left aside column #}
+	<main id="metsis-results-header-wrapper-{{ dom_id }}" class="metsis-search-main-content">
+		{# Active filters summary #}
+    <div id="results-header-replace-wrapper-{{ dom_id }}">
+    {% if header.views_filters_summary and header.views_filters_summary['#markup'] is not empty %}
+			<header id="metsis-active-filters-{{ dom_id }}" class="metsis-active-filters">
+				<h4>Active filters:</h4>
+				{{ header.views_filters_summary }}
+			</header>
+		{% endif %}
+    {# end active filters summary #}
+
+		{# Search box #}
+		<div id="metsis-search-box" class="metsis-search-box">
+			{{ exposed.text }}
+		</div>
+    {# end search box #}
+
+		{# Results summary #}
+		{% if header.result %}
+    <div id="metsis-results-summary-{{ dom_id }}">
+			<h4>Search Results:</h4>
+			{{ header.result }}
+    </div>
+    {% endif %}
+    {# end results summary #}
+
+    {{ attachment_before }}
+    </div>
+    {# Result Map container #}
+    <div id="metsis-map-app"></div>
+
+    {# Pager, results and footer wrapper #}
+    <div id="metsis-search-main-results-{{ dom_id }}" class="metsis-results-pager-rows-footer-wrapper">
+      {# Pager #}
+
+      {# Result rows #}
+      {% if rows -%}
+        {{ rows }}
+      {% elseif empty -%}
+        {{ empty }}
+      {% endif %}
+
+      {# Pager #}
+      {{ pager }}
+
+      {{ attachment_after }}
+      {{ more }}
+
+      {% if footer %}
+        <footer>
+          {{ footer }}
+        </footer>
+      {% endif %}
+
+      {{ feed_icons }}
+    </div>
+    {# end pager, results and footer wrapper #}
+  </main>
+  {# end main content to the right of the left aside column #}
+</div>
+{# End view main div #}

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+## Description: Run Eslint on the projct
+## Usage: eslint
+## Example: ddev eslint
+
+npx eslint

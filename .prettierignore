@@ -1,0 +1,15 @@
+# Ignore artifacts:
+build
+coverage
+web
+vendor
+.ddev
+.vscode
+.ipynb_checkpoints
+**/.github
+**/.git
+**/.svn
+**/.hg
+**/dist
+**/node_modules
+*.inc

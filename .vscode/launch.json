@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "log": false,
+            "pathMappings": {
+                "/var/www/html": "${workspaceFolder}"
+            },
+            "preLaunchTask": "DDEV: Enable Xdebug",
+            "postDebugTask": "DDEV: Disable Xdebug"
+        }
+    ]
+}

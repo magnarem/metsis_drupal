@@ -1,0 +1,18 @@
+name: METSIS Search
+type: module
+version: 4.x-dev
+description: Drupal interactive search frontend for the MET Norway Scientific Information System (METSIS).
+package: METNO
+core_version_requirement: ^10 || ^11
+dependencies:
+  - search_api_solr_autocomplete:search_api_solr_autocomplete
+  - search_api_solr:search_api_solr
+  - search_api:search_api
+  - facets:facets
+  - better_exposed_filters:better_exposed_filters
+  - leaflet:leaflet
+  - leaflet:leaflet_views
+  # - twig_views:twig_views
+  # - twig_tweak:twig_tweak
+  # - extlink
+  # - fontawesome

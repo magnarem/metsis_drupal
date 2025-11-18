@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+      "andrewdavidblum.drupal-smart-snippets",
+      "biati.ddev-manager",
+      "cerzat43.twigcs",
+      "dbaeumer.vscode-eslint",
+      "devsense.composer-php-vscode",
+      "devsense.phptools-vscode",
+      "editorconfig.editorconfig",
+      "mblode.twig-language-2",
+      "neilbrayfield.php-docblocker",
+      "sanderronde.phpstan-vscode",
+      "valeryanm.vscode-phpsab"
+    ]
+}

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+## Description: Do all liting and fixing and build js assets
+# Example: ddev checkall
+
+ddev phpcbf
+ddev phpcs -n
+ddev phpstan
+ddev eslint
+ddev prettier-fix
+ddev prettier-check
+ddev buildjs
+
