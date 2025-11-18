@@ -1,0 +1,50 @@
+{
+  "_Draw-CDIha0Eq.js": {
+    "file": "assets/Draw-CDIha0Eq.js",
+    "name": "Draw",
+    "imports": [
+      "_ol-0FFukYIU.js"
+    ]
+  },
+  "_ol-0FFukYIU.js": {
+    "file": "assets/ol-0FFukYIU.js",
+    "name": "ol"
+  },
+  "bbox-map-filter/src/main.js": {
+    "file": "assets/bboxMapFilter-CBVspSjH.js",
+    "name": "bboxMapFilter",
+    "src": "bbox-map-filter/src/main.js",
+    "isEntry": true,
+    "imports": [
+      "_ol-0FFukYIU.js",
+      "_Draw-CDIha0Eq.js"
+    ],
+    "css": [
+      "assets/bboxMapFilter-DCXUwTpP.css",
+      "assets/olCss-BtPuoxOl.css"
+    ]
+  },
+  "metsis-map-app/src/index.jsx": {
+    "file": "assets/metsisMapApp-Dh25ZJqd.js",
+    "name": "metsisMapApp",
+    "src": "metsis-map-app/src/index.jsx",
+    "isEntry": true,
+    "imports": [
+      "_ol-0FFukYIU.js",
+      "_Draw-CDIha0Eq.js"
+    ],
+    "css": [
+      "assets/metsisMapApp-BQGH7gr0.css",
+      "assets/olCss-BtPuoxOl.css"
+    ]
+  },
+  "node_modules/ol/ol.css": {
+    "file": "assets/olCss-BtPuoxOl.css",
+    "src": "node_modules/ol/ol.css",
+    "isEntry": true,
+    "name": "olCss",
+    "names": [
+      "olCss.css"
+    ]
+  }
+}
