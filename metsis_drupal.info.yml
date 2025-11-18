@@ -12,7 +12,6 @@ dependencies:
   - better_exposed_filters:better_exposed_filters
   - leaflet:leaflet
   - leaflet:leaflet_views
-  # - twig_views:twig_views
-  # - twig_tweak:twig_tweak
-  # - extlink
-  # - fontawesome
+  - facets_exposed_filters:facets_exposed_filters
+  - views_filters_summary:views_filters_summary
+  - views_ajax_history:views_ajax_history
