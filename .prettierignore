@@ -3,6 +3,7 @@ build
 coverage
 web
 vendor
+config/**
 .ddev
 .vscode
 .ipynb_checkpoints

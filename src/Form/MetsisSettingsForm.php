@@ -16,7 +16,7 @@ class MetsisSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'metsis_settings_form';
+    return 'metsis_drupal.admin_config_form';
   }
 
   /**

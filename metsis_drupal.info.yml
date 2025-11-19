@@ -5,13 +5,13 @@ description: Drupal interactive search frontend for the MET Norway Scientific In
 package: METNO
 core_version_requirement: ^10 || ^11
 dependencies:
+  - drupal:views
   - search_api_solr_autocomplete:search_api_solr_autocomplete
   - search_api_solr:search_api_solr
   - search_api:search_api
   - facets:facets
+  - facets:facets_exposed_filters
   - better_exposed_filters:better_exposed_filters
   - leaflet:leaflet
-  - leaflet:leaflet_views
-  - facets_exposed_filters:facets_exposed_filters
   - views_filters_summary:views_filters_summary
   - views_ajax_history:views_ajax_history
