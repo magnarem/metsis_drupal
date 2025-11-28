@@ -1,7 +1,7 @@
 name: solr
 repository: ddev/ddev-solr
 version: 0.8.0
-install_date: "2025-11-18T12:57:00+01:00"
+install_date: "2025-11-25T15:32:54+01:00"
 project_files:
     - commands/solr/
     - commands/host/solr-admin

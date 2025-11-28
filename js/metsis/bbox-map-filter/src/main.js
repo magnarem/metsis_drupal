@@ -240,19 +240,19 @@ function drawBoundingBoxFromInputs() {
 // Listen for AJAX complete events to update the map dynamically.
 (function ($, Drupal, once) {
   Drupal.behaviors.BboxFilter = {
-    attach: function (context, drupalSettings) {
+    attach: function (context) {
       // Listen for AJAX complete events to update the map app dynamically.
-      if (drupalSettings?.views?.ajaxViews) {
-        once(
-          "handle-bbox-map-filter-update",
-          ".bbox-map-filter-container",
-          context,
-        ).forEach(() => {
-          console.log("Bbox drupal Behaviour...initialize bbox map filter");
-          // First time initialize
-          initializeMap();
-        });
-      }
+      //if (drupalSettings?.views?.ajaxViews) {
+      once(
+        "handle-bbox-map-filter-update",
+        ".bbox-map-filter-container",
+        context,
+      ).forEach(() => {
+        console.log("Bbox drupal Behaviour...initialize bbox map filter");
+        // First time initialize
+        initializeMap();
+      });
     },
   };
+  //};
 })(jQuery, Drupal, once);
