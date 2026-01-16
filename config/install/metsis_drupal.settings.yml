@@ -1,4 +1,10 @@
-solr_url: ""
-search_limit: 10
-map_api_key: ""
-bbox_default: ""
+solr_url: null
+search_limit: null
+map_api_key: null
+bbox_default: null
+selected_collections:
+  ADC: ADC
+map_default_zoom: '3'
+map_default_center_lat: '60'
+map_default_center_lon: '12'
+plot_service_url: null

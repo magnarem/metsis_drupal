@@ -8,12 +8,10 @@
 declare(strict_types=1);
 
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\cache\CachePluginBase;
-use Drupal\metsis_drupal\MetsisConstants;
 
 /**
  * Implements hook_help().
@@ -43,24 +41,6 @@ function metsis_drupal_help($route_name, RouteMatchInterface $route_match): stri
 }
 
 /**
- * Implements hook_theme().
- */
-function metsis_drupal_theme($existing, $type, $theme, $path) {
-  return [
-    'views_view__metsis_search__results' => [
-      'template' => 'views-view--metsis-search--results',
-      // 'render element' => 'elements',
-      'base hook' => 'views view',
-      'path' => $path = \Drupal::service('extension.path.resolver')->getPath('module', 'metsis_drupal') . '/templates',
-    ],
-    // 'views_exposed_form__metsis_search__results' => [
-    // 'render element' => 'form',
-    // 'template' => 'form--views-exposed-form--metsis-search--results',
-    // ],
-  ];
-}
-
-/**
  * Implements hook_views_filters_summary_info_alter().
  */
 function metsis_drupal_views_filters_summary_info_alter(array &$info, FilterPluginBase $filter) {
@@ -74,7 +54,7 @@ function metsis_drupal_views_filters_summary_info_alter(array &$info, FilterPlug
 
       $info['value'][0] = [
         'id' => 0,
-        'raw' => ucfirst($filter->operator) . '(' . implode(', ', $formatted_values) . ')',
+        'raw' => 'bbox',
         'value' => ucfirst($filter->operator) . '(' . implode(', ', $formatted_values) . ')',
       ];
     }
@@ -95,68 +75,6 @@ function metsis_drupal_views_filters_summary_filter_value_alter(
     $inputs = $filter->view->getExposedInput();
     $value = $inputs[$filter->options['id']];
   }
-}
-
-/**
- * Implements hook_form_views_exposed_form_alter().
- */
-function metsis_drupal_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  $view = $form_state->get('view');
-
-  if ($view->id() == MetsisConstants::METSIS_SEARCH_VIEW_ID && $view->current_display == 'results' && $view->built) {
-    // Modify our exposed form for better rendering.
-    // $form['collection']['#attributes']['class'][] = 'accordion';
-    // $form['keywords']['#attributes']['class'][] = 'accordion';
-    // $form['keywords']['#attributes']['data-open'] = 'false';.
-    // $form['search_box']['#info'] = $form['#info'];
-    // $form['search_box']['#action'] = $form['#action'];
-    // $form['search_box']['actions'] = $form['actions'];
-    // $form['search_box']['#theme'] = $form['#theme'];
-    // $form['search_box']['#id'] = $form['#id'];
-    // $form['search_box']['#disable_inline_form_errors'] = $form['#disable_inline_form_errors'];
-    // $form['search_box']['#context'] = $form['#context'];
-    // $form['search_box']['#attached'] = $form['#attached'];
-    // $form['search_box']['#form_id'] = $form['#form_id'];
-    // $form['search_box']['#type'] = $form['#type'];
-    // $form['search_box']['#method'] = $form['#method'];
-    // $form['search_box']['#build_id'] = $form['#build_id'];
-    // // $form['search_box']['form_build_id'] = $form['form_build_id'];
-    // $form['search_box']['#theme_wrappers'] = $form['#theme_wrappers'];
-    // $form['search_box']['#defaults_loaded'] = $form['#defaults_loaded'];
-    // $form['search_box']['#tree'] = $form['#tree'];
-    // $form['search_box']['#parents'] = $form['#parents'];
-    // $form['search_box']['#validate'] = $form['#validate'];
-    // // $form['search_box']['#submit'] = $form['#submit'];
-    // $form['search_box']['#cache'] = $form['#cache'];
-    // $form['search_box']['text'] = $form['text'];
-    // $form['search_box']['#attributes']['class'][] = 'metsis-search-box-form';
-    // $form['search_box']['#attributes']['data-bef-auto-submit-exclude'] = '';
-    // unset($form['text']);
-    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-full-form"]);
-    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-delay"]);
-    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-minimum-length"]);
-    // // = '';
-    // unset($form["search_box"]["#attributes"]["data-bef-auto-submit-click"]);.
-    if (isset($form['text'])) {
-      $form['text']['#attributes']['form'] = $form['#id'];
-      $form['text']['#attributes']['data-form'] = $form['#id'];
-      $form['text']['#attributes']['class'][] = "search-box";
-      $form['text']['#attributes']['data-bef-auto-submit-exclude'] = "";
-    }
-    // If (isset($form['bbox_wrapper'])) {
-    // $form['bbox_wrapper']['bbox_op']['#attributes']['form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox_op']['#attributes']['data-form'] = $form['#id'];.
-    // $form['bbox_wrapper']['bbox']['minX']['#attributes']['form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['minX']['#attributes']['data-form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['maxX']['#attributes']['form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['maxX']['#attributes']['data-form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['maxY']['#attributes']['form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['maxY']['#attributes']['data-form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['minY']['#attributes']['form'] = $form['#id'];
-    // $form['bbox_wrapper']['bbox']['minY']['#attributes']['data-form'] = $form['#id'];
-    // }.
-  }
-  // dpm($form, __FUNCTION__);.
 }
 
 /**

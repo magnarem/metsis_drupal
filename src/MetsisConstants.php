@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal;
 
 /**
- * Defines constants for the Your Module.
+ * Define METSIS Constants.
  */
 final class MetsisConstants {
   // Define constants for METSIS Solr server and index IDs.
@@ -14,5 +14,6 @@ final class MetsisConstants {
 
   // Define constant names for metsis search view(s).
   public const METSIS_SEARCH_VIEW_ID = 'metsis_search';
+  public const METSIS_SEARCH_VIEW_NAME = 'metsis-search';
 
 }

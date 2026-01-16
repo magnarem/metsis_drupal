@@ -11,7 +11,7 @@ import "./projections";
 console.log("Metsis Map App running in " + import.meta.env.MODE + " mode.");
 
 // Define the container where the map app will be rendered
-const mapAppContainer = document.getElementById("metsis-map-app");
+// const mapAppContainer = document.getElementById("metsis-map-app");
 
 // Initial configuration
 const mapAppSettings = {
@@ -43,6 +43,23 @@ const mapAppSettings = {
     },
   },
 };
-console.log("Rendering map with mapAppSettings:", mapAppSettings);
-// Initialize the map app
-render(<MapApp config={mapAppSettings} />, mapAppContainer);
+
+// Listen for AJAX complete events to update the map dynamically.
+(function ($, Drupal, once) {
+  Drupal.behaviors.metsisMapApp = {
+    attach: function (context, settings) {
+      once(
+        "initialize-metsis-map-app",
+        "#metsis-map-app",
+        context,
+        settings,
+      ).forEach((elem) => {
+        console.log("METSIS MapApp Behaviour...initialize map app");
+        // First time initialize
+        console.log(elem, settings);
+        console.log("Rendering map with mapAppSettings:", mapAppSettings);
+        render(<MapApp config={mapAppSettings} />, elem);
+      });
+    },
+  };
+})(window.jQuery, window.Drupal, window.once);

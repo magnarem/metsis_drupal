@@ -67,7 +67,7 @@
 	<aside id="exposed-form-wrapper-{{ dom_id }}" class="metsis-filters">
 		{# { exposed.bbox_wrapper } #}
     <h4>Filters:</h4>
-		{{ exposed|without('text') }}
+		{{ exposed }}
 	</aside>
   {# end left aside column #}
 
@@ -83,11 +83,11 @@
 		{% endif %}
     {# end active filters summary #}
 
-		{# Search box #}
+		{# Search box
 		<div id="metsis-search-box" class="metsis-search-box">
 			{{ exposed.text }}
 		</div>
-    {# end search box #}
+    end search box #}
 
 		{# Results summary #}
 		{% if header.result %}

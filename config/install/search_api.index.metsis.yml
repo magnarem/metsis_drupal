@@ -20,7 +20,7 @@ third_party_settings:
       fragmenter: gap
       usePhraseHighlighter: true
       highlightMultiTerm: true
-      preserveMulti: true
+      preserveMulti: false
       regex:
         slop: 0.5
         pattern: blank
@@ -46,19 +46,19 @@ third_party_settings:
       fuzzy: 1
       fuzzy_analyzer: true
     advanced:
-      index_prefix: ""
-      collection: ""
+      index_prefix: ''
+      collection: ''
       timezone: UTC
     multilingual:
       limit_to_content_language: false
       include_language_independent: false
       use_language_undefined_as_fallback_language: false
       specific_languages:
-        en: "0"
+        en: '0'
       use_universal_collation: false
 id: metsis
 name: metsis
-description: "ADC Metadata Index"
+description: 'ADC Metadata Index'
 read_only: true
 field_settings:
   abstract:
@@ -67,17 +67,17 @@ field_settings:
     property_path: abstract
     type: string
   abstract_en:
-    label: "Abstract en"
+    label: 'Abstract en'
     datasource_id: solr_document
     property_path: abstract_en
     type: text
   access_constraint:
-    label: "Access constraint"
+    label: 'Access constraint'
     datasource_id: solr_document
     property_path: access_constraint
     type: string
   activity_type:
-    label: "Activity type"
+    label: 'Activity type'
     datasource_id: solr_document
     property_path: activity_type
     type: string
@@ -87,7 +87,7 @@ field_settings:
     property_path: bbox
     type: solr_bbox
   center:
-    label: "The center coordinates of the geographic extent"
+    label: 'The center coordinates of the geographic extent'
     datasource_id: solr_document
     property_path: center
     type: location
@@ -97,129 +97,129 @@ field_settings:
     property_path: collection
     type: string
   data_access_url_http:
-    label: "Data access url http"
+    label: 'Data access url http'
     datasource_id: solr_document
     property_path: data_access_url_http
     type: string
   data_access_url_http_desc:
-    label: "Data access url http desc"
+    label: 'Data access url http desc'
     datasource_id: solr_document
     property_path: data_access_url_http_desc
     type: string
   data_access_url_ogc_wms:
-    label: "Data access url ogc wms"
+    label: 'Data access url ogc wms'
     datasource_id: solr_document
     property_path: data_access_url_ogc_wms
     type: string
   data_access_url_ogc_wms_desc:
-    label: "Data access url ogc wms desc"
+    label: 'Data access url ogc wms desc'
     datasource_id: solr_document
     property_path: data_access_url_ogc_wms_desc
     type: string
   data_access_url_opendap:
-    label: "Data access url opendap"
+    label: 'Data access url opendap'
     datasource_id: solr_document
     property_path: data_access_url_opendap
     type: string
   data_access_url_opendap_desc:
-    label: "Data access url opendap desc"
+    label: 'Data access url opendap desc'
     datasource_id: solr_document
     property_path: data_access_url_opendap_desc
     type: string
   data_access_wms_layers:
-    label: "Data access_wms layers"
+    label: 'Data access_wms layers'
     datasource_id: solr_document
     property_path: data_access_wms_layers
     type: string
   data_center_long_name:
-    label: "Data center_long name"
+    label: 'Data center_long name'
     datasource_id: solr_document
     property_path: data_center_long_name
     type: string
   data_center_short_name:
-    label: "Data center_short name"
+    label: 'Data center_short name'
     datasource_id: solr_document
     property_path: data_center_short_name
     type: string
   data_center_url:
-    label: "Data center_url"
+    label: 'Data center_url'
     datasource_id: solr_document
     property_path: data_center_url
     type: string
   dataset_citation_author:
-    label: "Dataset citation author"
+    label: 'Dataset citation author'
     datasource_id: solr_document
     property_path: dataset_citation_author
     type: string
     boost: 3.0
   dataset_citation_doi:
-    label: "Dataset citation doi"
+    label: 'Dataset citation doi'
     datasource_id: solr_document
     property_path: dataset_citation_doi
     type: date
   dataset_citation_publication_date:
-    label: "Dataset citation publication date"
+    label: 'Dataset citation publication date'
     datasource_id: solr_document
     property_path: dataset_citation_publication_date
     type: string
   dataset_citation_url:
-    label: "Dataset citation url"
+    label: 'Dataset citation url'
     datasource_id: solr_document
     property_path: dataset_citation_url
     type: string
   dataset_production_status:
-    label: "Dataset production status"
+    label: 'Dataset production status'
     datasource_id: solr_document
     property_path: dataset_production_status
     type: string
   feature_type:
-    label: "Feature type"
+    label: 'Feature type'
     datasource_id: solr_document
     property_path: feature_type
     type: string
   full_text:
-    label: "Full text"
+    label: 'Full text'
     datasource_id: solr_document
     property_path: full_text
     type: text
     boost: 1.3
   geographic_extent_ectangle_east:
-    label: "Geographic extent_rectangle_east"
+    label: 'Geographic extent_rectangle_east'
     datasource_id: solr_document
     property_path: geographic_extent_rectangle_east
     type: decimal
   geographic_extent_rectangle_north:
-    label: "Geographic extent_rectangle_north"
+    label: 'Geographic extent_rectangle_north'
     datasource_id: solr_document
     property_path: geographic_extent_rectangle_north
     type: decimal
   geographic_extent_rectangle_south:
-    label: "Geographic extent_rectangle_south"
+    label: 'Geographic extent_rectangle_south'
     datasource_id: solr_document
     property_path: geographic_extent_rectangle_south
     type: decimal
   geographic_extent_rectangle_srs:
-    label: "Geographic extent rectangle srsName"
+    label: 'Geographic extent rectangle srsName'
     datasource_id: solr_document
     property_path: geographic_extent_rectangle_srsName
     type: string
   geographic_extent_rectangle_west:
-    label: "Geographic extent_rectangle_west"
+    label: 'Geographic extent_rectangle_west'
     datasource_id: solr_document
     property_path: geographic_extent_rectangle_west
     type: decimal
   geometry_geojson:
-    label: "Geometry geojson"
+    label: 'Geometry geojson'
     datasource_id: solr_document
     property_path: geometry_geojson
     type: geojson
   geometry_wkt:
-    label: "Geometry wkt"
+    label: 'Geometry wkt'
     datasource_id: solr_document
     property_path: geometry_wkt
     type: wkt
   geospatial_bounds3d:
-    label: "Geospatial bounds3d"
+    label: 'Geospatial bounds3d'
     datasource_id: solr_document
     property_path: geospatial_bounds3d
     type: rpt
@@ -240,201 +240,211 @@ field_settings:
     type: boolean
     boost: 1.3
   iso_topic_category:
-    label: "Iso topic category"
+    label: 'Iso topic category'
     datasource_id: solr_document
     property_path: iso_topic_category
     type: boolean
   keywords_cfstdn:
-    label: "Keywords cfstdn"
+    label: 'Keywords cfstdn'
     datasource_id: solr_document
     property_path: keywords_cfstdn
     type: string
   keywords_gcmd:
-    label: "Keywords gcmd"
+    label: 'Keywords gcmd'
     datasource_id: solr_document
     property_path: keywords_gcmd
     type: string
-  keywords_keyword:
-    label: Keywords_keyword
+  keywords_gcmdloc:
+    label: 'Keywords gcmdloc'
     datasource_id: solr_document
-    property_path: keywords_keyword
+    property_path: keywords_gcmdloc
     type: string
-  keywords_vocabulary:
-    label: "Keywords vocabulary"
+  keywords_gcmdprov:
+    label: 'Keywords gcmdprov'
     datasource_id: solr_document
-    property_path: keywords_vocabulary
+    property_path: keywords_gcmdprov
     type: string
-    boost: 1.3
+  keywords_gemet:
+    label: 'Keywords gemet'
+    datasource_id: solr_document
+    property_path: keywords_gemet
+    type: string
+  keywords_northemes:
+    label: 'Keywords northemes'
+    datasource_id: solr_document
+    property_path: keywords_northemes
+    type: string
   last_metadata_update_datetime:
-    label: "Last metadata update_datetime"
+    label: 'Last metadata update_datetime'
     datasource_id: solr_document
     property_path: last_metadata_update_datetime
     type: string
+  match_exact:
+    label: 'Match exact'
+    datasource_id: solr_document
+    property_path: match_exact
+    type: text
+    boost: 3.0
   metadata_identifier:
-    label: "Metadata identifier"
+    label: 'Metadata identifier'
     datasource_id: solr_document
     property_path: metadata_identifier
     type: string
   metadata_status:
-    label: "Metadata status"
+    label: 'Metadata status'
     datasource_id: solr_document
     property_path: metadata_status
     type: string
   mmd_xml_file:
-    label: "Mmd xml file"
+    label: 'Mmd xml file'
     datasource_id: solr_document
     property_path: mmd_xml_file
     type: solr_string_storage
   operational_status:
-    label: "Operational status"
+    label: 'Operational status'
     datasource_id: solr_document
     property_path: operational_status
     type: string
     boost: 2.0
-  phrase_suggester:
-    label: "Phrase suggester"
-    datasource_id: solr_document
-    property_path: phrase_suggester
-    type: solr_text_suggester
   platform_ancillary_cloud_coverage:
-    label: "Platform ancillary cloud coverage"
+    label: 'Platform ancillary cloud coverage'
     datasource_id: solr_document
     property_path: platform_ancillary_cloud_coverage
     type: decimal
   platform_ancillary_scene_coverage:
-    label: "Platform ancillary scene coverage"
+    label: 'Platform ancillary scene coverage'
     datasource_id: solr_document
     property_path: platform_ancillary_scene_coverage
     type: string
   platform_instrument_long_name:
-    label: "Platform instrument long name"
+    label: 'Platform instrument long name'
     datasource_id: solr_document
     property_path: platform_instrument_long_name
     type: string
   platform_instrument_mode:
-    label: "Platform instrument mode"
+    label: 'Platform instrument mode'
     datasource_id: solr_document
     property_path: platform_instrument_mode
     type: string
   platform_instrument_polarisation:
-    label: "Platform instrument polarisation"
+    label: 'Platform instrument polarisation'
     datasource_id: solr_document
     property_path: platform_instrument_polarisation
     type: string
   platform_instrument_product_type:
-    label: "Platform instrument product type"
+    label: 'Platform instrument product type'
     datasource_id: solr_document
     property_path: platform_instrument_product_type
     type: string
   platform_instrument_short_name:
-    label: "Platform instrument short name"
+    label: 'Platform instrument short name'
     datasource_id: solr_document
     property_path: platform_instrument_short_name
     type: integer
   platform_long_name:
-    label: "Platform_long name"
+    label: 'Platform_long name'
     datasource_id: solr_document
     property_path: platform_long_name
     type: string
   platform_orbit_absolute:
-    label: "Platform orbit absolute"
+    label: 'Platform orbit absolute'
     datasource_id: solr_document
     property_path: platform_orbit_absolute
     type: string
   platform_orbit_direction:
-    label: "Platform orbit direction"
+    label: 'Platform orbit direction'
     datasource_id: solr_document
     property_path: platform_orbit_direction
     type: integer
   platform_orbit_relative:
-    label: "Platform orbit relative"
+    label: 'Platform orbit relative'
     datasource_id: solr_document
     property_path: platform_orbit_relative
     type: string
   platform_short_name:
-    label: "Platform short name"
+    label: 'Platform short name'
     datasource_id: solr_document
     property_path: platform_short_name
     type: string
   project_long_name:
-    label: "Project_long name"
+    label: 'Project_long name'
     datasource_id: solr_document
     property_path: project_long_name
     type: string
   project_short_name:
-    label: "Project_short name"
+    label: 'Project_short name'
     datasource_id: solr_document
     property_path: project_short_name
     type: string
   quality_control:
-    label: "Quality control"
+    label: 'Quality control'
     datasource_id: solr_document
     property_path: quality_control
     type: string
   related_dataset:
-    label: "Related dataset"
+    label: 'Related dataset'
     datasource_id: solr_document
     property_path: related_dataset
-    type: string
+    type: mmd_parent_id
   related_dataset_id:
-    label: "Related dataset id"
+    label: 'Related dataset id'
     datasource_id: solr_document
     property_path: related_dataset_id
     type: string
   related_url_data_server_landing_page:
-    label: "Related url data server landing page"
+    label: 'Related url data server landing page'
     datasource_id: solr_document
     property_path: related_url_data_server_landing_page
     type: string
   related_url_data_server_landing_page_desc:
-    label: "Related url data server landing page desc"
+    label: 'Related url data server landing page desc'
     datasource_id: solr_document
     property_path: related_url_data_server_landing_page_desc
     type: string
   related_url_landing_page:
-    label: "Related url landing page"
+    label: 'Related url landing page'
     datasource_id: solr_document
     property_path: related_url_landing_page
     type: string
   related_url_landing_page_desc:
-    label: "Related url landing page desc"
+    label: 'Related url landing page desc'
     datasource_id: solr_document
     property_path: related_url_landing_page_desc
     type: string
   storage_information_file_format:
-    label: "Storage information file format"
+    label: 'Storage information file format'
     datasource_id: solr_document
     property_path: storage_information_file_format
     type: string
   temporal_extent_end_date:
-    label: "Temporal extent_end date"
+    label: 'Temporal extent_end date'
     datasource_id: solr_document
     property_path: temporal_extent_end_date
     type: date
     boost: 1.4
   temporal_extent_period_dr:
-    label: "Temporal extent period dr"
+    label: 'Temporal extent period dr'
     datasource_id: solr_document
     property_path: temporal_extent_period_dr
     type: solr_date_range
   temporal_extent_start_date:
-    label: "Temporal extent_start date"
+    label: 'Temporal extent_start date'
     datasource_id: solr_document
     property_path: temporal_extent_start_date
     type: date
     boost: 1.3
-  text_keywords_stemmed:
-    label: "Keywords stemmed"
+  text_keywords_stemmed_1:
+    label: 'Keywords stemmed'
     datasource_id: solr_document
     property_path: text_keywords_stemmed
     type: text
   text_suggester:
-    label: "Text suggester"
+    label: 'Text suggester'
     datasource_id: solr_document
     property_path: text_suggester
     type: solr_text_suggester
   thumbnail_url:
-    label: "Thumbnail URL"
+    label: 'Thumbnail URL'
     datasource_id: solr_document
     property_path: thumbnail_url
     type: string
@@ -452,54 +462,55 @@ field_settings:
     type: string
     boost: 1.5
   title_en:
-    label: "Title en"
+    label: 'Title en'
     datasource_id: solr_document
     property_path: title_en
     type: text
   use_constraint_identifier:
-    label: "Use constraint_identifier"
+    label: 'Use constraint_identifier'
     datasource_id: solr_document
     property_path: use_constraint_identifier
     type: string
   use_constraint_license_text:
-    label: "Use constraint license text"
+    label: 'Use constraint license text'
     datasource_id: solr_document
     property_path: use_constraint_license_text
     type: string
   use_constraint_resource:
-    label: "Use constraint resource"
+    label: 'Use constraint resource'
     datasource_id: solr_document
     property_path: use_constraint_resource
     type: string
 datasource_settings:
   solr_document:
     id_field: id
-    request_handler: ""
-    default_query: "*:*"
+    request_handler: ''
+    default_query: '*:*'
     label_field: title
-    language_field: ""
+    language_field: ''
     url_field: related_url_landing_page
 processor_settings:
-  add_url: {}
-  aggregated_field: {}
-  auto_aggregated_fulltext_field: {}
-  custom_value: {}
-  entity_type: {}
-  geojson_transformer: {}
+  add_url: {  }
+  aggregated_field: {  }
+  auto_aggregated_fulltext_field: {  }
+  custom_value: {  }
+  entity_type: {  }
+  geojson_transformer:
+    weights:
+      postprocess_query: 0
   highlight:
     weights:
       postprocess_query: 0
-    prefix: "<em><strong>"
-    suffix: "</strong></em>"
+    prefix: '<span class="metsis-hl">'
+    suffix: '</span class="metsis-hl">'
     excerpt: true
     excerpt_always: false
     excerpt_length: 320
-    exclude_fields:
-      - text_suggester
+    exclude_fields: {  }
     highlight: server
     highlight_partial: true
-  language_with_fallback: {}
-  rendered_item: {}
+  language_with_fallback: {  }
+  rendered_item: {  }
   solr_date_range:
     weights:
       preprocess_index: 0

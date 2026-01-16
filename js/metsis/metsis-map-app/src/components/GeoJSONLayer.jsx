@@ -2,7 +2,8 @@ import { useEffect } from "preact/hooks";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import GeoJSON from "ol/format/GeoJSON";
-import { Style, Fill, Stroke } from "ol/style";
+import { Style, Fill, Stroke, Icon } from "ol/style";
+import pinBlack from "@assets/pin-black.svg";
 
 const GeoJSONLayer = ({ mapInstance, geojsonFeatures, projection }) => {
   useEffect(() => {
@@ -48,30 +49,41 @@ const GeoJSONLayer = ({ mapInstance, geojsonFeatures, projection }) => {
 
 function styleFunction(feature) {
   const geometry = feature.getGeometry();
-
-  // Determine if the geometry is world-bound
-  const isWorld = isWorldBound(geometry);
-  // Define fill and stroke styles
-  let fillColor, strokeColor;
-
-  if (isWorld) {
-    // World-bound geometry
-    fillColor = "rgba(52, 5, 79, 0.2)"; // Transparent blue fill
-    strokeColor = "rgba(65, 5, 100, 1)"; // Solid blue stroke
+  const geomtryType = geometry.getType();
+  if (geomtryType === "Point") {
+    const pointStyle = new Style({
+      image: new Icon({
+        src: pinBlack,
+        scale: 0.1, // Scale the size of the icon
+        anchor: [0.5, 1], // Anchor the icon at the bottom center
+      }),
+    });
+    return pointStyle;
   } else {
-    fillColor = "rgba(49, 12, 214, 0.5)";
-    strokeColor = "rgba(23, 6, 96, 1)"; // Black stroke for other geometries
+    // Determine if the geometry is world-bound
+    const isWorld = isWorldBound(geometry);
+    // Define fill and stroke styles
+    let fillColor, strokeColor;
+
+    if (isWorld) {
+      // World-bound geometry
+      fillColor = "rgba(52, 5, 79, 0.2)"; // Transparent blue fill
+      strokeColor = "rgba(65, 5, 100, 1)"; // Solid blue stroke
+    } else {
+      fillColor = "rgba(49, 12, 214, 0.5)";
+      strokeColor = "rgba(23, 6, 96, 1)"; // Black stroke for other geometries
+    }
+    // Return a style object
+    return new Style({
+      fill: new Fill({
+        color: fillColor,
+      }),
+      stroke: new Stroke({
+        color: strokeColor,
+        width: 2,
+      }),
+    });
   }
-  // Return a style object
-  return new Style({
-    fill: new Fill({
-      color: fillColor,
-    }),
-    stroke: new Stroke({
-      color: strokeColor,
-      width: 2,
-    }),
-  });
 }
 
 // Function to check if a geometry spans the entire world

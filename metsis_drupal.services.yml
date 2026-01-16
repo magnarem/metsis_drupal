@@ -12,18 +12,31 @@ services:
     arguments: []
     tags:
       - { name: event_subscriber }
+
   metsis_drupal.search_api_solr_subscriber:
     class: Drupal\metsis_drupal\EventSubscriber\SearchApiSolrSubscriber
-    arguments: []
+    arguments:
+      - "@config.factory"
+      - "@metsis_drupal.metsis_helper"
     tags:
       - { name: event_subscriber }
+
   metsis_drupal.metsis_search_ajax_subscriber:
     class: Drupal\metsis_drupal\EventSubscriber\ViewsAjaxResponseSubscriber
     arguments: []
     tags:
       - { name: event_subscriber }
-  metsis_drupal.metsis_search_helper:
-    class: Drupal\metsis_drupal\Utility\MetsisSearchHelper
-    public: true
-    autowire: true
-    autoconfigure: true
+
+  metsis_drupal.metsis_helper:
+    class: Drupal\metsis_drupal\Utility\MetsisHelper
+    arguments:
+      - '@entity_type.manager'
+      - '@leaflet.service'
+      - '@renderer'
+      - '@module_handler'
+      - '@config.factory'
+
+  # Alias the FQCN to the service id so type-hinted injections (autowire)
+  # resolve to the defined service instead of attempting a no-arg instantiation.
+  Drupal\metsis_drupal\Utility\MetsisHelper:
+    alias: "metsis_drupal.metsis_helper"

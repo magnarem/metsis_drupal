@@ -1,0 +1,20 @@
+metsis_drupal.metadata_export:
+  type: config_object
+  label: 'Metsis Metadata Export mappings'
+  mapping:
+    xslt_path:
+      type: string
+      label: 'Directory path to XSLT files'
+    xslt_prefix:
+      type: string
+      label: 'XSLT file name prefix'
+    export_list:
+      type: ignore
+      label: 'Metadata export formats'
+      mapping:
+        "*":
+          type: string
+          label: 'Export format mapping'
+    export_types_descriptions:
+      type: ignore
+      label: 'Metadata export types descriptions'

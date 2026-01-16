@@ -1,17 +1,19 @@
-metsis_drupal.admin_config_metno:
+metsis_drupal.admin_metno:
   path: "/admin/config/metno"
   defaults:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: "METNO"
-    requirements:
-      _permission: "access administration pages"
-metsis_drupal.settings:
-  path: "/admin/config/metno/metsis-settings"
-  defaults:
-    _form: '\Drupal\metsis_drupal\Form\MetsisSettingsForm'
-    _title: "METSIS settings"
   requirements:
     _permission: "administer site configuration"
+
+metsis_drupal.settings:
+  path: "/admin/config/metno/metsis-drupal"
+  defaults:
+    _form: '\Drupal\metsis_drupal\Form\MetsisSettingsForm'
+    _title: "Configure METSIS settings"
+  requirements:
+    _permission: "administer site configuration"
+
 metsis_drupal.status_report:
   path: "/admin/reports/metsis-status-report"
   defaults:

@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * Default view template to display license icons in a search result row.
+ *
+ * Available variables:
+ * - license_code: The license code string.
+ * - license_uri: The URI to the license details page.
+ * - icon_path: relative URI for the icon image.
+ * - icon_alt_text: Alt text for the license icon.
+ *
+ * @see MetsisSearchRow views row plugin.
+ *
+ * @ingroup themeable
+ */
+#}
+{% if license_code != 'Not provided' %}
+<a href="{{ license_uri }}" title="{{ icon_alt_text }}" target="_blank">
+  <picture>
+    <source srcset="{{ icon_path }}.webp" type="image/webp">
+    <source srcset="{{ icon_path }}.png" type="image/png">
+    <img src="{{ icon_path }}.png" alt="{{ icon_alt_text }}" class="metsis-license-icon-img">
+  </picture>
+</a>
+{% else %}
+  {# No license icon available. #}
+  <span class="no-license-icon">No license available</span>
+{% endif %}

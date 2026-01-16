@@ -1,36 +1,21 @@
-{#
+#
 /**
  * @file
- * Default theme implementation for a 'form' element.
+ * Theme override for a views exposed form.
  *
- * Available variables
- * - attributes: A list of HTML attributes for the wrapper element.
- * - children: The child elements of the form.
+ * Available variables:
+ * - form: A render element representing the form.
  *
- * @see template_preprocess_form()
- *
- * @ingroup themeable
+ * @see template_preprocess_views_exposed_form()
  */
 #}
-<div class="metsis-messages-container">
-{{ dump(attributes)}}
-{{ dump(form)}}
-
+{% if q is not empty %}
+  {#
+    This ensures that, if clean URLs are off, the 'q' is added first,
+    as a hidden form element, so that it shows up first in the POST URL.
+  #}
+{{ q }}
+{% endif %}
+<div class="metsis-search-exposed-form">
+  {{ dump(form) }}
 </div>
-{# <aside class="metsis-filters">
-  {% if header.views_filters_summary %}
-    <header>
-    {% if header.views_filters_summary['#markup'] is not empty %}
-    <h4>Active filters:</h4>
-    {% endif %}
-      {{ header.views_filters_summary }}
-    </header>
-  {% endif %}
-  {{ exposed.collection}}
-  {{ exposed.keywords }}
-  </aside>
-
-  {{ attachment_before }}
-  <div class="metsis-search-box">
-  {{ exposed|without('collection','keywords') }}
-  </div> #}

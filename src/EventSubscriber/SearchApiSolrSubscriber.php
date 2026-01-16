@@ -12,13 +12,81 @@ use Drupal\search_api_solr\Event\SearchApiSolrEvents;
 use Drupal\search_api_solr\Event\PostFieldMappingEvent;
 use Drupal\metsis_drupal\LoggerTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\metsis_drupal\Utility\MetsisHelper;
 
 /**
  * Search API Solr events subscriber.
  */
 class SearchApiSolrSubscriber implements EventSubscriberInterface {
   use LoggerTrait;
-  /* @todo inject custom query helper service */
+
+  /**
+   * METSIS config (immutable).
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $metsisConfig;
+
+  /**
+   * Metsis search helper service.
+   *
+   * @var \Drupal\metsis_drupal\Utility\MetsisHelper
+   */
+  protected $metsisHelper;
+
+  /**
+   * Default solr search fields needed for metsis_search.
+   *
+   * @var array
+   */
+  protected $defaultFields = [
+    'id',
+    'personnel_organisation',
+    'project_long_name',
+    'project_short_name',
+    'temporal_extent_start_date',
+    'temporal_extent_end_date',
+    'last_metadata_update_datetime',
+    'abstract',
+    'related_url*',
+    'isParent',
+    'isChild',
+    'data_access_url_opendap',
+    'feature_type',
+    'data_access_url_http',
+    'score',
+    'geographic_extent_rectangle_south',
+    'geographic_extent_rectangle_north',
+    'geographic_extent_rectangle_west',
+    'geographic_extent_rectangle_east',
+    'use_constraint_identifier',
+    'iso_topic_category',
+    'activity_type',
+    'dataset_production_status',
+    'metadata_status',
+    'data_center_long_name',
+    'data_center_short_name',
+    'data_center_url',
+    'personnel_name',
+    'metadata_identifier',
+    'collection',
+     // 'keywords_keyword',
+    'data_access_url_ftp',
+    'data_access_url_ogc_wms',
+    'data_access_wms_layers',
+    'total_children:[subquery]',
+    'found_children:[subquery]',
+    'parent:[subquery]',
+  ];
+
+  /**
+   * Constructor.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, MetsisHelper $metsis_helper) {
+    $this->metsisConfig = $config_factory->get('metsis_drupal.settings');
+    $this->metsisHelper = $metsis_helper;
+  }
 
   /**
    * {@inheritdoc}
@@ -50,15 +118,32 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
       // Add custom solr queries when we have a metsis tag.
       if ($query->hasTag('metsis')) {
+
         // Retrieve geojson and wkt fields from solr.
         $solarium_query->addField('geometry_geojson');
         $solarium_query->addField('geometry_wkt');
+
+        /*
+         * Add fields not defined in search view but needed for
+         * other metsis search backends. I.E MapSearch
+         */
+        $fields = $solarium_query->getFields();
+        $newfields = array_merge($fields, $this->defaultFields);
+        // Make sure the fields array contains unique fields.
+        $uniq_fields = array_unique($newfields);
+        $solarium_query->setFields($uniq_fields);
 
         // Only show return documents with metadata_status:Active.
         $solarium_query->addFilterQuery([
           'key' => 'active_filter',
           'query' => 'metadata_status:Active',
         ]);
+        // Add collection filter if collections are selected.
+        if ($selected_collections = $this->metsisConfig->get('selected_collections')) {
+          $solarium_query->createFilterQuery('collection')
+            ->setQuery('collection:(' . implode(" ", array_keys($selected_collections)) . ')');
+        }
+
         // Add parent/child filter.
         $solarium_query->addFilterQuery([
           'key' => 'parent_child_filter',
@@ -85,6 +170,20 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           $solarium_query->addFilterQuery([
             'key' => 'metsis_date_range_filter',
             'query' => $date_range_filter,
+          ]);
+        }
+
+        // Handle parent filter.
+        if ($parent_filter = $query->getOption('metsis_parent_filter')) {
+          $solarium_query->addFilterQuery([
+            'key' => 'metsis_parent_filter',
+            'query' => $parent_filter,
+          ]);
+          // Update the parent_child_filter, when we have a parent filter.
+          $solarium_query->removeFilterQuery('parent_child_filter');
+          $solarium_query->addFilterQuery([
+            'key' => 'parent_child_filter',
+            'query' => "(isParent:true isParent:false) AND isChild:true",
           ]);
         }
       }
@@ -116,12 +215,19 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
         $main_query = $solarium_query->getQuery();
 
-        // Escape the main query for inclusion in the join query's 'v' parameter.
+        // Highlighting fails with join query, so we use main query in hl.q.
+        $solarium_query->getHighlighting()->setQuery($main_query);
+        $hl = $solarium_query->getHighlighting();
+
+        // Escape the main query for the join query's 'v' parameter.
         $escaped_query = $helper->escapeLocalParamValue($main_query);
 
         // Construct the join query.
         $child_q_join = "{!join from=related_dataset_id to=id v=$escaped_query}";
-
+        /* $solarium_query->addFilterQuery([
+        'key' => 'child_join',
+        'query' => $child_q_join,
+        ]);*/
         $solarium_query->setQuery($main_query . ' || (' . $child_q_join . ')');
       }
     }

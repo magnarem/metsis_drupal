@@ -111,9 +111,9 @@ class LeafletGeometryField extends FieldPluginBase {
       $map['OSM Mapnik']['settings']['leaflet_markercluster'] = [
         'control' => FALSE,
       ];
-      $map['OSM Mapnik']['settings']['reset_map'] = [
-        'control' => FALSE,
-      ];
+      $map['OSM Mapnik']['settings']['zoomControl'] = FALSE;
+      $map['OSM Mapnik']['settings']['zoom'] = 10;
+
       $feature = $this->getLeafletService()->leafletProcessGeofield($value);
       $map_markup = $this->getLeafletService()->leafletRenderMap($map['OSM Mapnik'], $feature);
       return $this->renderer->render($map_markup);

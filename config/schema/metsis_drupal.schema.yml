@@ -1,19 +1,21 @@
-# metsis_drupal.index:
-#   type: config_object
-#   label: 'Metsis Search API Index'
-#   mapping:
-#     field_settings:
-#       type: mapping
-#       label: 'Field settings'
-#       mapping:
-#         metsis_drupal_geojson_field:
-#           type: mapping
-#           label: 'GeoJSON field settings'
-#           mapping:
-#             configuration:
-#               type: mapping
-#               label: 'Configuration'
-#               mapping:
-#                 geojson_field_value:
-#                   type: string
-#                   label: 'GeoJSON field value'
+metsis_drupal.settings:
+  type: config_object
+  label: 'Metsis Search settings'
+  mapping:
+    selected_collections:
+      type: ignore
+      label: 'Selected collections'
+    map_default_zoom:
+      type: string
+      label: 'Default map zoom level'
+      constraints:
+        PositiveOrZero: ~
+    map_default_center_lat:
+      type: string
+      label: 'Default map center latitude'
+    map_default_center_lon:
+      type: string
+      label: 'Default map center longitude'
+    plot_service_url:
+      type: string
+      label: 'Plot service url endpoint'

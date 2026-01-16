@@ -28,13 +28,13 @@ dependencies:
     - search_api_solr
 id: metsis_solr
 name: metsis_solr
-description: "Search API Solr server for METSIS/ADC."
+description: 'Search API Solr server for METSIS/ADC.'
 backend: search_api_solr
 backend_config:
   retrieve_data: true
-  highlight_data: false
+  highlight_data: true
   site_hash: false
-  server_prefix: ""
+  server_prefix: ''
   domain: generic
   environment: default
   connector: solr_cloud_basic_auth
@@ -49,13 +49,13 @@ backend_config:
     optimize_timeout: 10
     finalize_timeout: 30
     skip_schema_check: true
-    solr_version: ""
+    solr_version: ''
     http_method: AUTO
     commit_within: 1000
     jmx: false
     jts: true
-    solr_install_dir: ""
-    checkpoints_collection: ""
+    solr_install_dir: ''
+    checkpoints_collection: ''
     stats_cache: org.apache.solr.search.stats.LRUStatsCache
     distrib: true
     context: solr
@@ -63,8 +63,8 @@ backend_config:
     password: SolrRocks
   optimize: false
   fallback_multiple: false
-  disabled_field_types: {}
-  disabled_caches: {}
+  disabled_field_types: {  }
+  disabled_caches: {  }
   disabled_request_handlers:
     - request_handler_elevate_default_7_0_0
     - request_handler_replicationmaster_default_7_0_0

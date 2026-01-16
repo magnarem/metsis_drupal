@@ -52,7 +52,8 @@ class GeoJsonTransformer extends ProcessorPluginBase {
 
     // Array to store all GeoJSON features.
     $features = [];
-
+    $solr_response = $results->getExtraData('search_api_solr_response');
+    $solr_response_docs = $solr_response['response']['docs'];
     // Iterate over the result items.
     foreach ($results->getResultItems() as $result_item) {
       // Get the field value for the GeoJSON field.

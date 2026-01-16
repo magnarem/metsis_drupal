@@ -111,8 +111,33 @@ class MetsisStatusReportControllerTest extends KernelTestBase {
     ]
     );
 
-    // Instantiate the controller with the mocked dependency.
-    $controller = new MetsisStatusReportController($entity_type_manager);
+    // Instantiate the controller with the mocked dependency and auto-mock remaining constructor args.
+    $reflection = new \ReflectionClass(MetsisStatusReportController::class);
+    $constructor = $reflection->getConstructor();
+    if ($constructor) {
+      $args = [];
+      $params = $constructor->getParameters();
+      foreach ($params as $index => $param) {
+        if ($index === 0) {
+          // Use our prepared EntityTypeManager mock for the first parameter.
+          $args[] = $entity_type_manager;
+          continue;
+        }
+        $type = $param->getType();
+        if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+          $className = $type->getName();
+          $args[] = $this->getMockBuilder($className)->disableOriginalConstructor()->getMock();
+        }
+        else {
+          $args[] = NULL;
+        }
+      }
+      $controller = $reflection->newInstanceArgs($args);
+    }
+    else {
+      // Fallback if no constructor is present: instantiate without invoking constructor.
+      $controller = $reflection->newInstanceWithoutConstructor();
+    }
 
     // Call the method.
     $build = $controller->statusReportPage();

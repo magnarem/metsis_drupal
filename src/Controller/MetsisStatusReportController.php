@@ -12,6 +12,9 @@ use Drupal\Core\Url;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\Core\Link;
 use Drupal\search_api_solr\SolrCloudConnectorInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Returns responses for METSIS Search routes.
@@ -25,14 +28,39 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
    */
   protected $entityTypeManager;
 
+
+  /**
+   * Metsis helper service.
+   *
+   * @var \Drupal\metsis_drupal\Utility\MetsisHelper
+   */
+  protected $metsisHelper;
+
+  /**
+   * METSIS config (immutable).
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $metsisConfig;
+
   /**
    * Constructs a StatusPageController object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory service.
+   * @param \Drupal\metsis_drupal\Utility\MetsisHelper $metsis_helper
+   *   The metsis search helper service.
    */
-  public function __construct($entity_type_manager) {
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    ConfigFactoryInterface $config_factory,
+    MetsisHelper $metsis_helper,
+  ) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->metsisConfig = $config_factory->get('metsis_drupal.settings');
+    $this->metsisHelper = $metsis_helper;
   }
 
   /**
@@ -40,7 +68,9 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('config.factory'),
+      $container->get('metsis_drupal.metsis_helper')
     );
   }
 
@@ -72,9 +102,9 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
     /** @var \Drupal\search_api\Entity\Server $server */
     $server = $server_storage->load(MetsisConstants::METSIS_SOLR_SERVER_ID);
 
-    /** @var \Drupal\search_api\Entity\Index[] $index */
+    /** @var \Drupal\search_api\Entity\Index $index */
     $index = $index_storage->load(MetsisConstants::METSIS_SOLR_INDEX_ID);
-
+    $index->status();
     /** @var \Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend $backend */
     $backend = $server->getBackend();
 
@@ -82,17 +112,47 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
     $connector = $backend->getSolrConnector();
     $cloud = $connector instanceof SolrCloudConnectorInterface;
 
+    // The configured MMD collections for this site.
+    $collections = $this->metsisConfig->get('selected_collections');
+
     // Gather metsis solr server information.
     $info["server"]["connection"] = $server->getBackendConfig()["connector_config"];
     $info["server"]["status"] = $backend->isAvailable();
     $info["server"]["solr_version"] = $connector->getSolrVersion();
     $info["server"]["description"] = $server->getDescription();
-
     $info["index"]["ping"] = $connector->pingCore();
     $info["index"]["schema_version"] = $connector->getSchemaVersionString();
     $info["index"]["stats"] = $connector->getStatsSummary();
     $info["index"]["data"] = $connector->getLuke();
 
+    // Info about the configured MMD collections for this site.
+    $info["index"]["collections"] = $collections;
+
+    // Gather parent/child relations.
+    $parent_child_info = $this->metsisHelper->countParentChildRelations($collections);
+    if ($parent_child_info['difference'] == 0) {
+      $info['index']['parent_child'] = $this->t('There are @num parents/collections for this site.', [
+        '@num' => $parent_child_info['parents_count'],
+      ]);
+      $info['index']['parent_child_level'] = RequirementSeverity::OK;
+    }
+    elseif ($parent_child_info['unique_parents'] > $parent_child_info['parents_count']) {
+      $num_missing_parents = $parent_child_info['unique_parents'] - $parent_child_info['parents_count'];
+      $info['index']['parent_child'] = $this->t('There are @num children pointing to parents that do not exists, or that are not marked as parents.', [
+        '@num' => $num_missing_parents,
+      ]);
+      $info['index']['parent_child_level'] = RequirementSeverity::Warning;
+    }
+    elseif ($parent_child_info['unique_parents'] < $parent_child_info['parents_count']) {
+      $num_missing_children = $parent_child_info['parents_count'] - $parent_child_info['unique_parents'];
+      $info['index']['parent_child'] = $this->t('There are @num parents that do not have any children.', [
+        '@num' => $num_missing_children,
+      ]);
+      $info['index']['parent_child_level'] = RequirementSeverity::Warning;
+    }
+
+    // Gather other statistics.
+    $adc_stats = $this->metsisHelper->getOtherStatistics($collections);
     // Process the statsSummary for the status report.
     $pending_msg = $info["index"]["stats"]['@pending_docs'] ? $this->t('(@pending_docs sent but not yet processed)', $info["index"]["stats"]) : '';
     $index_msg = $info["index"]["stats"]['@index_size'] ? $this->t('(@index_size on disk)', $info["index"]["stats"]) : '';
@@ -158,15 +218,6 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
         ),
         'severity' => RequirementSeverity::Info,
       ],
-      'core' => [
-        'title' => $this->t('Collection (core)'),
-        'value' => $this->t("<strong>@core</strong>",
-          [
-            '@core' => $info["server"]["connection"]["core"],
-          ],
-        ),
-        'severity' => RequirementSeverity::Info,
-      ],
       'ping' => [
         'title' => $this->t('Ping'),
         'value' => $this->t('The @name @core could be accessed (latency: @millisecs ms).', [
@@ -177,15 +228,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
         ),
         'severity' => $info["index"]["ping"] ? RequirementSeverity::OK : RequirementSeverity::Error,
       ],
-      'schema_version' => [
-        'title' => $this->t('Schema version'),
-        'value' => $this->t("<strong>@schema_version</strong>",
-          [
-            '@schema_version' => $info["index"]["schema_version"],
-          ],
-        ),
-        'severity' => RequirementSeverity::Info,
-      ],
+
       'autocommit' => [
         'title' => $this->t('Auto commit'),
         'value' => $this->t("The search should be updated every @time.",
@@ -196,9 +239,55 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
 
         'severity' => RequirementSeverity::Info,
       ],
+      'core' => [
+        'title' => $this->t('Collection (core)'),
+        'value' => $this->t("<strong>@core</strong>",
+          [
+            '@core' => $info["server"]["connection"]["core"],
+          ],
+        ),
+        'severity' => RequirementSeverity::Info,
+      ],
+      'schema_version' => [
+        'title' => $this->t('Schema version'),
+        'value' => $this->t("<strong>@schema_version</strong>",
+          [
+            '@schema_version' => $info["index"]["schema_version"],
+          ],
+        ),
+        'severity' => RequirementSeverity::Info,
+      ],
+      'collections' => [
+        'title' => $this->t('Configured collections'),
+        'value' => $this->t("<strong>@collections</strong>",
+          [
+            '@collections' => implode(', ', $info["index"]["collections"]),
+          ],
+        ),
+        'severity' => $info["index"]["collections"] ? RequirementSeverity::Info : RequirementSeverity::Warning,
+      ],
+      'parent_child' => [
+        'title' => $this->t('Parent/child integrity'),
+        'value' => $this->t('@text', ['@text' => $info['index']['parent_child']]),
+        'severity' => $info['index']['parent_child_level'],
+      ],
+      'site_status' => [
+        'title' => $this->t('This site index (filtered on configured collections)'),
+        'value' => $this->t('Total: @total - Active: @active, Inactive: @inactive', [
+          '@total' => $adc_stats['total_site'],
+          '@active' => $adc_stats['total_site_active'],
+          '@inactive' => $adc_stats['total_site_inactive'],
+        ]),
+        'severity' => RequirementSeverity::Info,
+      ],
+
       'doc_status' => [
-        'title' => $this->t('Indexed'),
-        'value' => $indexed_message,
+        'title' => $this->t('Global index'),
+        'value' => $this->t('@message - Active: @active, Inactive: @inactive', [
+          '@message' => $indexed_message,
+          '@active' => $adc_stats['total_active'],
+          '@inactive' => $adc_stats['total_inactive'],
+        ]),
         'severity' => RequirementSeverity::Info,
       ],
 

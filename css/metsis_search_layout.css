@@ -117,6 +117,102 @@
   min-width: 200px;
   /* Move below filters */
 }
+
+.metsis-search-row {
+  display: block;
+}
+
+/* left figure: fixed width, keeps map aspect via height */
+.metsis-map-figure {
+  flex: 0 0 220px;
+  /* fixed width */
+  width: 220px;
+  height: 160px;
+  /* adjust as needed */
+  margin: 0;
+  overflow: hidden;
+}
+
+/* ensure leaflet/map element fills the figure */
+.metsis-map-figure .leaflet-container,
+.metsis-map-figure #map,
+.metsis-map-figure .metsis-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* main area: map left, content right */
+.metsis-search-main {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* right content grows to remaining space */
+.metsis-search-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* allow overflow handling inside */
+}
+
+/* styling for the quote */
+.metsis-search-quote {
+  margin: 0;
+  padding: 0.25rem 0;
+  font-style: italic;
+}
+
+.metsis-search-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* styling for the search box and button */
+button.metsis-search-box__button {
+  border: none;
+  cursor: pointer;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
+  margin-top: 0.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metsis-search-box-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+}
+/* style highlighted text */
+.metsis-hl {
+  background-color: yellow;
+}
+
+/* license icon styling */
+.metsis-license-icon-wrapper {
+  flex: 0 0 auto;
+}
+.metsis-license-icon-img {
+  width: auto;
+}
+/*.metsis-search-text__input */
+
+/* small screens: stack vertically */
+@media (max-width: 720px) {
+  .metsis-search-row {
+    flex-direction: column;
+  }
+
+  .metsis-map-figure {
+    width: 100%;
+    height: 220px;
+    /* taller for mobile */
+  }
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .metsis-search-layout {

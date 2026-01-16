@@ -184,7 +184,7 @@ class MetsisSolrDateRangeFilter extends SearchApiDate {
    *
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if (empty($this->value)) {
       return;
     }

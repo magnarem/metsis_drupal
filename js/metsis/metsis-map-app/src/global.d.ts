@@ -4,9 +4,8 @@ declare global {
     jQuery: jQueryStatic;
     drupalSettings: DrupalSettings;
     transliterate: TransliterateType;
-    Drupal: {
-      attachBehaviors: (context: HTMLElement, settings) => void;
-    };
+    once: Once;
+    Drupal: Drupal;
   }
 }
 export {};

@@ -1,0 +1,20 @@
+xslt_path: vendor/metno/mmd/xslt/
+xslt_prefix: mmd-to-
+export_list:
+  mmd: MMD
+  dif: DIF
+  dif10: DIF10
+  iso: 'ISO 19115'
+  iso2: 'ISO 19115-2'
+  inspire: 'ISO Inspire'
+  geonorge: 'Norwegian ISO Inspire'
+  dcatap: 'DCAT'
+export_types_descriptions:
+  mmd: '<a href="https://htmlpreview.github.io/?https://github.com/metno/mmd/blob/master/doc/mmd-specification.html">MET Norway Metadata Format (MMD)</a>'
+  dif: 'Directory Interchange Format (DIF) v.9'
+  dif10: 'Directory Interchange Format (DIF) v.10'
+  iso: 'ISO 19115 Geographic Metadata Information'
+  iso2: 'Geographic information — Metadata — Part 2: Extensions for acquisition and processing'
+  inspire: 'Inspire profile of ISO 19115'
+  geonorge: 'Norwegian Inspire profile of ISO 19115'
+  dcatap: 'Data Catalog Vocabulary (DCAT) v3.0'

@@ -1,0 +1,47 @@
+{#
+/**
+ * @file
+ * Default view template to display all the fields in a row.
+ *
+ * Available variables:
+ * - view: The view in use.
+ * - row: The raw result from the query, with all data it fetched.
+ * - options: The options array passed to the row plugin.
+ * - solr_doc: The Solr document fields for the current result.
+ * - fields: An array of preprared/processed field values.
+ * - excerpt: An array of highlighted/excerpted field snippets.
+ *
+ * @see MetsisSearchRow views row plugin.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ dump() }}
+{# { dump(excerpt) } #}
+<div class="metsis-search-row">
+	<h3 class="metsis-search-title">
+  {% if fields.landing_page is not empty %}
+		<a href="{{ fields.landing_page }}"
+        target="_blank"
+        title="Go to dataset landing page"
+        aria-label="Go to dataset landing page">{{ fields.title|raw }}</a>
+	{% else %}
+    {{ fields.title|raw }}
+  {% endif %}
+  </h3>
+	<div class="metsis-search-main">
+		<figure class="metsis-map-figure">
+			{{ solr_doc.leaflet_markup }}
+		</figure>
+		<div class="metsis-search-content">
+			<blockquote class="metsis-search-quote">
+				{{ fields.abstract|raw }}
+			</blockquote>
+		</div>
+    <div class="metsis-license-icon-wrapper">
+  {% if fields.license_icon is defined and fields.license_icon is not empty %}
+      {{ fields.license_icon }}
+   {% endif %}
+   </div>
+	</div>
+</div>

@@ -25,385 +25,11 @@ display:
     display_options:
       title: 'Metsis Search'
       fields:
-        title_en:
-          id: title_en
-          table: search_api_index_metsis
-          field: title_en
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_text
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: h5
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          link_to_item: true
-          use_highlighting: false
-          multi_type: separator
-          multi_separator: ', '
-          filter_type: xss
         geometry_geojson:
           id: geometry_geojson
           table: search_api_index_metsis
           field: geometry_geojson
-          relationship: none
-          group_type: group
-          admin_label: ''
           plugin_id: leaflet_geometry_field
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: aside
-          element_class: leaflet-row
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          link_to_item: false
-          use_highlighting: false
-          display_as_leaflet: true
-        temporal_extent_start_date:
-          id: temporal_extent_start_date
-          table: search_api_index_metsis
-          field: temporal_extent_start_date
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_date
-          label: 'Start date'
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: strong
-          element_label_class: ''
-          element_label_colon: true
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          date_format: html_datetime
-          custom_date_format: ''
-          timezone: UTC
-          link_to_item: false
-          use_highlighting: false
-          multi_type: separator
-          multi_separator: ', '
-        temporal_extent_end_date:
-          id: temporal_extent_end_date
-          table: search_api_index_metsis
-          field: temporal_extent_end_date
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_date
-          label: 'End date'
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: strong
-          element_label_class: ''
-          element_label_colon: true
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: true
-          empty_zero: true
-          hide_alter_empty: true
-          date_format: html_datetime
-          custom_date_format: ''
-          timezone: UTC
-          link_to_item: false
-          use_highlighting: false
-          multi_type: separator
-          multi_separator: ', '
-        search_api_excerpt:
-          id: search_api_excerpt
-          table: search_api_index_metsis
-          field: search_api_excerpt
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_text
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          link_to_item: false
-          use_highlighting: false
-          multi_type: separator
-          multi_separator: ', '
-          filter_type: unfiltered
-        abstract_en:
-          id: abstract_en
-          table: search_api_index_metsis
-          field: abstract_en
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api_text
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: blockquote
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          link_to_item: false
-          use_highlighting: true
-          multi_type: separator
-          multi_separator: ', '
-          filter_type: xss
-        bbox:
-          id: bbox
-          table: search_api_index_metsis
-          field: bbox
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          link_to_item: false
-          use_highlighting: false
-          multi_type: separator
-          multi_separator: ', '
       pager:
         type: full
         options:
@@ -430,7 +56,7 @@ display:
         type: bef
         options:
           submit_button: Filter
-          reset_button: true
+          reset_button: false
           reset_button_label: 'Reset filters'
           exposed_sorts_label: 'Sort by'
           expose_sort_order: true
@@ -446,7 +72,7 @@ display:
               autosubmit_exclude_textfield: true
               autosubmit_textfield_delay: 500
               autosubmit_textfield_minimum_length: 3
-              autosubmit_hide: true
+              autosubmit_hide: false
               input_required: false
               allow_secondary: false
               secondary_label: 'Advanced options'
@@ -456,8 +82,6 @@ display:
               search_api_fulltext:
                 plugin_id: default
                 advanced:
-                  sort_options_method: alphabetical_asc
-                  sort_options_natural: true
                   placeholder_text: ''
                   rewrite:
                     filter_rewrite_values: ''
@@ -468,51 +92,10 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-              facets_collection:
-                plugin_id: bef
-                advanced:
-                  sort_options_method: alphabetical_asc
-                  sort_options_natural: true
-                  rewrite:
-                    filter_rewrite_values: ''
-                    filter_rewrite_values_key: false
-                  collapsible: false
-                  collapsible_disable_automatic_open: false
-                  open_by_default: false
-                  is_secondary: false
-                  hide_label: false
-                  field_classes: ''
-                select_all_none: false
-                select_all_none_nested: false
-                display_inline: false
-                soft_limit: 0
-                soft_limit_label_less: 'Show less'
-                soft_limit_label_more: 'Show more'
-              facets_keywords_keyword:
-                plugin_id: bef
-                advanced:
-                  sort_options_method: alphabetical_asc
-                  sort_options_natural: true
-                  rewrite:
-                    filter_rewrite_values: ''
-                    filter_rewrite_values_key: false
-                  collapsible: false
-                  collapsible_disable_automatic_open: false
-                  open_by_default: false
-                  is_secondary: false
-                  hide_label: false
-                  field_classes: ''
-                select_all_none: false
-                select_all_none_nested: false
-                display_inline: false
-                soft_limit: 0
-                soft_limit_label_less: 'Show less'
-                soft_limit_label_more: 'Show more'
+                  sort_options_unsupported: ''
               bbox:
                 plugin_id: default
                 advanced:
-                  sort_options_method: alphabetical_asc
-                  sort_options_natural: true
                   rewrite:
                     filter_rewrite_values: ''
                     filter_rewrite_values_key: false
@@ -522,13 +105,182 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
+                  sort_options_unsupported: ''
+              temporal_extent_period_dr:
+                plugin_id: default
+                advanced:
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+              related_dataset:
+                plugin_id: default
+                advanced:
+                  placeholder_text: ''
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+              facets_collection:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_cfstdn:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_gcmd:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_gcmdloc:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_gcmdprov:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_gemet:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_northemes:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  sort_options_unsupported: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
       access:
         type: none
         options: {  }
       cache:
         type: search_api_none
         options: {  }
-      empty: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text_custom
+          empty: true
+          content: 'No results found! Please refine your search removing filters, or text search keywords.'
+          tokenize: false
       sorts: {  }
       arguments: {  }
       filters:
@@ -546,8 +298,8 @@ display:
           exposed: true
           expose:
             operator_id: search_api_fulltext_op
-            label: Search
-            description: 'Search for names, variabkes, product types, keywords etc.'
+            label: ''
+            description: ''
             use_operator: false
             operator: search_api_fulltext_op
             operator_limit_selection: false
@@ -559,7 +311,7 @@ display:
             remember_roles:
               authenticated: authenticated
             expose_fields: false
-            placeholder: ''
+            placeholder: 'Search for datasets....'
             searched_fields_id: search_api_fulltext_searched_fields
             value_maxlength: 128
             value_max_words: null
@@ -577,7 +329,13 @@ display:
             group_items: {  }
           parse_mode: edismax
           min_length: null
-          fields: {  }
+          fields:
+            - abstract_en
+            - full_text
+            - match_exact
+            - text_keywords_stemmed_1
+            - text_suggester
+            - title_en
         bbox:
           id: bbox
           table: search_api_index_metsis
@@ -610,7 +368,7 @@ display:
               authenticated: authenticated
             map_input: 1
             user_input: 1
-            user_input_collapsed: 0
+            user_input_collapsed: 1
           is_grouped: false
           group_info:
             label: ''
@@ -655,6 +413,37 @@ display:
             placeholder: null
             min_placeholder: null
             max_placeholder: null
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        related_dataset:
+          id: related_dataset
+          table: search_api_index_metsis
+          field: related_dataset
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: metsis_parent_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Parent/Collection
+            description: 'Parent/Collection filter'
+            operator: ''
+            identifier: related_dataset
+            required: false
           is_grouped: false
           group_info:
             label: ''
@@ -712,10 +501,10 @@ display:
             min_count: 1
             show_numbers: true
             processor_configs: {  }
-        facets_keywords_keyword:
-          id: facets_keywords_keyword
+        facets_keywords_cfstdn:
+          id: facets_keywords_cfstdn
           table: search_api_index_metsis
-          field: facets_keywords_keyword
+          field: facets_keywords_cfstdn
           relationship: none
           group_type: group
           admin_label: ''
@@ -726,13 +515,13 @@ display:
           exposed: true
           expose:
             operator_id: ''
-            label: Keywords
-            description: ''
+            label: 'CF Variables Keywords'
+            description: 'Keywords that corresponds to Climate and Forecast variable definition'
             use_operator: false
             operator: ''
             operator_limit_selection: false
             operator_list: {  }
-            identifier: keywords
+            identifier: keywords_cfstdn
             required: false
             remember: false
             multiple: true
@@ -754,22 +543,240 @@ display:
           label_display: visible
           facet:
             query_operator: and
-            hard_limit: 20
+            hard_limit: 0
             min_count: 1
-            show_numbers: true
-            processor_configs:
-              hide_non_narrowing_result_processor:
-                processor_id: hide_non_narrowing_result_processor
-                weights:
-                  build: 40
-                settings: {  }
-              count_limit:
-                processor_id: count_limit
-                weights:
-                  build: 50
-                settings:
-                  minimum_items: 1
-                  maximum_items: null
+            show_numbers: false
+            processor_configs: {  }
+        facets_keywords_gcmd:
+          id: facets_keywords_gcmd
+          table: search_api_index_metsis
+          field: facets_keywords_gcmd
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'GMCD Keywords'
+            description: 'https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all?gtm_scheme=all'
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: keywords_gcmd
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_keywords_gcmdloc:
+          id: facets_keywords_gcmdloc
+          table: search_api_index_metsis
+          field: facets_keywords_gcmdloc
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'GCMD Location keywords'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: keywords_gcmdloc
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_keywords_gcmdprov:
+          id: facets_keywords_gcmdprov
+          table: search_api_index_metsis
+          field: facets_keywords_gcmdprov
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Keywords gcmdprov'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: keywords_gcmdprov
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_keywords_gemet:
+          id: facets_keywords_gemet
+          table: search_api_index_metsis
+          field: facets_keywords_gemet
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Keywords gemet'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: keywords_gemet
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_keywords_northemes:
+          id: facets_keywords_northemes
+          table: search_api_index_metsis
+          field: facets_keywords_northemes
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Northemes Keywords'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: keywords_northemes
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
       filter_groups:
         operator: AND
         groups:
@@ -781,18 +788,27 @@ display:
           row_class: .metsis-result-item
           default_row_class: true
       row:
-        type: fields
+        type: metsis_search_row
+        options:
+          show_operations: 1
+          style: default
+          datacenter_name_fallback: long
+          project_name_fallback: long
+          platform_name_fallback: long
+          platform_instrument_name_fallback: long
+          extra_detailed_config: ''
+          view_modes: {  }
       query:
         type: search_api_query
         options:
           bypass_access: true
           skip_access: true
-          preserve_facet_query_args: false
+          preserve_facet_query_args: true
           query_tags:
             - metsis
       relationships: {  }
       css_class: metsis-search-results
-      use_ajax: true
+      use_ajax: false
       header:
         views_filters_summary:
           id: views_filters_summary
@@ -845,7 +861,7 @@ display:
       exposed_block: false
       display_extenders:
         ajax_history:
-          enable_history: true
+          enable_history: false
           exclude_args: ''
       path: metsis/search
     cache_metadata:
