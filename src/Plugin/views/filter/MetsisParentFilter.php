@@ -168,7 +168,7 @@ class MetsisParentFilter extends Equality {
 
     // Set the form element as hidden.
     // if (isset($form[$this->options['expose']['identifier']])) {
-    //   $form[$this->options['expose']['identifier']]['#type'] = 'hidden';
+    // $form[$this->options['expose']['identifier']]['#type'] = 'hidden';
     // }.
   }
 

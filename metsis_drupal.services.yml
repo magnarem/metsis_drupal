@@ -30,11 +30,11 @@ services:
   metsis_drupal.metsis_helper:
     class: Drupal\metsis_drupal\Utility\MetsisHelper
     arguments:
-      - '@entity_type.manager'
-      - '@leaflet.service'
-      - '@renderer'
-      - '@module_handler'
-      - '@config.factory'
+      - "@entity_type.manager"
+      - "@leaflet.service"
+      - "@renderer"
+      - "@module_handler"
+      - "@config.factory"
 
   # Alias the FQCN to the service id so type-hinted injections (autowire)
   # resolve to the defined service instead of attempting a no-arg instantiation.

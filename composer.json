@@ -2,7 +2,15 @@
     "name": "metno/metsis_drupal",
     "type": "drupal-custom-module",
     "description": "METSIS Drupal module providing search and metadata export functionality for METSIS.",
-    "keywords": ["drupal", "custom module", "search", "solr", "mmd", "opendap", "wms"],
+    "keywords": [
+        "drupal",
+        "custom module",
+        "search",
+        "solr",
+        "mmd",
+        "opendap",
+        "wms"
+    ],
     "license": "GPL-2.0-or-later",
     "authors": [
         {
