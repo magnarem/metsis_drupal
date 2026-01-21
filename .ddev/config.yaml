@@ -8,13 +8,12 @@ additional_hostnames: []
 additional_fqdns: []
 database:
     type: postgres
-    version: "17"
+    version: "18"
 webimage_extra_packages: [bash-completion, asciinema]
 use_dns_when_possible: true
 composer_version: stable
 web_environment: []
 corepack_enable: false
-nodejs_version: "22"
 
 # Key features of DDEV's config.yaml:
 
