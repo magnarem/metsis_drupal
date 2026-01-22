@@ -82,7 +82,25 @@ class MetsisThemeHooks {
           'icon_alt_text' => NULL,
           'module_path' => NULL,
         ],
-        'template' => 'metsis-license-icons-component',
+        'template' => 'components/metsis-license-icons-component',
+      ],
+      'metsis_collection_icon_component' => [
+        'variables' => [
+          'image_path' => NULL,
+          'parent_id' => NULL,
+        ],
+        'template' => 'components/metsis-collection-icon-component',
+      ],
+      'metsis_doi_icon_component' => [
+        'variables' => [
+          'doi_uri' => NULL,
+          'icon_path' => NULL,
+        ],
+        'template' => 'components/metsis-doi-icon-component',
+      ],
+
+      'metsis_filter_icon_component' => [
+        'template' => 'components/metsis-filter-icon-component',
       ],
 
       // Add more theme hooks here if needed.

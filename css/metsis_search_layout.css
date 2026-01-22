@@ -5,20 +5,26 @@
 /* Override grid-template-columns for .metsis-search-layout inside .grid-full */
 .metsis-search-layout {
   display: grid;
-  grid-template-columns: 2fr 10fr; /* First column (aside) adjusts to content, second column takes remaining space */
-  grid-template-rows: auto auto; /* Two rows: one for messages, one for content */
-  gap: 20px; /* Add spacing between grid items */
+  grid-template-columns: 2fr 10fr;
+  /* First column (aside) adjusts to content, second column takes remaining space */
+  grid-template-rows: auto auto;
+  /* Two rows: one for messages, one for content */
+  gap: 20px;
+  /* Add spacing between grid items */
   padding: 20px;
 }
 
 .metsis-search-layout .metsis-messages-container {
-  grid-column: 1 / -1; /* Span both columns */
+  grid-column: 1 / -1;
+  /* Span both columns */
   max-width: 100%;
 }
 
 .metsis-search-layout .metsis-filters {
-  grid-column: 1; /* Place in the first column */
-  grid-row: 2; /* Place it in the second row */
+  grid-column: 1;
+  /* Place in the first column */
+  grid-row: 2;
+  /* Place it in the second row */
   background-color: #fff;
   padding: 10px;
   border: 1px solid #ddd;
@@ -26,8 +32,10 @@
 }
 
 .metsis-search-layout .metsis-search-main-content {
-  grid-column: 2; /* Place in the second column */
-  grid-row: 2; /* Place it in the second row */
+  grid-column: 2;
+  /* Place in the second column */
+  grid-row: 2;
+  /* Place it in the second row */
   background-color: #fff;
   padding: 10px;
   border: 1px solid #ddd;
@@ -40,7 +48,8 @@
 }
 
 .metsis-search-layout .metsis-search-box {
-  grid-column: 1 / -1; /* Span both columns */
+  grid-column: 1 / -1;
+  /* Span both columns */
   max-width: 100%;
 
   padding: 10px;
@@ -118,6 +127,25 @@
   /* Move below filters */
 }
 
+.metsis-search-layout .filter-icon-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Space between icon and text */
+}
+
+.metsis-search-layout .filter-icon {
+  flex-shrink: 0;
+  /* Prevent icon from shrinking */
+  vertical-align: middle;
+  /* Align vertically with text */
+}
+
+.metsis-search-layout .filter-text-header {
+  margin: 0;
+  font-size: 1.2em;
+}
+
 .metsis-search-row {
   display: block;
 }
@@ -152,6 +180,9 @@
 .metsis-search-content {
   flex: 1 1 auto;
   min-width: 0;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
   /* allow overflow handling inside */
 }
 
@@ -160,6 +191,7 @@
   margin: 0;
   padding: 0.25rem 0;
   font-style: italic;
+  text-align: justify;
 }
 
 .metsis-search-title {
@@ -175,7 +207,7 @@ button.metsis-search-box__button {
   padding-left: 0;
   padding-right: 0;
   margin: 0;
-  margin-top: 0.4em;
+  margin-top: 2.5em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,6 +218,7 @@ button.metsis-search-box__button {
   gap: 0.5rem;
   align-items: center;
 }
+
 /* style highlighted text */
 .metsis-hl {
   background-color: yellow;
@@ -194,9 +227,105 @@ button.metsis-search-box__button {
 /* license icon styling */
 .metsis-license-icon-wrapper {
   flex: 0 0 auto;
+  gap: 0.5rem;
 }
+
 .metsis-license-icon-img {
   width: auto;
+}
+
+.metsis-collection-icon-img {
+  width: auto;
+}
+
+.metsis-icon-wrapper {
+  overflow: hidden;
+  width: 20em;
+}
+.metsis-icon-wrapper > button {
+  display: block;
+  float: right;
+  max-width: 100%;
+}
+.metsis-icon-wrapper > a {
+  display: block;
+  float: right;
+  margin-bottom: 0.5rem;
+}
+
+.metsis-icon-wrapper > a > img,
+.metsis-icon-wrapper > a > picture {
+  display: block;
+  max-width: 100%;
+  float: right;
+}
+
+.metsis-icon-wrapper > img,
+.metsis-icon-wrapper > picture {
+  display: block;
+  max-width: 100%;
+  float: right;
+}
+
+.metsis-doi-icon {
+  height: 36px;
+  width: auto;
+}
+
+.metsis-collection-image {
+  display: flex;
+  /* Use flexbox to allow layout control */
+  flex-direction: column;
+  /* Stack the image and button vertically */
+  align-items: center;
+  /* Center-align the image and button */
+  text-align: center;
+  /* Ensure the text aligns nicely below the image */
+}
+
+.metsis-collection-image img {
+  display: block;
+  /* Ensure the image is treated as a block-level element */
+  margin-bottom: 0.5rem;
+  /* Add spacing between the image and the button */
+  max-width: 100%;
+  /* Ensure the image is responsive */
+  height: auto;
+  /* Maintain aspect ratio */
+}
+
+.metsis-collection-button {
+  display: flex;
+  /* Use flexbox for the button to align the SVG and text */
+  align-items: center;
+  /* Vertically align SVG and text */
+  gap: 0.5rem;
+  /* Add spacing between the SVG and the text */
+  padding: 0.5rem 1rem;
+  /* Add padding around the button */
+  font-size: 0.9rem;
+  border: none;
+  background-color: white;
+  /* Remove default border */
+  border-radius: 4px;
+  /* Rounded corners */
+  cursor: pointer;
+  /* Pointer cursor on hover */
+  font-size: 18px;
+}
+
+.metsis-collection-button:hover {
+  background-color: #b7daff;
+  border: black 1px solid;
+  /* Darker blue on hover */
+}
+
+.metsis-collection-button svg {
+  /* Inherit the color from the button text */
+  width: 24px;
+  /* Icon width */
+  height: 24px;
+  /* Icon height */
 }
 /*.metsis-search-text__input */
 
@@ -212,21 +341,28 @@ button.metsis-search-box__button {
     /* taller for mobile */
   }
 }
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .metsis-search-layout {
-    grid-template-columns: 1fr; /* Single column layout */
-    grid-template-rows: auto auto auto; /* Add an extra row for filters */
+    grid-template-columns: 1fr;
+    /* Single column layout */
+    grid-template-rows: auto auto auto;
+    /* Add an extra row for filters */
   }
 
   .metsis-search-layout .metsis-filters {
-    grid-column: 1; /* Full width */
-    grid-row: 2; /* Move below messages */
+    grid-column: 1;
+    /* Full width */
+    grid-row: 2;
+    /* Move below messages */
   }
 
   .metsis-search-layout .metsis-main-content {
-    grid-column: 1; /* Full width */
-    grid-row: 3; /* Move below filters */
+    grid-column: 1;
+    /* Full width */
+    grid-row: 3;
+    /* Move below filters */
   }
 }
 

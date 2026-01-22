@@ -13,6 +13,7 @@ use Solarium\QueryType\Select\Query\Query;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\metsis_drupal\LoggerTrait;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Small service helper for Metsis search related utilities.
@@ -24,6 +25,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 final class MetsisHelper {
 
   use LoggerTrait;
+  use StringTranslationTrait;
 
   /**
    * The search_api_index entity instance.
@@ -211,6 +213,8 @@ final class MetsisHelper {
    *
    * @return array<string,int>
    *   The result of the parent child relations and unique counts.
+   *
+   * @todo Move to seperate MetsisSatatusService.
    */
   public function countParentChildRelations(array $collections): array {
     // Create the solr select query and add filters.
@@ -268,6 +272,8 @@ final class MetsisHelper {
    *
    * @return array<string,int>
    *   The result of the queries.
+   *
+   * @todo Move to seperate MetsisSatatusService.
    */
   public function getOtherStatistics(array $collections): array {
     // Create a new select query and query for marked parents count.
@@ -413,6 +419,119 @@ final class MetsisHelper {
       '#icon_path' => $icon_path,
       '#icon_alt_text' => $icon_alt_text,
     ];
+  }
+
+  /**
+   * Generate Icon markup for collection image.
+   *
+   * @param string $parent_id
+   *   The id of this collection.
+   *
+   * @return array
+   *   The render array for this component.
+   */
+  public function getCollectionIconMarkup(string $parent_id): array {
+    $image_path = '/' . $this->getModulePath() . '/assets/images/collection';
+
+    return [
+      '#theme' => 'metsis_collection_icon_component',
+      '#image_path' => $image_path,
+      '#parent_id' => $parent_id,
+    ];
+  }
+
+  /**
+   * Generate Icon markup for collection image.
+   *
+   * @param string $doi_uri
+   *   The id of this collection.
+   *
+   * @return array
+   *   The render array for this component.
+   */
+  public function getDoiIconMarkup(string $doi_uri): array {
+    // Get the path to the DOI svg icon.
+    $doi_icon_path = '/' . $this->getModulePath() . '/assets/icons/DOI_logo.svg';
+    return [
+      '#theme' => 'metsis_doi_icon_component',
+      '#doi_uri' => $doi_uri,
+      '#icon_path' => $doi_icon_path,
+    ];
+  }
+
+  /**
+   * Generate markup for child dataset count.
+   *
+   * @param array $solr_doc
+   *   The solr document array.
+   *
+   * @return array
+   *   The render array for this component.
+   */
+  public function getChildDatasetCountMarkup(array $solr_doc): array {
+    $found_children = $solr_doc['found_children']['numFound'] ?? 0;
+    $total_children = $solr_doc['total_children']['numFound'] ?? 0;
+
+    $renderArray = [
+      // '#prefix' => '<div class="metsis-child-dataset-count">',
+      // '#suffix' => '</div>',
+      '#markup' => $this->t('@found of @total', [
+        '@found' => $found_children,
+        '@total' => $total_children,
+      ]),
+    ];
+    return $renderArray;
+  }
+
+  /**
+   * Generate a string for MMD fields that have both long and short names.
+   *
+   * If both Long name (short name) string is created.
+   * Else the one that have value.
+   *
+   * @param string|null $short
+   *   The short name for this field.
+   * @param string|null $long
+   *   The long name for this field.
+   *
+   * @return string
+   *   The generated string given input
+   */
+  private function handleShortLong(?string $short = NULL, ?string $long = NULL): string {
+    $generated_string = '';
+    if (!empty($short) && !empty($long)) {
+      $generated_string = $long . '(' . $short . ')';
+    }
+    elseif (!empty($long) && empty($short)) {
+      $generated_string = $long;
+    }
+    elseif (empty($long) && !empty($short)) {
+      $generated_string = $short;
+    }
+    return $generated_string;
+  }
+
+  /**
+   * Convert plain text URLs to anchor tags.
+   *
+   * @param string $text
+   *   The input text.
+   *
+   * @return string
+   *   The text with URLs converted to links.
+   */
+  private function linkify(string $text): string {
+    return preg_replace_callback(
+      '/(?<!href=")(https?:\/\/|www\.)[^\s<]+/i',
+      function ($m) {
+        $url = $m[0];
+        $href = preg_match('/^www\./i', $url) ? 'http://' . $url : $url;
+        $escapedHref = htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $escapedText = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        return '<a href="' . $escapedHref . '" target="_blank" rel="noopener noreferrer">' . $escapedText . '</a>';
+      },
+      $text
+    ) ?? $text;
   }
 
 }

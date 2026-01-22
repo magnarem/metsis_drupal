@@ -1,23 +1,10 @@
-Only non-core 3rd party modules that are covered by the Drupal security advisory 
+Only non-core 3rd party modules that are covered by the Drupal security advisory
 policy (https://www.drupal.org/security-advisory-policy) should be considered
-safe for use. 
+safe for use.
 
-Other criteria that should be considered before using non-core 3rd party modules 
-are the number of sites that report using the module, the number of downloads, 
-issue statistics for the module and documentation. Even with all these criteria 
-being satisfied, conflicts in functionality between modules may arise. 
-Thus careful consideration must be given to the import of functionality 
+Other criteria that should be considered before using non-core 3rd party modules
+are the number of sites that report using the module, the number of downloads,
+issue statistics for the module and documentation. Even with all these criteria
+being satisfied, conflicts in functionality between modules may arise.
+Thus careful consideration must be given to the import of functionality
 offered by non-core 3rd party modules.
-
-The Views module, for example offers functionality that is critical. 
-In Drupal 7 Views is a non-core module while in Drupal 8 Views is adopted 
-as a core-module. The details of this module can be found at  
-https://www.drupal.org/project/views
-
-Another critical, non-core module for METSIS is the Views Bulk Operations module. 
-For this module however, we have had to stay with version 7.x-3.3 
-(https://ftp.drupal.org/files/projects/views_bulk_operations-7.x-3.3.tar.gz) 
-which is several sub-versions below the latest in the 7.x* branch. 
-This is due to conflicts between the later versions and other modules. 
-There are no security updates of this release as of 2018-12-19. 
-This version of Views Bulk Operations must therefore be exempted when upgrading your site.

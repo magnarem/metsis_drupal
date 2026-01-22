@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * Default view template to display license icons in a search result row.
+ *
+ * Available variables:
+ * - parent_id: The id of this collection.
+ * - image_path: The path to the collection image without extension.
+ *
+ * @see MetsisSearchRow views row plugin.
+ *
+ * @ingroup themeable
+ */
+#}
+<picture data-parent-id={{ parent_id }}>
+  <source srcset="{{ image_path }}.webp" type="image/webp">
+  <source srcset="{{ image_path }}.png" type="image/png">
+  <img src="{{ image_path }}.png" alt="This dataset is a collection of multiple datasets (series)" class="metsis-collection-icon-img">
+</picture>

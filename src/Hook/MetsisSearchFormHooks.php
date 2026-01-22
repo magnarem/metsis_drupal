@@ -55,7 +55,9 @@ class MetsisSearchFormHooks {
         unset($form['actions']);
       }
       $form['search-box-container']['#weight'] = -100;
+      // dpm($form, __FUNCTION__);.
     }
+
   }
 
 }

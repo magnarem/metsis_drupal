@@ -9,6 +9,7 @@ use Drupal\search_api\Plugin\views\row\SearchApiRow;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\filter\FilterPluginManager;
 
 /**
  * Provides a Views row plugin for METSIS search results.
@@ -36,6 +37,13 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
   protected MetsisHelper $metsisHelper;
 
   /**
+   * The filter plugin manager service.
+   *
+   * @var \Drupal\filter\FilterPluginManager
+   */
+  protected $filterPluginManager;
+
+  /**
    * Construct the plugin with DI.
    *
    * @param array $configuration
@@ -46,10 +54,19 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    *   The plugin implementation definition.
    * @param \Drupal\metsis_drupal\Utility\MetsisHelper $metsis_helper
    *   The MetsismetsisHelper service.
+   * @param \Drupal\filter\FilterPluginManager $filter_plugin_manager
+   *   The filter plugin manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MetsisHelper $metsis_helper) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    MetsisHelper $metsis_helper,
+    FilterPluginManager $filter_plugin_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->metsisHelper = $metsis_helper;
+    $this->filterPluginManager = $filter_plugin_manager;
   }
 
   /**
@@ -60,7 +77,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('metsis_drupal.metsis_helper')
+      $container->get('metsis_drupal.metsis_helper'),
+      $container->get('plugin.manager.filter')
     );
   }
 
@@ -227,19 +245,30 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
 
     $fields = [];
 
+    // Merge highlighted fields if available.
+    // $solr_doc = array_merge($solr_doc, $highlight);.
     // Handle title. Use highlighted field if available.
-    $fields['title'] = $solr_doc['title'] ?? '';
+    $fields['title'] = [
+      '#markup' => $solr_doc['title'] ?? '',
+    ];
     if (!empty($highlight['title_en'])) {
-      $fields['title'] = $highlight['title_en'][0];
+      $fields['title'] = [
+        '#markup' => $highlight['title_en'][0],
+      ];
     }
     // Handle abstract/description. Use highlighted field if available.
-    $fields['abstract'] = $solr_doc['abstract'] ?? '';
+    $fields['id'] = trim($solr_doc['metadata_identifier']);
+    $fields['abstract'] = [
+      '#markup' => check_markup($solr_doc['abstract'], 'metsis_html') ?? '',
+    ];
     if (!empty($highlight['abstract_en'])) {
-      $fields['abstract'] = $highlight['abstract_en'][0];
+      $abstract = $highlight['abstract_en'][0];
+      $abstract_html = check_markup($abstract, 'metsis_html');
+      $fields['abstract'] = $abstract_html;
+      // $fields['abstract'] = $processed_html;
     }
     // Convert plain URLs in abstract to <a href> links.
-    $fields['abstract'] = $this->linkify($fields['abstract']);
-
+    // $fields['abstract'] = $this->linkify($fields['abstract']);
     // Labding page URL.
     $fields['landing_page'] = $solr_doc['related_url_landing_page'][0] ?? '';
     // License icon data.
@@ -248,24 +277,31 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         $solr_doc['use_constraint_identifier']
       );
     }
-    return $fields;
-  }
+    if (!empty($solr_doc['isParent']) && $solr_doc['isParent'] == TRUE) {
+      $fields['parent'] = $this->metsisHelper->getCollectionIconMarkup(
+        $solr_doc['metadata_identifier']
+      );
+      $fields['children_count'] = $this->metsisHelper->getChildDatasetCountMarkup($solr_doc);
+    }
 
-  /**
-   * Convert plain text URLs to anchor tags.
-   */
-  private function linkify(string $text): string {
-    return preg_replace_callback(
-      '/(?<!href=")(https?:\/\/|www\.)[^\s<]+/i',
-      function ($m) {
-        $url = $m[0];
-        $href = preg_match('/^www\./i', $url) ? 'http://' . $url : $url;
-        $escapedHref = htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $escapedText = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        return '<a href="' . $escapedHref . '" target="_blank" rel="noopener noreferrer">' . $escapedText . '</a>';
-      },
-      $text
-    ) ?? $text;
+    if (!empty($solr_doc['dataset_citation_doi'])) {
+      $var = $solr_doc['dataset_citation_doi'];
+      $doi_uri = is_string($var) ? $var : (is_array($var) ? reset($var) : NULL);
+      if (NULL !== $doi_uri) {
+        $fields['doi_icon'] = $this->metsisHelper->getDoiIconMarkup($doi_uri);
+      }
+    }
+
+    if (!empty($solr_doc['thumbnail_url'])) {
+      $fields['thumbnail'] = [
+        '#theme' => 'image',
+        '#uri' => $solr_doc['thumbnail_url'],
+        '#alt' => $solr_doc['title'] ?? 'Dataset thumbnail',
+        '#attributes' => ['class' => ['metsis-search-thumbnail']],
+      ];
+    }
+
+    return $fields;
   }
 
 }

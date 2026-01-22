@@ -118,4 +118,56 @@ const isAjaxing = () =>
       }
     },
   };
+
+  Drupal.behaviors.collectionParentFilter = {
+    attach: function (context, settings) {
+      once(
+        "metsis-collection-button",
+        ".metsis-collection-button",
+        context,
+      ).forEach((button) => {
+        const collectionId = button.getAttribute("data-collection-id");
+        console.log(
+          "Collection filter button clicked for collection ID:",
+          collectionId,
+        );
+        console.log("Settings:", settings);
+        console.log("context:", context);
+        button.addEventListener("click", function (event) {
+          event.preventDefault();
+          console.log("inside colletion id:", collectionId);
+
+          // Get the collection ID from the button
+
+          // Find the closest form (exposed filter form)
+          const form = document.getElementById(
+            "views-exposed-form-metsis-search-results",
+          );
+          if (!form) {
+            console.error(
+              "Could not find parent form for collection filter button.",
+            );
+            return;
+          }
+
+          // Get the filter input name from settings or fallback to default
+          const filterName = "related_dataset";
+          const input = form.querySelector(`[name='${filterName}']`);
+
+          if (input) {
+            input.value = collectionId;
+            // Submit the form (trigger AJAX if present)
+            const $form = $(form);
+            if ($form.hasClass("js-view-dom-id")) {
+              $form.find("[type='submit']").trigger("click");
+            } else {
+              form.submit();
+            }
+          } else {
+            console.error("Could not find collection filter input in form.");
+          }
+        });
+      });
+    },
+  };
 })(jQuery, Drupal, once);

@@ -71,7 +71,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'personnel_name',
     'metadata_identifier',
     'collection',
-     // 'keywords_keyword',
+    'dataset_citation_doi',
     'data_access_url_ftp',
     'data_access_url_ogc_wms',
     'data_access_wms_layers',
@@ -145,11 +145,12 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         }
 
         // Add parent/child filter.
-        $solarium_query->addFilterQuery([
-          'key' => 'parent_child_filter',
-          'query' => '(isParent:true isParent:false) AND isChild:false',
-        ]);
-
+        if (!$query->hasTag('flat_search')) {
+          $solarium_query->addFilterQuery([
+            'key' => 'parent_child_filter',
+            'query' => '(isParent:true isParent:false) AND isChild:false',
+          ]);
+        }
         // Handle geojson field transformation.
         if ($geofield_transformer = $query->getOption('metsis_drupal_geojson_field')) {
           $solarium_query->removeField('metsis_drupal_geojson_field');
@@ -186,6 +187,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
             'query' => "(isParent:true isParent:false) AND isChild:true",
           ]);
         }
+
       }
     }
 
@@ -215,6 +217,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
         $main_query = $solarium_query->getQuery();
 
+        $main_query_filters = $solarium_query->getFilterQueries();
+
         // Highlighting fails with join query, so we use main query in hl.q.
         $solarium_query->getHighlighting()->setQuery($main_query);
         $hl = $solarium_query->getHighlighting();
@@ -222,13 +226,32 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // Escape the main query for the join query's 'v' parameter.
         $escaped_query = $helper->escapeLocalParamValue($main_query);
 
-        // Construct the join query.
+        // Construct the parent/child join query.
         $child_q_join = "{!join from=related_dataset_id to=id v=$escaped_query}";
-        /* $solarium_query->addFilterQuery([
-        'key' => 'child_join',
-        'query' => $child_q_join,
-        ]);*/
         $solarium_query->setQuery($main_query . ' || (' . $child_q_join . ')');
+
+        // Construct the child found/child total subqueries.
+        $solarium_query->addParam('found_children.q', $main_query);
+        $child_query_filters = $this->createChildQueryFilters($main_query_filters);
+        $solarium_query->addParam('found_children.fq', $child_query_filters);
+        $solarium_query->addParam('found_children.rows', '0');
+
+        /*
+         * Create subquery for getting the total number of children for each
+         * parent document in the main query result set.
+         */
+        $solarium_query->addParam('total_children.q', '{!terms f=related_dataset_id v=$row.id}');
+        $solarium_query->addParam('total_children.fq', '+metadata_status:"Active"');
+        $solarium_query->addParam('total_children.rows', '0');
+
+        /*
+         * Add parent subquery to get information about parent
+         * if dataset is a child.
+         */
+        $solarium_query->addParam('parent.q', '{!terms f=id v=$row.related_dataset_id}');
+        $solarium_query->addParam('parent.fq', 'isParent:"true"');
+        $solarium_query->addParam('parent.rows', '1');
+        $solarium_query->addParam('parent.fl', 'id,metadata_identifier,title, abstract, related_url_landing*,temporal*date*');
       }
     }
   }
@@ -258,6 +281,64 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     // //$result->setField('metsis_drupal_geojson_field', json_decode($geojson_field, TRUE));
     // }
     // }
+  }
+
+  /**
+   * Create child query filters based on main query filters.
+   *
+   * @param array $filters
+   *   The main query filters.
+   *
+   * @return array
+   *   The child query filters.
+   *
+   * @todo Refactor to the MetsisSolrHelper service.
+   */
+  protected function createChildQueryFilters(array $filters): array {
+    $child_query_filters = [];
+
+    // Add the same collection filter as from the main query.
+    // $child_query_filters[] = $filters['collection']->getOption('query');.
+    // Add bbox filter if exits in main query.
+    // And to the metsis state for bbox filter.
+    // dpm($filters);
+    // Some helpers.
+    $pattern = '/\+\w+_dataset:"[^"]+"/';
+    foreach ($filters as $filter) {
+      if ($filter->getOption('query') === '(isParent:"true" isParent:"false")') {
+        continue;
+      }
+      elseif (strpos($filter->getOption('query'), '+isChild') !== FALSE) {
+        $fq = str_replace('+isChild:"false"', '+isChild:"true"', $filter->getOption('query'));
+
+        if (preg_match($pattern, $filter->getOption('query'), $m) == 1) {
+          $fq = preg_replace($pattern, '', $fq);
+        }
+        if (strpos($fq, '+isParent:"true"') !== FALSE) {
+          // $this->getLogger()->notice("got is parent true");
+          $fq = str_replace('+isParent:"true"', '', $fq);
+        }
+        $child_query_filters[] = $fq;
+      }
+
+      elseif (strpos($filter->getOption('query'), '+isParent') !== FALSE) {
+        $fq2 = str_replace('+isParent:"true"', '', $filter->getOption('query'));
+        $child_query_filters[] = $fq2;
+
+      }
+      elseif (preg_match($pattern, $filter->getOption('query'), $m) == 1) {
+        $fq = preg_replace($pattern, '', $filter->getOption('query'));
+        $child_query_filters[] = $fq;
+      }
+
+      else {
+        $child_query_filters[] = $filter->getOption('query');
+      }
+
+    }
+    // Filter on related children.
+    $child_query_filters[] = '{!terms f=related_dataset_id v=$row.id}';
+    return $child_query_filters;
   }
 
 }

@@ -298,7 +298,7 @@ display:
           exposed: true
           expose:
             operator_id: search_api_fulltext_op
-            label: ''
+            label: Search
             description: ''
             use_operator: false
             operator: search_api_fulltext_op
@@ -333,7 +333,6 @@ display:
             - abstract_en
             - full_text
             - match_exact
-            - text_keywords_stemmed_1
             - text_suggester
             - title_en
         bbox:

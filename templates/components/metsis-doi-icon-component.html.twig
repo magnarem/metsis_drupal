@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * Default view template to display license icons in a search result row.
+ *
+ * - doi_uri: The DOI URI for this dataset.
+ * - icon_path: The path to the DOI icon.
+ *
+ * @see MetsisSearchRow views row plugin.
+ *
+ * @ingroup themeable
+ */
+#}
+<a href="{{ doi_uri }}" aria-label="DOI URI">
+<img class="metsis-doi-icon" src="{{ icon_path }}" alt="DOI Icon"/>
+</a>

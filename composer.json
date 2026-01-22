@@ -42,8 +42,7 @@
     },
     "suggest": {
         "drupal/back_to_top": "Add back to top icon on scrolling",
-        "drupal/ext_link": "Add icon to external links",
-        "drupal/markdown": "Enable Markdown support"
+        "drupal/ext_link": "Add icon to external links"
     },
     "require-dev": {
         "drupal/devel": "^4.0 || ^5.0",
@@ -61,7 +60,6 @@
         "phpunit/php-code-coverage": "^9.2 || ^10.0 || ^11.0 || ^12.0",
         "drupal/gin": "^5.0",
         "drupal/gin_toolbar": "^3.0",
-        "drupal/default_content": "^2.0@alpha",
         "drupal/htmx": "^2.0@beta",
         "friendsoftwig/twigcs": "*",
         "drupal/solo": "^1.0",
@@ -69,7 +67,9 @@
         "phpstan/phpstan": "*",
         "phpstan/extension-installer": "*",
         "phpstan/phpstan-deprecation-rules": "*",
-        "drupal/config_inspector": "^2.1"
+        "drupal/config_inspector": "^2.1",
+        "drupal/markdown": "^3.1",
+        "league/commonmark": "^2.8"
     },
     "config": {
         "allow-plugins": {

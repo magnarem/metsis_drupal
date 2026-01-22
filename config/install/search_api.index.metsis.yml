@@ -269,6 +269,11 @@ field_settings:
     datasource_id: solr_document
     property_path: keywords_gemet
     type: string
+  keywords_keyword:
+    label: 'Keywords keyword'
+    datasource_id: solr_document
+    property_path: keywords_keyword
+    type: text
   keywords_northemes:
     label: 'Keywords northemes'
     datasource_id: solr_document
@@ -433,7 +438,7 @@ field_settings:
     property_path: temporal_extent_start_date
     type: date
     boost: 1.3
-  text_keywords_stemmed_1:
+  text_keywords_stemmed:
     label: 'Keywords stemmed'
     datasource_id: solr_document
     property_path: text_keywords_stemmed
@@ -498,18 +503,19 @@ processor_settings:
   geojson_transformer:
     weights:
       postprocess_query: 0
-  highlight:
+  language_with_fallback: {  }
+  metsis_highlight:
     weights:
-      postprocess_query: 0
+      postprocess_query: -50
+      preprocess_query: 0
     prefix: '<span class="metsis-hl">'
     suffix: '</span class="metsis-hl">'
     excerpt: true
     excerpt_always: false
-    excerpt_length: 320
+    excerpt_length: 256
     exclude_fields: {  }
     highlight: server
-    highlight_partial: true
-  language_with_fallback: {  }
+    highlight_partial: false
   rendered_item: {  }
   solr_date_range:
     weights:

@@ -35,7 +35,7 @@ This component is a module linking the METSIS backend services to the Drupal Con
 
 ## Context
 
-See <https://adc.met.no/node/13>
+See <https://adc.met.no/about>
 
 ## Contact
 

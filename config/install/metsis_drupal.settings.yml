@@ -1,10 +1,12 @@
-solr_url: null
-search_limit: null
-map_api_key: null
-bbox_default: null
 selected_collections:
   ADC: ADC
+  NBS: NBS
+  SIOS: SIOS
 map_default_zoom: '3'
 map_default_center_lat: '60'
 map_default_center_lon: '12'
 plot_service_url: null
+solr_url: null
+search_limit: null
+map_api_key: null
+bbox_default: null
