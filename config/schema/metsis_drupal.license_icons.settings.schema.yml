@@ -1,7 +1,0 @@
-metsis_drupal.license_icons:
-  type: config_object
-  label: 'Metsis License icons mappings'
-  mapping:
-    license_icons:
-      type: ignore
-      label: 'License icons mappings'

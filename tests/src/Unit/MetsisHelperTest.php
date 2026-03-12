@@ -15,10 +15,13 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use Drupal\metsis_drupal\Service\FeatureTypeLookupService;
 
 /**
  * Unit tests for MetsisHelper.
  */
+#[Group('metsis_drupal')]
 class MetsisHelperTest extends TestCase {
 
   /**
@@ -36,7 +39,9 @@ class MetsisHelperTest extends TestCase {
     $entityStorage = $this->createMock(EntityStorageInterface::class);
     $entityTypeManager->method('getStorage')->willReturn($entityStorage);
     $entityStorage->method('load')->willReturn(NULL);
-    return new MetsisHelper($entityTypeManager, $leaflet, $renderer, $moduleHandler, $configFactory);
+    $featureTypeLookup = $this->createMock(FeatureTypeLookupService::class);
+    $featureTypeLookup->method('lookup')->willReturn('timeSeries');
+    return new MetsisHelper($entityTypeManager, $leaflet, $renderer, $moduleHandler, $configFactory, $featureTypeLookup);
   }
 
   /**

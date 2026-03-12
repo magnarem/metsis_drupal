@@ -9,11 +9,13 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Unittests for MetsisSolrHelper.
  */
 #[CoversClass(MetsisSolrHelper::class)]
+#[Group('metsis_drupal')]
 class MetsisSolrHelperTest extends TestCase {
 
   /**

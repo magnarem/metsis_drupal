@@ -120,7 +120,7 @@ function addBboxDrawFilterInteraction() {
       let maxX = extent[2];
       const maxY = extent[3];
       // Test if crosses dateline, if so normalize lon values
-      let crossesDateline = false;
+      let crossesDateline;
       if (minX < -180 || minX > 180) {
         crossesDateline = true;
         console.log(
@@ -237,22 +237,29 @@ function drawBoundingBoxFromInputs() {
   }
 }
 
-// Listen for AJAX complete events to update the map dynamically.
-(function ($, Drupal, once) {
-  Drupal.behaviors.BboxFilter = {
-    attach: function (context) {
-      // Listen for AJAX complete events to update the map app dynamically.
-      //if (drupalSettings?.views?.ajaxViews) {
-      once(
-        "handle-bbox-map-filter-update",
-        ".bbox-map-filter-container",
-        context,
-      ).forEach(() => {
-        console.log("Bbox drupal Behaviour...initialize bbox map filter");
-        // First time initialize
-        initializeMap();
-      });
-    },
-  };
-  //};
-})(jQuery, Drupal, once);
+/**
+ * Drupal behavior for the BBOX map filter.
+ *
+ * @type {Drupal~behavior}
+ *
+ * @prop {Drupal~behaviorAttach} attach
+ *   Attaches the map to the map container.
+ */
+(
+  function ($, Drupal, once) {
+    Drupal.behaviors.BboxFilter = {
+      attach: function (context) {
+        once(
+          "handle-bbox-map-filter-update",
+          ".bbox-map-filter-container",
+          context,
+        ).forEach(() => {
+          console.log("Bbox drupal Behaviour...initialize bbox map filter");
+          // First time initialize
+          initializeMap();
+        });
+      },
+    };
+    //};
+  }
+)(jQuery, Drupal, once);

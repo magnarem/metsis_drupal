@@ -14,6 +14,8 @@
  * @ingroup themeable
  */
 #}
+
+<div class="use-constraint-wrapper">
 {% if license_code != 'Not provided' %}
 <a href="{{ license_uri }}" title="{{ icon_alt_text }}" target="_blank">
   <picture>
@@ -26,3 +28,4 @@
   {# No license icon available. #}
   <span class="no-license-icon">No license available</span>
 {% endif %}
+</div>

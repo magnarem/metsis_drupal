@@ -1,0 +1,87 @@
+metsis_drupal:
+  enabled: true
+  label: "METSIS Icons"
+  description: "A collection of icons used in the METSIS Drupal module."
+  extractor: svg
+  config:
+    sources:
+      - assets/icons/*.svg
+  settings:
+    size:
+      title: "Size"
+      type: "integer"
+      default: 32
+  template: >
+    <svg
+      {{ attributes
+          .setAttribute('width', size|default('32'))
+          .setAttribute('height', size|default('32'))
+          .setAttribute('aria-hidden', 'true')
+      }}
+    >
+      {{ content }}
+    </svg>
+
+metsis_drupal_cc:
+  enabled: true
+  label: "Creative Commons Icons"
+  description: "A collection of Creative Commons license icons used in the METSIS Drupal module."
+  extractor: svg
+  config:
+    sources:
+      - assets/icons/creative-commons/{icon_id}-min.svg
+  settings:
+    width:
+      title: "Width"
+      type: "integer"
+      default: 120
+    height:
+      title: "Height"
+      type: "integer"
+      default: 42
+  template: >
+    <svg
+      {{ attributes
+          .setAttribute('viewBox', attributes.viewBox|default('0 0 120 42'))
+          .setAttribute('width', width|default('120'))
+          .setAttribute('height', height|default('42'))
+          .setAttribute('aria-hidden', 'true')
+      }}
+    >
+      {{ content }}
+    </svg>
+
+metsis_drupal_spinners:
+  enabled: true
+  label: "Spinners"
+  description: "A collection of spinner icons used in the METSIS Drupal module."
+  extractor: svg
+  config:
+    sources:
+      - assets/icons/spinners/{icon_id}-min.svg
+  settings:
+    width:
+      title: "Width"
+      type: "integer"
+      default: 64
+    height:
+      title: "Height"
+      type: "integer"
+      default: 64
+    stroke:
+      title: "Stroke Color"
+      type: "string"
+      default: "#000000"
+  template: >
+    <svg
+      {{ attributes
+          .setAttribute('viewBox', attributes.viewBox|default('0 0 64 64'))
+          .setAttribute('height', height|default('64'))
+          .setAttribute('width', width|default('64'))
+          .setAttribute('stroke', stroke|default('#000000'))
+          .setAttribute('aria-hidden', 'true')
+          .setAttribute('class', 'svg-spinner')
+      }}
+    >
+      {{ content }}
+    </svg>

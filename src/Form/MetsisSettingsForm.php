@@ -10,6 +10,11 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Drupal\metsis_drupal\MetsisConstants;
 
 /**
  * Configuration form for the METSIS module.
@@ -24,11 +29,24 @@ class MetsisSettingsForm extends ConfigFormBase {
   protected $metsisHelper;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * MetsisSettingsForm constructor.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $language_manager, MetsisHelper $metsis_helper) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $language_manager,
+    MetsisHelper $metsis_helper,
+    EntityTypeManagerInterface $entity_type_manager,
+  ) {
     parent::__construct($config_factory, $language_manager);
     $this->metsisHelper = $metsis_helper;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -38,7 +56,8 @@ class MetsisSettingsForm extends ConfigFormBase {
     return new static(
     $container->get('config.factory'),
     $container->get('config.typed'),
-    $container->get('metsis_drupal.metsis_helper')
+    $container->get('metsis_drupal.metsis_helper'),
+    $container->get('entity_type.manager')
     );
   }
 
@@ -65,7 +84,29 @@ class MetsisSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('metsis_drupal.settings');
+    $config = $this->configFactory()->get('metsis_drupal.settings');
+    // Provide a link to the Search API server Solr connection settings.
+    $server_storage = $this->entityTypeManager->getStorage('search_api_server');
+    /** @var \Drupal\search_api\Entity\Server $server */
+    $server = $server_storage->load(MetsisConstants::METSIS_SOLR_SERVER_ID);
+
+    $link = Link::fromTextAndUrl(
+    $this->t('Configure Solr connection'),
+    Url::fromRoute('entity.search_api_server.edit_form', ['search_api_server' => MetsisConstants::METSIS_SOLR_SERVER_ID])
+    )->toString();
+
+    $solr_summary = '';
+    if ($server) {
+
+      $solr_config = $server->getBackendConfig()['connector_config'] ?? [];
+      $solr_summary = $this->t('<code>@scheme://@host:@port/@context/@core</code>', [
+        '@scheme' => $solr_config['scheme'] ?? '',
+        '@host' => $solr_config['host'] ?? '',
+        '@port' => $solr_config['port'] ?? '',
+        '@context' => $solr_config['context'] ?? '',
+        '@core' => $solr_config['core'] ?? '',
+      ]);
+    }
 
     $form['#tree'] = TRUE;
     $form['metsis_vertical_tabs'] = [
@@ -99,10 +140,11 @@ class MetsisSettingsForm extends ConfigFormBase {
         'data-tab-id' => 'solr_index',
       ],
     ];
-    $form['solr_index']['solr_url'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Solr URL'),
-      '#default_value' => $config->get('solr_url'),
+    $form['solr_index']['solr_connection'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Solr Connection'),
+      '#markup' => $solr_summary,
+      '#description' => $this->t('Solr connection is managed via the Search API server configuration: @link', ['@link' => $link]),
     ];
 
     // Get a list of collections.
@@ -111,7 +153,7 @@ class MetsisSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Configure METSIS collections to include in search.'),
       '#description' => $this->t('Select which collections to include in search (if none are selected, all collections will be included in the search)'),
       '#type' => 'select',
-      '#size' => 10,
+      '#size' => count($collections),
       '#options' => $collections,
       '#multiple' => TRUE,
       '#default_value' => $config->get('selected_collections'),
@@ -157,18 +199,27 @@ class MetsisSettingsForm extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Default map zoom level'),
       '#default_value' => $config->get('map_default_zoom'),
+      '#min' => 0,
+      '#max' => 28,
+      '#step' => 1,
     ];
 
     $form['map_app']['map_default_center_lat'] = [
       '#type' => 'number',
       '#title' => $this->t('Default map center latitude'),
       '#default_value' => $config->get('map_default_center_lat'),
+      '#min' => -90,
+      '#max' => 90,
+      '#step' => 'any',
     ];
 
     $form['map_app']['map_default_center_lon'] = [
       '#type' => 'number',
       '#title' => $this->t('Default map center longitude'),
       '#default_value' => $config->get('map_default_center_lon'),
+      '#min' => -180,
+      '#max' => 180,
+      '#step' => 'any',
     ];
 
     // METSIS Services configuration.
@@ -186,12 +237,42 @@ class MetsisSettingsForm extends ConfigFormBase {
         'data-tab-id' => 'metsis_services',
       ],
     ];
-
-    $form['metsis_services']['plot_service_url'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Plot Service URL'),
-      '#default_value' => $config->get('plot_service_url'),
-    ];
+    // Check if bokeh_plot_service_url is overridden via settings.php.
+    $bokeh_overridden = $config->hasOverrides() && $config->get('bokeh_plot_service_url') !== $config->getRawData()['bokeh_plot_service_url'];
+    if ($bokeh_overridden) {
+      $form['metsis_services']['bokeh_plot_service_url'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Bokeh Plot Service URL'),
+        '#default_value' => $config->get('bokeh_plot_service_url'),
+        '#disabled' => TRUE,
+        '#description' => $this->t('This value has been overridden in settings.php and cannot be changed here.'),
+      ];
+    }
+    else {
+      $form['metsis_services']['bokeh_plot_service_url'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Bokeh Plot Service URL'),
+        '#default_value' => $config->get('bokeh_plot_service_url'),
+      ];
+    }
+    // Check if bokeh_plot_service_url is overridden via settings.php.
+    $bokeh_overridden = $config->hasOverrides() && $config->get('bokeh_plot_service_url') !== $config->getRawData()['bokeh_plot_service_url'];
+    if ($bokeh_overridden) {
+      $form['metsis_services']['feature_type_lookup_service'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('featureType lookup Service URL'),
+        '#default_value' => $config->get('feature_type_lookup_service'),
+        '#disabled' => TRUE,
+        '#description' => $this->t('This value has been overridden in settings.php and cannot be changed here.'),
+      ];
+    }
+    else {
+      $form['metsis_services']['feature_type_lookup_service'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('featureType lookup Service URL'),
+        '#default_value' => $config->get('feature_type_lookup_service'),
+      ];
+    }
 
     // Build the rest of the form.
     $form = parent::buildForm($form, $form_state);
@@ -214,15 +295,24 @@ class MetsisSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->config('metsis_drupal.settings')
-      ->set('solr_url', $form_state->getValue('solr_url'))
-      ->set('search_limit', $form_state->getValue('search_limit'))
+    $im_config = $this->configFactory->get('metsis_drupal.settings');
+    $config = $this->config('metsis_drupal.settings');
+    $config
       ->set('map_default_zoom', $form_state->getValue(['map_app', 'map_default_zoom']))
       ->set('map_default_center_lat', $form_state->getValue(['map_app', 'map_default_center_lat']))
       ->set('map_default_center_lon', $form_state->getValue(['map_app', 'map_default_center_lon']))
-      ->set('plot_service_url', $form_state->getValue('plot_service_url'))
-      ->set('selected_collections', $form_state->getValue(['solr_index', 'collections']))
-      ->save();
+      ->set('selected_collections', $form_state->getValue(['solr_index', 'collections']));
+
+    // Only set bokeh_plot_service_url if not overridden.
+    if (!($im_config->hasOverrides() && $im_config->get('bokeh_plot_service_url') !== $im_config->getRawData()['bokeh_plot_service_url'])) {
+      $config->set('bokeh_plot_service_url', $form_state->getValue(['metsis_services', 'bokeh_plot_service_url']));
+    }
+    if (!($im_config->hasOverrides() && $im_config->get('feature_type_lookup_service') !== $im_config->getRawData()['feature_type_lookup_service'])) {
+      $config->set('feature_type_lookup_service',
+        $form_state->getValue(['metsis_services', 'feature_type_lookup_service']));
+    }
+
+    $this->config('metsis_drupal.settings')->save();
     parent::submitForm($form, $form_state);
   }
 

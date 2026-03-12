@@ -1,17 +1,17 @@
 {
   "type": "module",
   "devDependencies": {
-    "@eslint/js": "^9.39.0",
+    "@eslint/js": "^10",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "@zackad/prettier-plugin-twig": "^0.16.0",
-    "eslint": "^9.39.0",
+    "eslint": "^10",
     "eslint-config-preact": "^2.0.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
-    "globals": "^16.5.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-react": "^7",
+    "globals": "^17",
     "prettier": "^3.6.2",
-    "typescript-eslint": "^8.46.3"
+    "typescript-eslint": "^8"
   },
   "eslintConfig": {
     "extends": "preact"

@@ -152,17 +152,6 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       '#description' => $this->t('Configure to use short or long name as default fallback if one does not exist.'),
     ];
 
-    // Example: Show extra config only for 'detailed' style.
-    $form['extra_detailed_config'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Extra config for detailed style'),
-      '#states' => [
-        'visible' => [
-          ':input[name="style"]' => ['value' => 'detailed'],
-        ],
-      ],
-    ];
-
     parent::buildOptionsForm($form, $form_state);
   }
 
@@ -200,7 +189,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
 
     // Build leaflet map if geometry is available.
     if (!empty($solr_doc['geometry_geojson'])) {
-      $solr_doc['leaflet_markup'] = $this->metsisHelper->buildLeafletMap($solr_doc['geometry_geojson']);
+      $solr_doc['leaflet_markup'] = $this->metsisHelper->buildLeafletMap($solr_doc['geometry_geojson'], '250px');
     }
 
     // Try to retrieve highlighted data.

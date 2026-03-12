@@ -92,7 +92,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
               bbox:
                 plugin_id: default
                 advanced:
@@ -105,7 +104,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
               temporal_extent_period_dr:
                 plugin_id: default
                 advanced:
@@ -115,7 +113,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
               related_dataset:
                 plugin_id: default
                 advanced:
@@ -129,7 +126,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
               facets_collection:
                 plugin_id: bef
                 advanced:
@@ -142,7 +138,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -161,7 +156,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -180,7 +174,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -199,7 +192,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -218,7 +210,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -237,7 +228,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -256,7 +246,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  sort_options_unsupported: ''
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
@@ -789,13 +778,12 @@ display:
       row:
         type: metsis_search_row
         options:
-          show_operations: 1
+          show_operations: true
           style: default
           datacenter_name_fallback: long
           project_name_fallback: long
           platform_name_fallback: long
-          platform_instrument_name_fallback: long
-          extra_detailed_config: ''
+          platform_instrument_name_fallback: short
           view_modes: {  }
       query:
         type: search_api_query

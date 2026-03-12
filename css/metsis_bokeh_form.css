@@ -1,0 +1,166 @@
+.opendap-url-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.opendap-url-input-wrapper label,
+.opendap-url-input-wrapper input,
+.opendap-url-input-wrapper .form-item__description {
+  width: 100%;
+  box-sizing: border-box;
+}
+.opendap-url-input-wrapper .form-item__description {
+  font-size: medium;
+}
+.opendap-url-input-wrapper .spinner-container {
+  position: absolute;
+  transform: translateY(2em);
+  right: 0.5rem;
+  top: 0.5em;
+  pointer-events: none;
+}
+
+.opendap-url-clear-button {
+  display: none;
+  background: none;
+  border: none;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(2em);
+  right: 0.5rem;
+  top: 0.5em;
+  visibility: hidden;
+  transition:
+    opacity 0.5s ease,
+    visibility 0.5s ease;
+}
+
+.opendap-url-clear-button .x-circle {
+  max-height: fit-content;
+}
+
+.opendap-url-clear-button.visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Hide the X button when HTMX is sending a request (spinner is visible) */
+.htmx-request .opendap-url-clear-button {
+  display: none;
+}
+
+/* Add hover effect for the clear button */
+.opendap-url-clear-button:hover svg {
+  fill: black;
+}
+
+.opendap-url-input-wrapper .svg-spinner {
+  height: auto;
+  display: block;
+}
+
+.opendap-url-input {
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  /* Add right padding for the spinner */
+  box-sizing: border-box;
+  /* Ensures padding is included in the element's total width/height */
+  /* border: 1px solid #ccc;
+  border-radius: 4px; */
+}
+
+.opendap-url-input:valid {
+  border: 2px solid green;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.opendap-url-input:invalid {
+  border: 2px solid red;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.opendap-url-input:focus:invalid {
+  outline: 2px solid red;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.opendap-url-input:focus:valid {
+  outline: 2px solid green;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Main container for the plot */
+.bokeh-plot-container {
+  position: relative;
+
+  margin-top: 1.5em;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  align-items: center;
+  transition: height 0.5s ease;
+}
+
+/* Spinner overlay (initially visible, covers the entire container) */
+.bokeh-spinner-overlay {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  opacity: 1;
+  pointer-events: none;
+  visibility: visible;
+  /* Ensure it's visible by default */
+  transition:
+    opacity 0.5s ease,
+    visibility 0.5s ease;
+}
+
+.bokeh-spinner-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  height: 0;
+}
+
+.bokeh-spinner-overlay .svg-spinner {
+  width: 100%;
+  min-height: 256px;
+  max-height: fit-content;
+}
+
+#bokeh-plot {
+  position: relative;
+  display: flex;
+  width: 90%;
+  height: auto;
+  justify-content: center;
+  flex-grow: 1;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 1;
+  transition:
+    opacity 0.5s ease,
+    visibility 0.5s ease;
+}
+
+#bokeh-plot div {
+  display: flex;
+  justify-content: center;
+}
+
+#bokeh-plot.visible {
+  opacity: 1;
+  visibility: visible;
+}

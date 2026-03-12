@@ -27,6 +27,18 @@ services:
     tags:
       - { name: event_subscriber }
 
+  metsis_drupal.bokeh_plot_service:
+    class: Drupal\metsis_drupal\Service\BokehPlotService
+    arguments:
+      - "@http_client"
+      - "@config.factory"
+
+  metsis_drupal.feature_type_lookup_service:
+    class: Drupal\metsis_drupal\Service\FeatureTypeLookupService
+    arguments:
+      - "@http_client"
+      - "@config.factory"
+
   metsis_drupal.metsis_helper:
     class: Drupal\metsis_drupal\Utility\MetsisHelper
     arguments:
@@ -35,7 +47,14 @@ services:
       - "@renderer"
       - "@module_handler"
       - "@config.factory"
+      - "@metsis_drupal.feature_type_lookup_service"
 
+  metsis_drupal.status_report_service:
+    class: Drupal\metsis_drupal\Service\StatusReportService
+    arguments:
+      - "@entity_type.manager"
+      - "@module_handler"
+      - "@config.factory"
 
   # Alias the FQCN to the service id so type-hinted injections (autowire)
   # resolve to the defined service instead of attempting a no-arg instantiation.

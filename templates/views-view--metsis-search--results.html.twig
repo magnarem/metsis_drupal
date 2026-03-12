@@ -56,13 +56,11 @@
 {% set classes = ['metsis-search-layout', dom_id ? 'js-view-dom-id-' ~ dom_id] %}
 {# Messages #}
 <div class="metsis-messages-container"></div>
-
 {# View main div #}
 <div{{ attributes.addClass(classes) }}>
 	{{ title_prefix }}
 	{{ title }}
 	{{ title_suffix }}
-
 	{# Left aside column Exposed form wrapper #}
 	<aside id="exposed-form-wrapper-{{ dom_id }}" class="metsis-filters">
 		{# { exposed.bbox_wrapper } #}

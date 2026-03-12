@@ -19,3 +19,4 @@ recipes/
 .ddev/docker-compose*
 .ddev/.*
 core.*
+config-sync

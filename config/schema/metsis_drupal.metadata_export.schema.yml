@@ -1,0 +1,39 @@
+metsis_drupal.metadata_export:
+  type: config_object
+  constraints:
+    FullyValidatable: ~
+  mapping:
+    xslt_path:
+      type: string
+      label: 'XSLT Path'
+      description: 'The path to the XSLT files.'
+      constraints:
+        NotBlank: ~
+    xslt_prefix:
+      type: string
+      label: 'XSLT Prefix'
+      description: 'The prefix for XSLT files.'
+      constraints:
+        NotBlank: ~
+    export_list:
+      type: sequence
+      label: 'Export List'
+      description: 'A list of export types and their labels.'
+      constraints:
+          NotBlank: ~
+      sequence:
+        type: label
+        label: 'Export Type'
+        constraints:
+          NotBlank: ~
+    export_types_descriptions:
+      type: sequence
+      label: 'Export Types Descriptions'
+      description: 'A list of export types and their descriptions.'
+      constraints:
+          NotBlank: ~
+      sequence:
+        type: label
+        label: 'Export Type Description'
+        constraints:
+          NotBlank: ~

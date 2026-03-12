@@ -1,21 +1,53 @@
 metsis_drupal.settings:
   type: config_object
   label: 'Metsis Search settings'
+  constraints:
+    FullyValidatable: ~
   mapping:
     selected_collections:
-      type: ignore
+      type: sequence
       label: 'Selected collections'
+      description: 'A mapping of collection keys to their labels.'
+      constraints:
+          NotBlank: ~
+      sequence:
+        type: label
+        label: 'Collection'
+        constraints:
+          NotBlank: ~
+          Regex:
+            pattern: /^[A-Z]+$/
+            message: 'Collection keys must be uppercase letters only.'
     map_default_zoom:
-      type: string
+      type: integer
       label: 'Default map zoom level'
       constraints:
-        PositiveOrZero: ~
+        Range:
+          min: 0
+          max: 28
     map_default_center_lat:
-      type: string
+      type: float
       label: 'Default map center latitude'
+      constraints:
+        Range:
+          min: -90.0
+          max: 90.0
     map_default_center_lon:
-      type: string
+      type: float
       label: 'Default map center longitude'
-    plot_service_url:
-      type: string
+      constraints:
+        Range:
+          min: -180.0
+          max: 180.0
+    bokeh_plot_service_url:
+      type: uri
       label: 'Plot service url endpoint'
+      description: 'The URL endpoint for the Bokeh plot service.'
+      constraints:
+        NotBlank: ~
+    feature_type_lookup_service:
+      type: uri
+      label: 'featureType lookup service url endpoint'
+      description: 'The URL endpoint for the featureType lookup service.'
+      constraints:
+        NotBlank: ~

@@ -24,10 +24,8 @@ trait LoggerTrait {
    * @return \Psr\Log\LoggerInterface
    *   The logger.
    */
-  public function getLogger() {
-    // @todo Make the channel name a constant to improve reusability once we
-    //   depend on PHP 8.2+ (Drupal 11.0+).
-    return $this->logger ?: \Drupal::service('logger.channel.metsis_drupal');
+  public function getLogger($channel = 'metsis_drupal'): LoggerInterface {
+    return $this->logger ?: \Drupal::service("logger.channel.{$channel}");
   }
 
   /**

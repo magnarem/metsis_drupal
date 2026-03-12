@@ -1,0 +1,18 @@
+{# <div id="metsis-map-app"></div> #}
+<div id="panel-app">
+<script id="a1011ca9-d94a-444e-93da-33be4caa18a2">
+  (function() {
+    const xhr = new XMLHttpRequest()
+    xhr.responseType = 'blob';
+    xhr.open('GET', "https://ncmet.wps.met.no/TRJ/autoload.js?bokeh-autoload-element=a1011ca9-d94a-444e-93da-33be4caa18a2&bokeh-app-path=/TRJ&bokeh-absolute-url=https://ncmet.wps.met.no/TRJ&url=https%3A%2F%2Fthredds.met.no%2Fthredds%2FdodsC%2Farcticdata%2Farctic-passion%2FUiT-drifters%2FAWS-ITO%2Faws_2022.nc", true);
+    xhr.withCredentials = false;
+    xhr.onload = function (event) {
+      const script = document.createElement('script');
+      const src = URL.createObjectURL(event.target.response);
+      script.src = src;
+      document.body.appendChild(script);
+    };
+    xhr.send();
+  })();
+</script>
+  </div>

@@ -13,7 +13,7 @@ use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\Core\Link;
 use Drupal\search_api_solr\SolrCloudConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Drupal\metsis_drupal\Service\StatusReportService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\search_api_solr\SearchApiSolrException;
 
@@ -33,9 +33,9 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
   /**
    * Metsis helper service.
    *
-   * @var \Drupal\metsis_drupal\Utility\MetsisHelper
+   * @var \Drupal\metsis_drupal\Service\StatusReportService
    */
-  protected $metsisHelper;
+  protected $statusReportService;
 
   /**
    * METSIS config (immutable).
@@ -51,17 +51,17 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
    *   The entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
-   * @param \Drupal\metsis_drupal\Utility\MetsisHelper $metsis_helper
-   *   The metsis search helper service.
+   * @param \Drupal\metsis_drupal\Service\StatusReportService $status_report_service
+   *   The metsis status report service.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     ConfigFactoryInterface $config_factory,
-    MetsisHelper $metsis_helper,
+    StatusReportService $status_report_service,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->metsisConfig = $config_factory->get('metsis_drupal.settings');
-    $this->metsisHelper = $metsis_helper;
+    $this->statusReportService = $status_report_service;
   }
 
   /**
@@ -71,7 +71,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
     return new static(
       $container->get('entity_type.manager'),
       $container->get('config.factory'),
-      $container->get('metsis_drupal.metsis_helper')
+      $container->get('metsis_drupal.status_report_service')
     );
   }
 
@@ -138,7 +138,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
       $info["index"]["collections"] = $collections;
 
       // Gather parent/child relations.
-      $parent_child_info = $this->metsisHelper->countParentChildRelations($collections);
+      $parent_child_info = $this->statusReportService->countParentChildRelations($collections);
       if ($parent_child_info['difference'] == 0) {
         $info['index']['parent_child'] = $this->t('There are @num parents/collections for this site.', [
           '@num' => $parent_child_info['parents_count'],
@@ -161,7 +161,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
       }
 
       // Gather other statistics.
-      $adc_stats = $this->metsisHelper->getOtherStatistics($collections);
+      $adc_stats = $this->statusReportService->getOtherStatistics($collections);
       // Process the statsSummary for the status report.
       $pending_msg = $info["index"]["stats"]['@pending_docs'] ? $this->t('(@pending_docs sent but not yet processed)', $info["index"]["stats"]) : '';
       $index_msg = $info["index"]["stats"]['@index_size'] ? $this->t('(@index_size on disk)', $info["index"]["stats"]) : '';

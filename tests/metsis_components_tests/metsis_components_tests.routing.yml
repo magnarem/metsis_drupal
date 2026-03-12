@@ -1,0 +1,7 @@
+metsis_components_tests.map_app_test:
+  path: "/metsis-map-test"
+  defaults:
+    _controller: '\Drupal\metsis_components_tests\Controller\MetsisMapTestController::testPage'
+    _title: "Metsis Map Test"
+  requirements:
+    _permission: "access content"

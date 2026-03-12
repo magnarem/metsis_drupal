@@ -25,9 +25,12 @@ class MetsisStatusReportControllerTest extends KernelTestBase {
    */
   protected static $modules = [
     'system',
-    'metsis_drupal',
     'search_api',
     'search_api_solr',
+    'leaflet',
+    'geofield',
+    'metsis_drupal',
+
     // Add other required modules if needed.
   ];
 
@@ -79,11 +82,21 @@ class MetsisStatusReportControllerTest extends KernelTestBase {
     // Set up the storage to return the mocked server.
     $server_storage->method('load')->willReturn($server);
 
-    // Set up the entity type manager to return the mocked storage.
+    // Mock the index storage and index entity.
+    $index_storage = $this->getMockBuilder('Drupal\Core\Entity\EntityStorageInterface')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $index = $this->getMockBuilder('Drupal\search_api\Entity\Index')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $index->method('status')->willReturn('unavailable');
+    $index_storage->method('load')->willReturn($index);
+
+    // Set up the entity type manager to return the mocked storages.
     $entity_type_manager->method('getStorage')
       ->willReturnMap([
         ['search_api_server', $server_storage],
-        ['search_api_index', $this->getMockBuilder('Drupal\Core\Entity\EntityStorageInterface')->getMock()],
+        ['search_api_index', $index_storage],
       ]);
 
     // Define mocks for the connector methods used in the controller.
@@ -111,7 +124,7 @@ class MetsisStatusReportControllerTest extends KernelTestBase {
     ]
     );
 
-    // Instantiate the controller with the mocked dependency and auto-mock remaining constructor args.
+    // Instantiate the controller with mocked and auto-mock constructor args.
     $reflection = new \ReflectionClass(MetsisStatusReportController::class);
     $constructor = $reflection->getConstructor();
     if ($constructor) {
@@ -135,7 +148,7 @@ class MetsisStatusReportControllerTest extends KernelTestBase {
       $controller = $reflection->newInstanceArgs($args);
     }
     else {
-      // Fallback if no constructor is present: instantiate without invoking constructor.
+      // Fallback if no constructor is present.
       $controller = $reflection->newInstanceWithoutConstructor();
     }
 
@@ -146,14 +159,13 @@ class MetsisStatusReportControllerTest extends KernelTestBase {
     $this->assertIsArray($build);
     $this->assertArrayHasKey('report', $build);
     $this->assertArrayHasKey('#requirements', $build['report']);
-    $this->assertArrayHasKey('server', $build['report']['#requirements']);
+    $this->assertArrayHasKey('status', $build['report']['#requirements']);
 
-    // Assert the server requirement indicates not available.
-    $server_req = $build['report']['#requirements']['server'];
-    $this->assertEquals('Solr', $server_req['title']);
-    $this->assertEquals('Not available.', (string) $server_req['value']);
-    $this->assertEquals(RequirementSeverity::Error, $server_req['severity']);
-    $this->assertStringContainsString('not available', strtolower((string) $server_req['description']));
+    // Assert the status requirement indicates not available.
+    $status_req = $build['report']['#requirements']['status'];
+    $this->assertEquals('Status', $status_req['title']);
+    $this->assertStringContainsString('not available', strtolower((string) $status_req['value']));
+    $this->assertEquals(RequirementSeverity::Error, $status_req['severity']);
   }
 
 }

@@ -15,6 +15,7 @@ export default defineConfig([
         drupalSettings: "readonly",
         once: "readonly",
         jQuery: "readonly",
+        Bokeh: "readonly",
       },
       parserOptions: {
         tsconfigRootDir: import.meta.dirname,
@@ -22,5 +23,12 @@ export default defineConfig([
     },
   },
   tseslint.configs.recommended,
-  globalIgnores([".ddev", "web/**", "vendor/**", "**/node_modules", "**/dist"]),
+  globalIgnores([
+    ".ddev",
+    "web/**",
+    "vendor/**",
+    "**/node_modules",
+    "**/dist",
+    ".phpdoc",
+  ]),
 ]);

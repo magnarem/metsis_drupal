@@ -78,6 +78,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'total_children:[subquery]',
     'found_children:[subquery]',
     'parent:[subquery]',
+    'thumbnail_url',
   ];
 
   /**
@@ -305,24 +306,24 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     // Some helpers.
     $pattern = '/\+\w+_dataset:"[^"]+"/';
     foreach ($filters as $filter) {
-      if ($filter->getOption('query') === '(isParent:"true" isParent:"false")') {
+      if ($filter->getOption('query') === '(isParent:true isParent:false) AND isChild:false') {
         continue;
       }
-      elseif (strpos($filter->getOption('query'), '+isChild') !== FALSE) {
-        $fq = str_replace('+isChild:"false"', '+isChild:"true"', $filter->getOption('query'));
+      elseif (strpos($filter->getOption('query'), 'isChild') !== FALSE) {
+        $fq = str_replace('isChild:false', 'isChild:true', $filter->getOption('query'));
 
         if (preg_match($pattern, $filter->getOption('query'), $m) == 1) {
           $fq = preg_replace($pattern, '', $fq);
         }
-        if (strpos($fq, '+isParent:"true"') !== FALSE) {
+        if (strpos($fq, 'isParent:true') !== FALSE) {
           // $this->getLogger()->notice("got is parent true");
-          $fq = str_replace('+isParent:"true"', '', $fq);
+          $fq = str_replace('isParent:true', '', $fq);
         }
         $child_query_filters[] = $fq;
       }
 
-      elseif (strpos($filter->getOption('query'), '+isParent') !== FALSE) {
-        $fq2 = str_replace('+isParent:"true"', '', $filter->getOption('query'));
+      elseif (strpos($filter->getOption('query'), 'isParent') !== FALSE) {
+        $fq2 = str_replace('isParent:true', '', $filter->getOption('query'));
         $child_query_filters[] = $fq2;
 
       }

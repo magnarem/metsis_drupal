@@ -12,8 +12,10 @@ use Drupal\Core\Config\ImmutableConfig;
 use Solarium\QueryType\Select\Query\Query;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\metsis_drupal\LoggerTrait;
+use Drupal\metsis_drupal\Service\FeatureTypeLookupService;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\search_api_solr\SearchApiSolrException;
 
 /**
  * Small service helper for Metsis search related utilities.
@@ -22,7 +24,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * add additional helper methods in the future. It may delegate to static
  * helpers such as WktHelper.
  */
-final class MetsisHelper {
+class MetsisHelper {
 
   use LoggerTrait;
   use StringTranslationTrait;
@@ -94,6 +96,13 @@ final class MetsisHelper {
   protected $moduleExtension;
 
   /**
+   * The feature_type_lookup_service.
+   *
+   * @var \Drupal\metsis_drupal\Service\FeatureTypeLookupService
+   */
+  protected $featureTypeLookup;
+
+  /**
    * Constructor.
    *
    * EntityTypeManager is injected so we can load the Search API index once
@@ -105,12 +114,14 @@ final class MetsisHelper {
     RendererInterface $renderer,
     ModuleHandlerInterface $module_handler,
     ConfigFactoryInterface $config_factory,
+    FeatureTypeLookupService $feature_type_lookup_service,
   ) {
     $this->leaflet = $leaflet;
     $this->renderer = $renderer;
     $this->moduleExtension = $module_handler->getModule('metsis_drupal');
     $this->configFactory = $config_factory;
     $this->settingsConfig = $config_factory->get('metsis_drupal.settings');
+    $this->featureTypeLookup = $feature_type_lookup_service;
     $this->metadataExportConfig = $config_factory->get('metsis_drupal.metadata_export');
     $this->licenseIconsConfig = $config_factory->get('metsis_drupal.license_icons');
     $this->index = $entity_type_manager->getStorage('search_api_index')
@@ -206,116 +217,6 @@ final class MetsisHelper {
   }
 
   /**
-   * Count the number of parents/children and integrity check.
-   *
-   * @param array $collections
-   *   The Configured MMD collections for this site.
-   *
-   * @return array<string,int>
-   *   The result of the parent child relations and unique counts.
-   *
-   * @todo Move to seperate MetsisSatatusService.
-   */
-  public function countParentChildRelations(array $collections): array {
-    // Create the solr select query and add filters.
-    $solarium_query = $this->createSelectQuery();
-    $solarium_query->setRows(0);
-    $solarium_query->setQuery('*:*');
-    $solarium_query->createFilterQuery('active')->setQuery('metadata_status:Active');
-    $solarium_query->createFilterQuery('collection')
-      ->setQuery('collection:(' . implode(" ", array_keys($collections)) . ')');
-
-    // Use JSON facet query to get all unique parent ids referenced in children.
-    $jsonFacetSet = $solarium_query->getFacetSet();
-
-    // Add a JSON facet for the HyperLogLog aggregation.
-    $jsonFacetSet->createJsonFacetAggregation('unique_parents')
-      ->setFunction('hll(related_dataset_id)');
-
-    /** @var \Solarium\QueryType\Select\Result\Result $result */
-    $result = $this->getConnector()->execute($solarium_query);
-
-    /** @var \Solarium\Component\Result\FacetSet $facetResSet */
-    $facetResSet = $result->getFacetSet();
-
-    /** @var \Solarium\Component\Result\Facet\Aggregation $uniqueParentsRes */
-    $uniqueParentsRes = $facetResSet->getFacet('unique_parents');
-
-    $uniqueParents = $uniqueParentsRes->getValue();
-
-    // Create a new select query and query for marked parents count.
-    $solarium_query = $this->createSelectQuery();
-    $solarium_query->setRows(0);
-    $solarium_query->setQuery('*:*');
-    $solarium_query->createFilterQuery('active')->setQuery('metadata_status:Active');
-    $solarium_query->createFilterQuery('collection')
-      ->setQuery('collection:(' . implode(" ", array_keys($collections)) . ')');
-    $solarium_query->createFilterQuery('parents')
-      ->setQuery('isParent:true');
-
-    /** @var \Solarium\QueryType\Select\Result\Result $result */
-    $result = $this->getConnector()->execute($solarium_query);
-    $parentsCount = $result->getNumFound();
-
-    return [
-      'unique_parents' => $uniqueParents,
-      'parents_count' => $parentsCount,
-      'difference' => abs($uniqueParents - $parentsCount),
-    ];
-  }
-
-  /**
-   * Return other statistics for the METSIS index.
-   *
-   * @param array $collections
-   *   The Configured MMD collections for this site.
-   *
-   * @return array<string,int>
-   *   The result of the queries.
-   *
-   * @todo Move to seperate MetsisSatatusService.
-   */
-  public function getOtherStatistics(array $collections): array {
-    // Create a new select query and query for marked parents count.
-    $solarium_query = $this->createSelectQuery();
-    $solarium_query->setRows(0);
-    $solarium_query->setQuery('*:*');
-    $solarium_query->createFilterQuery('active')->setQuery('metadata_status:Active');
-
-    /** @var \Solarium\QueryType\Select\Result\Result $result */
-    $result = $this->getConnector()->execute($solarium_query);
-    $active_count = $result->getNumFound();
-
-    $solarium_query->removeFilterQuery('active');
-    $solarium_query->createFilterQuery('inactive')->setQuery('metadata_status:Inactive');
-    $result = $this->getConnector()->execute($solarium_query);
-    $inactive_count = $result->getNumFound();
-
-    $solarium_query->removeFilterQuery('inactive');
-    $solarium_query->createFilterQuery('collection')
-      ->setQuery('collection:(' . implode(" ", array_keys($collections)) . ')');
-    $result = $this->getConnector()->execute($solarium_query);
-    $total_site_count = $result->getNumFound();
-
-    $solarium_query->createFilterQuery('active')->setQuery('metadata_status:Active');
-    $result = $this->getConnector()->execute($solarium_query);
-    $total_site_active = $result->getNumFound();
-
-    $solarium_query->removeFilterQuery('active');
-    $solarium_query->createFilterQuery('inactive')->setQuery('metadata_status:Inactive');
-    $result = $this->getConnector()->execute($solarium_query);
-    $total_site_inactive = $result->getNumFound();
-
-    return [
-      'total_active' => $active_count,
-      'total_inactive' => $inactive_count,
-      'total_site' => $total_site_count,
-      'total_site_active' => $total_site_active,
-      'total_site_inactive' => $total_site_inactive,
-    ];
-  }
-
-  /**
    * Retrieves the leaflet service.
    *
    * @return \Drupal\leaflet\LeafletService
@@ -331,7 +232,7 @@ final class MetsisHelper {
    * Prefer returning a render array so controllers/blocks can handle rendering
    * and bubbleable metadata correctly.
    */
-  public function buildLeafletMap(string $geometry): array {
+  public function buildLeafletMap(string $geometry, string $height): array {
     $maps = $this->leaflet->leafletMapGetInfo();
 
     // Work on the map you want to use.
@@ -342,7 +243,7 @@ final class MetsisHelper {
     // $map['settings']['crs'] = "L.CRSEPSG4326";
     $feature = $this->leaflet->leafletProcessGeofield($geometry);
 
-    return $this->leaflet->leafletRenderMap($map, $feature);
+    return $this->leaflet->leafletRenderMap($map, $feature, $height);
   }
 
   /**
@@ -399,6 +300,10 @@ final class MetsisHelper {
     $license_icons_config = $this->getLicenseIconsConfig();
     $licenses = $license_icons_config->get('license_icons');
 
+    if ($license_code === 'Not provided') {
+      return [];
+    }
+
     // Replace _ with . to match config keys.
     $license_type = str_replace('.', '_', $license_code);
     if (empty($licenses)) {
@@ -451,11 +356,18 @@ final class MetsisHelper {
    */
   public function getDoiIconMarkup(string $doi_uri): array {
     // Get the path to the DOI svg icon.
-    $doi_icon_path = '/' . $this->getModulePath() . '/assets/icons/DOI_logo.svg';
+    // $doi_icon_path = '/' . $this->getModulePath() . '/assets/icons/DOI_logo.svg';
+    // return [
+    //   '#theme' => 'metsis_doi_icon_component',
+    //   '#doi_uri' => $doi_uri,
+    //   '#icon_path' => $doi_icon_path,
+    // ];.
     return [
-      '#theme' => 'metsis_doi_icon_component',
-      '#doi_uri' => $doi_uri,
-      '#icon_path' => $doi_icon_path,
+      '#prefix' => "<div class=\"doi-icon-wrapper\"><a href=\"{$doi_uri}\"",
+      '#suffix' => '</a></div>',
+      '#type' => 'icon',
+      '#pack_id' => 'metsis_drupal',
+      '#icon_id' => 'doi',
     ];
   }
 
@@ -481,6 +393,89 @@ final class MetsisHelper {
       ]),
     ];
     return $renderArray;
+  }
+
+  /**
+   * Fetch the feature type from solr or opendap given the OPeNDAP URL.
+   *
+   * If metadata_identifier is given, then use solr by default.
+   *
+   * @param string $identifier
+   *   The identifier (optional).
+   * @param string $url
+   *   The provided OPeNDAP url (optional).
+   * @param string $mode
+   *   The lookup mode. Default solr.
+   *
+   * @return string|null|int
+   *   The featureType fetched from solr or OPeNDAP.
+   *   Returns 404 if not found (solr). NULL when other errors
+   */
+  public function lookupFeatureType(?string $identifier = NULL, ?string $url = NULL, string $mode = 'solr'): string|int|null {
+    // Create a select query.
+    if ($mode === 'solr' || $identifier != NULL) {
+      return $this->lookupFeatureTypeSolr($identifier, $url);
+    }
+    if ($mode === 'opendap' && $url != NULL) {
+      return $this->featureTypeLookup->lookup($url);
+    }
+    return NULL;
+  }
+
+  /**
+   * Fetch the feature type from solr given url or identifier.
+   *
+   * @param string $identifier
+   *   The identifier (optional).
+   * @param string $url
+   *   The provided OPeNDAP url (optional).
+   *
+   * @return string|null|int
+   *   The featureType fetched from solr.
+   *   Returns 404 if not found. NULL when other erros.
+   */
+  public function lookupFeatureTypeSolr(?string $identifier = NULL, ?string $url = NULL): string|int|null {
+    // Create a select query.
+    $solr_query = $this->createSelectQuery();
+    if ($identifier !== NULL && $identifier !== '') {
+      $solr_query->setQuery("metadata_identifier:\"{$identifier}\"");
+    }
+
+    elseif ($url !== NULL && $url !== '') {
+      $solr_query->setQuery("data_access_url_opendap:\"{$url}\"");
+    }
+    else {
+      // No valid input, return unknown.
+      $this->getLogger()->warning('FeatureTypeSolrLookup: No URL or identifier provided for feature type lookup.');
+      return NULL;
+    }
+    $solr_query->setRows(1);
+    $solr_query->setFields(['feature_type']);
+    $solr_query->createFilterQuery('active')->setQuery('metadata_status:Active');
+
+    try {
+      /** @var \Solarium\QueryType\Select\Result\Result $result */
+      $result = $this->getConnector()->execute($solr_query);
+      if ($result->getNumFound() > 0) {
+        $featureType = $result->getDocuments()[0]->feature_type ?? NULL;
+        return is_array($featureType) ? reset($featureType) : $featureType;
+      }
+      if ($result->getNumFound() == 0) {
+        $this->getLogger()->warning('FeatureTypeSolrLookup: No product found with opendap url @url',
+          ['@url' => $url]);
+        return 404;
+      }
+      return NULL;
+
+    }
+    catch (SearchApiSolrException $e) {
+      $this->getLogger()->error('lookupFeatureType: Solr exception: @message', [
+        '@url' => $url,
+        '@identifier' => $identifier,
+        '@message' => $e->getMessage(),
+      ]);
+      return NULL;
+    }
   }
 
   /**

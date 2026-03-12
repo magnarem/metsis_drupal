@@ -1,0 +1,5 @@
+metsis_components_tests.test:
+  title: "METSIS Map Test"
+  description: "Test METSIS Javascript Map"
+  route_name: metsis_components_tests.test
+  parent: main

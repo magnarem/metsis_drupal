@@ -6,17 +6,19 @@ namespace Drupal\Tests\metsis_drupal\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Drupal\metsis_drupal\Utility\WktHelper;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Unit tests for envelope to polygon conversion.
- *
- * @group metsis_drupal
  */
+#[Group('metsis_drupal')]
 final class EnvelopeToPolygonTest extends TestCase {
 
   /**
    * Test that a valid envelope converts correctly to polygon.
    */
+  #[Test]
   public function testValidEnvelopeConvertsToPolygon(): void {
     $env = 'ENVELOPE(5.0, 10.0, 62.0, 58.0)';
     $polygon = WktHelper::envelopeWktToPolygonWkt($env);
@@ -30,6 +32,7 @@ final class EnvelopeToPolygonTest extends TestCase {
   /**
    * Test that an invalid envelope throws.
    */
+  #[Test]
   public function testInvalidEnvelopeThrows(): void {
     $this->expectException(\InvalidArgumentException::class);
     WktHelper::envelopeWktToPolygonWkt('ENVELOPE(-230, 190, 95, -95)');

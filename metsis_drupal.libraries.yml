@@ -5,7 +5,6 @@ metsis_map:
     version: 1.x
   js:
     js/metsis/metsis-map-app/src/index.jsx: { attributes: { type: module } }
-
   dependencies:
     - core/drupal
     - core/drupalSettings
@@ -20,6 +19,8 @@ bbox_map_filter:
   dependencies:
     - core/drupal
     - core/drupalSettings
+    - core/jquery
+    - core/once
 
 metsis_search_layout:
   version: 1.x
@@ -36,3 +37,13 @@ metsis_search_ajax:
     - core/once
     - core/jquery
     - core/drupalSettings
+
+metsis_bokeh_form:
+  version: 1.x
+  css:
+    component:
+      css/metsis_bokeh_form.css: {}
+  js:
+    js/bokeh-plot-behaviours.js: {}
+  dependencies:
+    - core/drupal

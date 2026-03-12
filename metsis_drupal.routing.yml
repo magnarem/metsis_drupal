@@ -21,3 +21,21 @@ metsis_drupal.status_report:
     _controller: '\Drupal\metsis_drupal\Controller\MetsisStatusReportController::statusReportPage'
   requirements:
     _permission: "administer metsis"
+
+metsis_drupal.bokeh_plot:
+  path: "/services/bokeh-plot/get"
+  defaults:
+    _controller: '\Drupal\metsis_drupal\Controller\BokehPlotController::getPlot'
+    _title: "Bokeh Plot"
+  requirements:
+    _permission: "access content"
+  options:
+    _htmx_route: true
+
+metsis_drupal.bokeh_plot_form:
+  path: "/services/bokeh-plot/form"
+  defaults:
+    _form: '\Drupal\metsis_drupal\Form\BokehPlotForm'
+    _title: "Bokeh Plot Form"
+  requirements:
+    _permission: "access content"

@@ -99,3 +99,59 @@ views.filter.metsis_filter_bbox:
         user_input_collapsed:
           type: integer
           label: "Manual input fields collapsed by default"
+
+views.row.metsis_search_row:
+  type: mapping
+  label: 'Metsis Search Row Plugin'
+  description: 'Configuration schema for the custom Metsis search row plugin.'
+  mapping:
+    show_operations:
+      type: boolean
+      label: 'Show Operations'
+      description: 'Whether to show operations for each row.'
+    style:
+      type: string
+      label: 'Style'
+      description: 'The style to apply to the row.'
+      constraints:
+        Choice:
+          choices:
+            - default
+            - custom
+          message: 'The style must be either "default" or "custom".'
+    datacenter_name_fallback:
+      type: string
+      label: 'Datacenter Name Fallback'
+      description: 'Fallback value for the datacenter name.'
+    project_name_fallback:
+      type: string
+      label: 'Project Name Fallback'
+      description: 'Fallback value for the project name.'
+    platform_name_fallback:
+      type: string
+      label: 'Platform Name Fallback'
+      description: 'Fallback value for the platform name.'
+    platform_instrument_name_fallback:
+      type: string
+      label: 'Platform Instrument Name Fallback'
+      description: 'Fallback value for the platform instrument name.'
+    extra_detailed_config:
+      type: mapping
+      label: 'Extra Detailed Config'
+      description: 'Extra detailed configuration for the row plugin.'
+      mapping:
+        key1:
+          type: string
+          label: 'Key 1'
+          description: 'A custom key for extra configuration.'
+        key2:
+          type: integer
+          label: 'Key 2'
+          description: 'A custom integer for extra configuration.'
+    view_modes:
+      type: sequence
+      label: 'View Modes'
+      description: 'A list of view modes for the row plugin.'
+      sequence:
+        type: string
+        label: 'View Mode'

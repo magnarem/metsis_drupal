@@ -20,8 +20,11 @@ class MetsisDrupalInstallUninstallTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'search_api',
-    'metsis_drupal',
     'search_api_solr',
+    'leaflet',
+    'geofield',
+    'metsis_drupal',
+
   ];
 
   /**

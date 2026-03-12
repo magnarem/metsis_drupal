@@ -1,0 +1,10 @@
+metsis_components_tests_behaviors:
+  version: 1.x
+  js:
+    js/metsis_components_tests.behaviors.js: { module: true }
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/
+    - core/drupalSettings
+    - metsis_drupal/metsis_map

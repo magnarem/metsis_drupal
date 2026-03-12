@@ -1,0 +1,35 @@
+metsis_drupal.license_icons:
+  type: config_object
+  label: 'License Icons Configuration'
+  constraints:
+    FullyValidatable: ~
+  mapping:
+    license_icons:
+      type: sequence
+      label: 'License Icons'
+      description: 'A mapping of license keys to their metadata (URI, icon path, alt text).'
+      constraints:
+          NotBlank: ~
+      sequence:
+        type: mapping
+        label: 'License Icon Metadata'
+        description: 'Metadata for a specific license key.'
+        mapping:
+          license_uri:
+            type: uri
+            label: 'License URI'
+            description: 'The URI of the license.'
+            constraints:
+              NotBlank: ~
+          icon_path:
+            type: string
+            label: 'Icon Path'
+            description: 'The path to the license icon, relative to the Drupal root.'
+            constraints:
+              NotBlank: ~
+          icon_alt_text:
+            type: string
+            label: 'Icon Alt Text'
+            description: 'The alt text for the license icon.'
+            constraints:
+              NotBlank: ~
