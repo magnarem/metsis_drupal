@@ -1,0 +1,17 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: search
+status: stable
+description: Search input with magnifier button and X reset button
+props:
+  type: object
+  properties:
+    placeholder:
+      type: string
+      title: placeholder
+      description: Placeholder for the search input
+      # @todo Add examples here.
+      examples: []
+slots:
+  other_components:
+    title: Other components
+    description: Maybe need to add others here

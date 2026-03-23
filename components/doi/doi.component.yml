@@ -1,0 +1,33 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: doi
+group: metsis
+status: stable
+description: DOI icon with link and optional DOI identifier
+props:
+  type: object
+  required:
+    - doi_url
+  properties:
+    show_doi_identifier:
+      type: boolean
+      title: Show DOI identifier
+      description: Show the DOI identifier XX.XXXX/YYY
+      default: false
+      examples:
+        - true
+    doi_url:
+      type: string
+      title: DOI Url
+      description: The DOI full url
+      format: url-reference
+      examples:
+        - "https://doi.org/10.1000/182"
+    size:
+      type: integer
+      title: Icon Size
+      description: The size of the icon
+      default: 32
+      examples:
+        - 32
+        - 24
+        - 16

@@ -1,0 +1,11 @@
+<div {{ attributes.addClass('cc-license-wrapper') }}>
+  <a href="{{ license_url }}"
+     title="{{ icon_alt_text }} License"
+     target="_blank"
+     rel="noopener noreferrer"
+     class="cc-license-link"
+     aria-label="{{ icon_alt_text }} License (opens in new window)"> <!-- Accessible aria-label -->
+    <span class="visually-hidden">{{ icon_alt_text }} License</span> <!-- Hidden text for screen readers -->
+    {{ icon('metsis_drupal_cc', icon_id) }}
+  </a>
+</div>

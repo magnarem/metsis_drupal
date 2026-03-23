@@ -1,0 +1,10 @@
+[data-component-id="metsis:doi"] .doi-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: fit-content;
+}
+
+[data-component-id="metsis:doi"] .doi-icon-wrapper svg {
+  max-height: fit-content;
+}

@@ -1,0 +1,31 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: cc_license
+status: stable
+description: Renders a Creative Commons license icon with a link to the license description.
+props:
+  type: object
+  properties:
+    license_id:
+      type: string
+      title: license_id
+      description: The license identifier, e.g., CC-BY-4.0.
+      # @todo Add examples here.
+      examples: []
+    license_url:
+      type: string
+      title: license_url
+      description: The URL to the Creative Commons license page.
+      # @todo Add examples here.
+      examples: []
+    icon_id:
+      type: string
+      title: icon_id
+      description: The ID of the SVG icon to display for the license.
+      # @todo Add examples here.
+      examples: []
+    icon_alt_text:
+      type: string
+      title: icon_alt_text
+      description: The alt text for the icon (The long descriptive name of the license).
+      # @todo Add examples here.
+      examples: []
