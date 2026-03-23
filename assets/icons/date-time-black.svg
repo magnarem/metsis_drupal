@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   version="1.1"
+   viewBox="0 0 100 100"
+   id="svg134"
+   sodipodi:docname="date-time-black.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs138" />
+  <sodipodi:namedview
+     id="namedview136"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.00875"
+     inkscape:cx="399.50434"
+     inkscape:cy="400"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg134" />
+  <path
+     d="m1.7 8.5 4.5-1.9 47.8-5.1 6 48.5-43 11-6-1z"
+     fill="none"
+     stroke="#444"
+     stroke-width="2"
+     id="path98" />
+  <path
+     d="m1.7 8.5 4.5-1.9 47.8-5.1 2 16.5-46.3 6-4.4 1z"
+     fill="#287293"
+     stroke="#888"
+     id="path100"
+     style="fill:#000000" />
+  <path
+     d="M 6.2,7.5 C 7.1,12 8.5,20 9.7,23"
+     fill="none"
+     stroke="#ddd"
+     id="path102" />
+  <path
+     d="m9.7 23-4.4 1 5.7 36 6 1s43-10 43-11l-4-33z"
+     fill="#ccc"
+     stroke="#888"
+     id="path104" />
+  <path
+     d="m56 17s2 16 7 23c-2 4-9 10-13 10-4 1-31 10-31 10s-2-2-4-8l-5.3-29z"
+     fill="#eee"
+     stroke="#aaa"
+     id="path106" />
+  <path
+     d="m63 40c-1 0-2-2-2-2l-9 12s8-4 11-10"
+     fill="#ddd"
+     stroke="#aaa"
+     id="path108" />
+  <path
+     d="m35 25 15-2 1 3s-6 9-3 21l-5 1s-2-8 3-21l-10 2zm-17 9c5-1 6-5 6-8h4l6 24-5 2-5-18s-1 3-4 4z"
+     fill="#4444444"
+     id="path110" />
+  <circle
+     cx="65"
+     cy="65"
+     r="34"
+     fill="none"
+     stroke="#eee"
+     stroke-width="3"
+     id="circle112" />
+  <circle
+     cx="65"
+     cy="65"
+     r="32"
+     fill="#444"
+     fill-opacity=".7"
+     id="circle114" />
+  <circle
+     cx="65"
+     cy="65"
+     r="30"
+     fill="none"
+     stroke="#222"
+     stroke-width="5pt"
+     id="circle116" />
+  <g
+     fill="#aaa"
+     id="g126">
+    <circle
+       cx="65"
+       cy="35"
+       r="2.5"
+       id="circle118" />
+    <circle
+       cx="95"
+       cy="65"
+       r="2.5"
+       id="circle120" />
+    <circle
+       cx="65"
+       cy="95"
+       r="2.5"
+       id="circle122" />
+    <circle
+       cx="35"
+       cy="65"
+       r="2.5"
+       id="circle124" />
+  </g>
+  <path
+     d="m65 65-5-23"
+     fill="none"
+     stroke="#fff"
+     stroke-width="4"
+     id="path128" />
+  <path
+     d="m65 65-21 22"
+     fill="none"
+     stroke="#fff"
+     stroke-width="3"
+     id="path130" />
+  <circle
+     cx="65"
+     cy="65"
+     r="3.5"
+     fill="#fff"
+     id="circle132" />
+</svg>
