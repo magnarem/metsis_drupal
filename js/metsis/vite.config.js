@@ -11,6 +11,9 @@ const origin = `localhost:${port}`;
 
 export default defineConfig({
   plugins: [preact()],
+  // Use relative base so preload-helper resolves chunk URLs correctly
+  // regardless of the deployment subdirectory (e.g. Drupal module paths).
+  base: "./",
   build: {
     manifest: true,
     rollupOptions: {

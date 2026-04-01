@@ -1,8 +1,8 @@
 import { useEffect } from "preact/hooks";
-import { Draw } from "ol/interaction";
-import { Vector as VectorLayer } from "ol/layer";
-import { Vector as VectorSource } from "ol/source";
-import { bbox as bboxStrategy } from "ol/loadingstrategy";
+import Draw, { createBox } from "ol/interaction/Draw.js";
+import VectorLayer from "ol/layer/Vector.js";
+import VectorSource from "ol/source/Vector.js";
+import { bbox as bboxStrategy } from "ol/loadingstrategy.js";
 
 const BoundingBoxDrawer = ({ mapInstance, onBboxDrawn }) => {
   useEffect(() => {
@@ -19,7 +19,7 @@ const BoundingBoxDrawer = ({ mapInstance, onBboxDrawn }) => {
     const draw = new Draw({
       source,
       type: "Circle",
-      geometryFunction: Draw.createRectangle(),
+      geometryFunction: createBox(),
     });
     mapInstance.addInteraction(draw);
 

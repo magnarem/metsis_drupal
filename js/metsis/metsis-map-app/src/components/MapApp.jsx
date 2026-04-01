@@ -1,14 +1,12 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 import "@styles/MapApp.css";
 import { useReactiveDrupalSettings } from "@hooks/drupalSettingsHook";
 
 import MapContainer from "@components/MapContainer.jsx";
 import GeoJSONLayer from "@components/GeoJSONLayer.jsx";
-import BoundingBoxDrawer from "@components/BoundingBoxDrawer.jsx";
 import ProjectionSwitcher from "@components/ProjectionSwitcher.jsx";
 import LayerSwitcher from "@components/LayerSwitcher.jsx";
-import WMSLayerManager from "@components/WMSLayerManager.jsx";
 import TooltipHover from "@components/TooltipHover";
 
 const MapApp = ({ config }) => {
@@ -18,6 +16,31 @@ const MapApp = ({ config }) => {
   const [projection, setProjection] = useState(
     config?.features?.defaultProjection || "EPSG:3857",
   ); //Hold the proejction state
+  const [BoundingBoxDrawer, setBoundingBoxDrawer] = useState(null);
+  const [WMSLayerManager, setWmsLayerManager] = useState(null);
+
+  useEffect(() => {
+    if (!config?.features?.boundingBox) {
+      setBoundingBoxDrawer(null);
+      return;
+    }
+
+    import("@components/BoundingBoxDrawer.jsx").then((module) => {
+      setBoundingBoxDrawer(() => module.default);
+    });
+  }, [config?.features?.boundingBox]);
+
+  useEffect(() => {
+    if (!config?.features?.wms) {
+      setWmsLayerManager(null);
+      return;
+    }
+
+    import("@components/WMSLayerManager.jsx").then((module) => {
+      setWmsLayerManager(() => module.default);
+    });
+  }, [config?.features?.wms]);
+
   // The geojson data of the current search from drupal settings
   const geojsonResultData = useReactiveDrupalSettings();
   // Render the MapApp component
@@ -48,7 +71,7 @@ const MapApp = ({ config }) => {
       </MapContainer>
 
       {/* Enable bounding box drawing if enabled */}
-      {config.features.boundingBox && (
+      {config.features.boundingBox && BoundingBoxDrawer && (
         <BoundingBoxDrawer
           mapInstance={olMap}
           onBboxDrawn={config.events.onBboxDrawn}
@@ -56,7 +79,7 @@ const MapApp = ({ config }) => {
       )}
 
       {/* Add WMS layers if enabled */}
-      {config.features.wms && (
+      {config.features.wms && WMSLayerManager && (
         <WMSLayerManager
           mapInstance={olMap}
           wmsUrls={config.features.wmsUrl}

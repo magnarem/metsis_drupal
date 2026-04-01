@@ -122,8 +122,10 @@ class SearchPageMetaTagHook {
    * Injects modulepreload hints for shared Vite chunks (ol, Draw, etc.).
    *
    * Reads the Vite manifest so filenames stay correct after each build.
-   * Preloading shared chunks in parallel with entry scripts removes the
+   * Preloading the ol chunk in parallel with entry scripts removes the
    * sequential download chain Lighthouse reports as critical path latency.
+   * The path is generated server-side and is always correct; the Vite runtime
+   * preload-helper resolves its own lazy-chunk paths via import.meta.url.
    *
    * @param array $attachments
    *   The page attachments array, passed by reference.
@@ -148,11 +150,17 @@ class SearchPageMetaTagHook {
 
     $base = base_path() . $module_path . '/js/metsis/dist/';
 
-    // Shared chunks have keys starting with '_' (e.g. _ol-*.js, _Draw-*.js).
-    // Preloading them early lets the browser fetch them in parallel with entry
-    // scripts instead of waiting for entry parse before discovering the import.
+    // Only preload the ol chunk — always needed by the map app and large
+    // enough to benefit from an early browser hint. Optional lazy chunks
+    // (Draw, WMSLayerManager) are excluded so they remain deferred.
+    $preload_chunk_names = ['ol'];
+
     foreach ($manifest as $key => $chunk) {
-      if (!str_starts_with($key, '_') || empty($chunk['file'])) {
+      if (!str_starts_with($key, '_') || empty($chunk['file']) || empty($chunk['name'])) {
+        continue;
+      }
+
+      if (!in_array((string) $chunk['name'], $preload_chunk_names, TRUE)) {
         continue;
       }
 

@@ -1,41 +1,147 @@
 {
-  "_Draw-CG-KlKpn.js": {
-    "file": "assets/Draw-CG-KlKpn.js",
-    "name": "Draw",
+  "_BaseTile-D6e1XrwX.js": {
+    "file": "assets/BaseTile-D6e1XrwX.js",
+    "name": "BaseTile",
     "imports": [
-      "_ol-C0RGbIXc.js"
+      "_ol-PlMjdKuB.js"
     ]
   },
-  "_ol-C0RGbIXc.js": {
-    "file": "assets/ol-C0RGbIXc.js",
-    "name": "ol"
+  "_TileEventType-C2Rj9dhW.js": {
+    "file": "assets/TileEventType-C2Rj9dhW.js",
+    "name": "TileEventType",
+    "imports": [
+      "_ol-PlMjdKuB.js",
+      "_tilecoord-ByVamQUv.js"
+    ]
+  },
+  "_TileImage-Dbi1x18G.js": {
+    "file": "assets/TileImage-Dbi1x18G.js",
+    "name": "TileImage",
+    "imports": [
+      "_ol-PlMjdKuB.js",
+      "_tilecoord-ByVamQUv.js",
+      "_TileEventType-C2Rj9dhW.js"
+    ]
+  },
+  "_ol-PlMjdKuB.js": {
+    "file": "assets/ol-PlMjdKuB.js",
+    "name": "ol",
+    "isDynamicEntry": true
+  },
+  "_preload-helper-PPVm8Dsz.js": {
+    "file": "assets/preload-helper-PPVm8Dsz.js",
+    "name": "preload-helper"
+  },
+  "_tilecoord-ByVamQUv.js": {
+    "file": "assets/tilecoord-ByVamQUv.js",
+    "name": "tilecoord",
+    "imports": [
+      "_ol-PlMjdKuB.js"
+    ]
   },
   "bbox-map-filter/src/main.js": {
-    "file": "assets/bboxMapFilter-BpJhNi0w.js",
+    "file": "assets/bboxMapFilter-D_QRaF1N.js",
     "name": "bboxMapFilter",
     "src": "bbox-map-filter/src/main.js",
     "isEntry": true,
     "imports": [
-      "_ol-C0RGbIXc.js",
-      "_Draw-CG-KlKpn.js"
+      "_preload-helper-PPVm8Dsz.js"
+    ],
+    "dynamicImports": [
+      "_ol-PlMjdKuB.js",
+      "_ol-PlMjdKuB.js",
+      "_ol-PlMjdKuB.js",
+      "_ol-PlMjdKuB.js",
+      "node_modules/ol/interaction/Draw.js",
+      "_ol-PlMjdKuB.js",
+      "node_modules/ol/layer/Tile.js",
+      "node_modules/ol/source/OSM.js",
+      "_ol-PlMjdKuB.js",
+      "_ol-PlMjdKuB.js",
+      "_ol-PlMjdKuB.js",
+      "_ol-PlMjdKuB.js"
     ],
     "css": [
       "assets/bboxMapFilter-DCXUwTpP.css",
       "assets/olCss-BtPuoxOl.css"
     ]
   },
+  "metsis-map-app/src/components/BoundingBoxDrawer.jsx": {
+    "file": "assets/BoundingBoxDrawer-_F1_fr19.js",
+    "name": "BoundingBoxDrawer",
+    "src": "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "metsis-map-app/src/index.jsx",
+      "node_modules/ol/interaction/Draw.js",
+      "_ol-PlMjdKuB.js",
+      "_preload-helper-PPVm8Dsz.js",
+      "_BaseTile-D6e1XrwX.js",
+      "_tilecoord-ByVamQUv.js",
+      "_TileEventType-C2Rj9dhW.js"
+    ],
+    "css": [
+      "assets/olCss-BtPuoxOl.css"
+    ]
+  },
+  "metsis-map-app/src/components/WMSLayerManager.jsx": {
+    "file": "assets/WMSLayerManager-D-VAmzoM.js",
+    "name": "WMSLayerManager",
+    "src": "metsis-map-app/src/components/WMSLayerManager.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "metsis-map-app/src/index.jsx",
+      "node_modules/ol/layer/Tile.js",
+      "_ol-PlMjdKuB.js",
+      "_tilecoord-ByVamQUv.js",
+      "_TileEventType-C2Rj9dhW.js",
+      "_TileImage-Dbi1x18G.js",
+      "_preload-helper-PPVm8Dsz.js",
+      "_BaseTile-D6e1XrwX.js"
+    ],
+    "css": [
+      "assets/olCss-BtPuoxOl.css"
+    ]
+  },
   "metsis-map-app/src/index.jsx": {
-    "file": "assets/metsisMapApp-qvqBENww.js",
+    "file": "assets/metsisMapApp-BwbQvIBW.js",
     "name": "metsisMapApp",
     "src": "metsis-map-app/src/index.jsx",
     "isEntry": true,
     "imports": [
-      "_ol-C0RGbIXc.js",
-      "_Draw-CG-KlKpn.js"
+      "_preload-helper-PPVm8Dsz.js",
+      "_ol-PlMjdKuB.js",
+      "_BaseTile-D6e1XrwX.js",
+      "_tilecoord-ByVamQUv.js",
+      "_TileEventType-C2Rj9dhW.js"
+    ],
+    "dynamicImports": [
+      "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
+      "metsis-map-app/src/components/WMSLayerManager.jsx"
     ],
     "css": [
       "assets/metsisMapApp-BQGH7gr0.css",
       "assets/olCss-BtPuoxOl.css"
+    ]
+  },
+  "node_modules/ol/interaction/Draw.js": {
+    "file": "assets/Draw-CvBaOkQ5.js",
+    "name": "Draw",
+    "src": "node_modules/ol/interaction/Draw.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_ol-PlMjdKuB.js"
+    ]
+  },
+  "node_modules/ol/layer/Tile.js": {
+    "file": "assets/Tile-DpYt_LVf.js",
+    "name": "Tile",
+    "src": "node_modules/ol/layer/Tile.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_BaseTile-D6e1XrwX.js",
+      "_ol-PlMjdKuB.js",
+      "_tilecoord-ByVamQUv.js"
     ]
   },
   "node_modules/ol/ol.css": {
@@ -45,6 +151,18 @@
     "name": "olCss",
     "names": [
       "olCss.css"
+    ]
+  },
+  "node_modules/ol/source/OSM.js": {
+    "file": "assets/OSM-Baxd5KuS.js",
+    "name": "OSM",
+    "src": "node_modules/ol/source/OSM.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_TileEventType-C2Rj9dhW.js",
+      "_TileImage-Dbi1x18G.js",
+      "_ol-PlMjdKuB.js",
+      "_tilecoord-ByVamQUv.js"
     ]
   }
 }

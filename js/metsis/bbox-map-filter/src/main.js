@@ -1,16 +1,5 @@
 import "ol/ol.css";
 import "./style.css";
-import { Map, View } from "ol";
-import Feature from "ol/Feature";
-import Polygon from "ol/geom/Polygon";
-import Draw, { createBox } from "ol/interaction/Draw";
-import { defaults as defaultControls } from "ol/control";
-import TileLayer from "ol/layer/Tile";
-import OSM from "ol/source/OSM";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { toLonLat, fromLonLat } from "ol/proj";
-import Attribution from "ol/control/Attribution";
 
 // Selector for the map container
 // const mapContainerSelector = "#bbox-map-filter-container";
@@ -19,9 +8,78 @@ import Attribution from "ol/control/Attribution";
 let map;
 let bboxFilterSource;
 let bboxFilterVectorLayer;
+let olModulesPromise;
+
+function loadOlModules() {
+  if (!olModulesPromise) {
+    olModulesPromise = Promise.all([
+      import("ol/Map.js"),
+      import("ol/View.js"),
+      import("ol/Feature.js"),
+      import("ol/geom/Polygon.js"),
+      import("ol/interaction/Draw.js"),
+      import("ol/control/defaults.js"),
+      import("ol/layer/Tile.js"),
+      import("ol/source/OSM.js"),
+      import("ol/layer/Vector.js"),
+      import("ol/source/Vector.js"),
+      import("ol/proj.js"),
+      import("ol/control/Attribution.js"),
+    ]).then(
+      ([
+        mapModule,
+        viewModule,
+        featureModule,
+        polygonModule,
+        drawModule,
+        controlsModule,
+        tileLayerModule,
+        osmModule,
+        vectorLayerModule,
+        vectorSourceModule,
+        projModule,
+        attributionModule,
+      ]) => ({
+        Map: mapModule.default,
+        View: viewModule.default,
+        Feature: featureModule.default,
+        Polygon: polygonModule.default,
+        Draw: drawModule.default,
+        createBox: drawModule.createBox,
+        defaultControls: controlsModule.defaults,
+        TileLayer: tileLayerModule.default,
+        OSM: osmModule.default,
+        VectorLayer: vectorLayerModule.default,
+        VectorSource: vectorSourceModule.default,
+        toLonLat: projModule.toLonLat,
+        fromLonLat: projModule.fromLonLat,
+        Attribution: attributionModule.default,
+      }),
+    );
+  }
+
+  return olModulesPromise;
+}
 
 // Function to initialize the map
-function initializeMap() {
+async function initializeMap() {
+  const {
+    Map,
+    View,
+    Feature,
+    Polygon,
+    Draw,
+    createBox,
+    defaultControls,
+    TileLayer,
+    OSM,
+    VectorLayer,
+    VectorSource,
+    toLonLat,
+    fromLonLat,
+    Attribution,
+  } = await loadOlModules();
+
   console.log("Initializing BBOX Filter map...");
 
   // Add osm baseLayer
@@ -75,14 +133,14 @@ function initializeMap() {
   });
 
   // Add the draw interaction
-  addBboxDrawFilterInteraction();
+  addBboxDrawFilterInteraction(Draw, createBox);
 
   // Draw existing bbox if present in input fields
-  drawBoundingBoxFromInputs();
+  drawBoundingBoxFromInputs(Polygon, Feature);
 }
 
 // Add draw interaction to the map
-function addBboxDrawFilterInteraction() {
+function addBboxDrawFilterInteraction(Draw, createBox) {
   // const bboxGeometryFunction = createRegularPolygon(4);
   const bboxGeometryFunction = createBox();
 
@@ -176,7 +234,7 @@ function normalizeLon(lon) {
 }
 
 // Function to draw the bounding box from input values
-function drawBoundingBoxFromInputs() {
+function drawBoundingBoxFromInputs(Polygon, Feature) {
   const minXInput = document.querySelector('input[name="bbox[minX]"]');
   const maxXInput = document.querySelector('input[name="bbox[maxX]"]');
   const minYInput = document.querySelector('input[name="bbox[minY]"]');
@@ -255,8 +313,41 @@ function drawBoundingBoxFromInputs() {
           context,
         ).forEach(() => {
           console.log("Bbox drupal Behaviour...initialize bbox map filter");
-          // First time initialize
-          initializeMap();
+          const container = document.getElementById(
+            "bbox-map-filter-container",
+          );
+          if (!container) {
+            return;
+          }
+
+          let initialized = false;
+          const start = () => {
+            if (initialized) {
+              return;
+            }
+            initialized = true;
+            initializeMap();
+          };
+
+          if ("IntersectionObserver" in window) {
+            const observer = new IntersectionObserver(
+              (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                  observer.disconnect();
+                  start();
+                }
+              },
+              { rootMargin: "200px" },
+            );
+            observer.observe(container);
+          }
+
+          ["pointerenter", "click", "focusin"].forEach((eventName) => {
+            container.addEventListener(eventName, start, {
+              once: true,
+              passive: true,
+            });
+          });
         });
       },
     };

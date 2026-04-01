@@ -1,6 +1,6 @@
 import { useEffect } from "preact/hooks";
-import { Tile as TileLayer } from "ol/layer";
-import TileWMS from "ol/source/TileWMS";
+import TileLayer from "ol/layer/Tile.js";
+import TileWMS from "ol/source/TileWMS.js";
 
 const WMSLayerManager = ({ mapInstance, wmsUrls, defaultLayers }) => {
   useEffect(() => {

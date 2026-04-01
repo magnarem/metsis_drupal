@@ -1,8 +1,11 @@
 import { useEffect } from "preact/hooks";
-import { Vector as VectorLayer } from "ol/layer";
-import { Vector as VectorSource } from "ol/source";
-import GeoJSON from "ol/format/GeoJSON";
-import { Style, Fill, Stroke, Icon } from "ol/style";
+import VectorLayer from "ol/layer/Vector.js";
+import VectorSource from "ol/source/Vector.js";
+import GeoJSON from "ol/format/GeoJSON.js";
+import Style from "ol/style/Style.js";
+import Fill from "ol/style/Fill.js";
+import Stroke from "ol/style/Stroke.js";
+import Icon from "ol/style/Icon.js";
 import pinBlack from "@assets/pin-black.svg";
 
 const GeoJSONLayer = ({ mapInstance, geojsonFeatures, projection }) => {

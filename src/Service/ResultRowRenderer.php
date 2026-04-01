@@ -95,6 +95,7 @@ final class ResultRowRenderer {
       ];
     }
     // Handle abstract/description. Use highlighted field if available.
+    $fields['metadata_identifier'] = $solr_doc['metadata_identifier'] ?? '';
     $fields['id'] = $this->metsisHelper->toSolrId($solr_doc['metadata_identifier']);
     $fields['abstract'] = [
       '#markup' => check_markup($solr_doc['abstract'], 'metsis_html') ?? '',

@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from "preact/hooks";
-import { Map, View } from "ol";
-import { Tile as TileLayer } from "ol/layer";
-import OSM from "ol/source/OSM";
+import Map from "ol/Map.js";
+import View from "ol/View.js";
+import TileLayer from "ol/layer/Tile.js";
+import OSM from "ol/source/OSM.js";
 
 const useMap = (mapOptions) => {
   const mapRef = useRef(null); // Store the map instance.

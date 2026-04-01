@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "preact/hooks";
 import "ol/ol.css";
 import "../styles/MapContainer.css";
-import { Map, View } from "ol";
+import Map from "ol/Map.js";
+import View from "ol/View.js";
 // import TileLayer from "ol/layer/Tile";
-import TileLayer from "ol/layer/WebGLTile";
+import TileLayer from "ol/layer/WebGLTile.js";
 import Source from "ol/source/ImageTile.js";
 // import OSM from "ol/source/OSM";
-import ScaleLine from "ol/control/ScaleLine";
-import { defaults as defaultControls } from "ol/control";
-import FullScreen from "ol/control/FullScreen";
+import ScaleLine from "ol/control/ScaleLine.js";
+import { defaults as defaultControls } from "ol/control/defaults.js";
+import FullScreen from "ol/control/FullScreen.js";
 import { transform } from "ol/proj.js";
 import Attribution from "ol/control/Attribution.js";
 
