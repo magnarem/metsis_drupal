@@ -1,0 +1,28 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: bbox-form-tabs
+status: stable
+group: metsis
+description: Display the Bbox map input and coordinates input in a tabs component
+libraryOverrides:
+  dependencies:
+    - core/once
+    - core/drupal
+props:
+  type: object
+  properties:
+    default_tab:
+      type: string
+      title: Default tab
+      description: The default tab to show
+      default: "map"
+      enum: ["map", "coords"]
+      examples:
+        - "map"
+        - "coords"
+slots:
+  map_input_tab:
+    title: Map input tab
+    description: The tab for the map form input
+  coords_input_tab:
+    title: Coordinates input tab
+    description: The coordinates form input

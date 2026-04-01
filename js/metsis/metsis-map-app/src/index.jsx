@@ -11,8 +11,10 @@ import "./projections";
 // Some basic logging to confirm the app is running and in which mode.
 console.log("Metsis Map App running in " + import.meta.env.MODE + " mode.");
 
+const DEFAULT_MOUNT_SELECTOR = "#metsis-map-app";
+
 // Initial configuration
-const mapAppSettings = {
+const baseMapAppSettings = {
   mapOptions: {
     center: [7, 50],
     zoom: 2,
@@ -32,7 +34,7 @@ const mapAppSettings = {
       "EPSG:32661": "UPS North (WGS 84)",
       "EPSG:32761": "UPS South (WGS 84)",
     },
-    defaultProjection: "EPSG:4326",
+    defaultProjection: "EPSG:3857",
     defaultCenters: {
       "EPSG:4326": [0, 0],
       "EPSG:3857": [0, 0],
@@ -41,6 +43,66 @@ const mapAppSettings = {
     },
   },
 };
+
+function getMountSelectors(settings) {
+  const configuredSelectors =
+    settings?.metsis_drupal?.map_app?.mount_selectors ??
+    settings?.mapApp?.mountSelectors;
+
+  if (Array.isArray(configuredSelectors)) {
+    const selectors = configuredSelectors.filter(
+      (selector) => typeof selector === "string" && selector.trim() !== "",
+    );
+    return selectors.length > 0 ? selectors : [DEFAULT_MOUNT_SELECTOR];
+  }
+
+  if (typeof configuredSelectors === "string") {
+    const selectors = configuredSelectors
+      .split(",")
+      .map((selector) => selector.trim())
+      .filter(Boolean);
+    return selectors.length > 0 ? selectors : [DEFAULT_MOUNT_SELECTOR];
+  }
+
+  return [DEFAULT_MOUNT_SELECTOR];
+}
+
+function buildMapAppSettings(settings) {
+  const drupalConfig = settings?.mapApp ?? {};
+  const configuredProjection =
+    settings?.metsis_drupal?.map_app?.default_projection;
+  const supportedProjections = {
+    ...baseMapAppSettings.features.supportedProjections,
+    ...(drupalConfig?.features?.supportedProjections ?? {}),
+  };
+
+  const mergedSettings = {
+    ...baseMapAppSettings,
+    ...drupalConfig,
+    mapOptions: {
+      ...baseMapAppSettings.mapOptions,
+      ...(drupalConfig.mapOptions ?? {}),
+    },
+    features: {
+      ...baseMapAppSettings.features,
+      ...(drupalConfig.features ?? {}),
+      supportedProjections,
+    },
+  };
+
+  if (
+    typeof configuredProjection === "string" &&
+    supportedProjections[configuredProjection]
+  ) {
+    mergedSettings.features.defaultProjection = configuredProjection;
+  }
+
+  return mergedSettings;
+}
+
+function selectorToOnceKey(selector) {
+  return selector.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
 
 /**
  * Drupal behavior for the MapApp.
@@ -54,17 +116,21 @@ const mapAppSettings = {
   function ($, Drupal, once) {
     Drupal.behaviors.metsisMapApp = {
       attach: function (context, settings) {
-        once(
-          "initialize-metsis-map-app",
-          "#metsis-map-app",
-          context,
-          settings,
-        ).forEach((elem) => {
-          console.log("METSIS MapApp Behaviour...initialize map app");
-          // First time initialize
-          console.log(elem, settings);
-          console.log("Rendering map with mapAppSettings:", mapAppSettings);
-          render(<MapApp config={mapAppSettings} />, elem);
+        const selectors = getMountSelectors(settings);
+        const mapAppSettings = buildMapAppSettings(settings);
+
+        selectors.forEach((selector) => {
+          once(
+            `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
+            selector,
+            context,
+            settings,
+          ).forEach((elem) => {
+            console.log("METSIS MapApp Behaviour...initialize map app");
+            console.log(elem, settings);
+            console.log("Rendering map with mapAppSettings:", mapAppSettings);
+            render(<MapApp config={mapAppSettings} />, elem);
+          });
         });
       },
     };

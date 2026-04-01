@@ -1,6 +1,7 @@
 "$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
 name: search
 status: stable
+group: metsis
 description: Search input with magnifier button and X reset button
 props:
   type: object

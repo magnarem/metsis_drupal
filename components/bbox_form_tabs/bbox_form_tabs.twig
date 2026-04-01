@@ -1,0 +1,20 @@
+<div {{ attributes }}>
+{% block map_input_tab %}
+	<div class="tabs" role="tablist">
+		{% for tab in tabs %}
+			<button id="tab-{{ loop.index }}" role="tab" class="tab-button {% if loop.first %}is-active{% endif %}" aria-selected="{{ loop.first ? 'true' : 'false' }}" aria-controls="panel-{{ loop.index }}" tabindex="{{ loop.first ? '0' : '-1' }}">
+				{{ tab.label }}
+			</button>
+		{% endfor %}
+	</div>
+  {% endblock %}
+
+	<div class="tab-panels">
+		{% for tab in tabs %}
+			<div id="panel-{{ loop.index }}" role="tabpanel" class="tab-panel {% if loop.first %}is-active{% endif %}" aria-labelledby="tab-{{ loop.index }}" {% if not loop.first %} hidden {% endif %}>
+				{{ tab.content }}
+			</div>
+		{% endfor %}
+	</div>
+	{% block coords_input_tab %}{% endblock %}
+</div>

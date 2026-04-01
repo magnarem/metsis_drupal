@@ -3,13 +3,14 @@
     "type": "drupal-custom-module",
     "description": "METSIS Drupal module providing search and metadata export functionality for METSIS.",
     "keywords": [
-        "drupal",
+        "Drupal",
         "custom module",
-        "search",
-        "solr",
-        "mmd",
-        "opendap",
-        "wms"
+        "Search API",
+        "Solr",
+        "MMD",
+        "OPEnDAP",
+        "WMS",
+        "METSIS"
     ],
     "license": "GPL-2.0-or-later",
     "authors": [
@@ -19,8 +20,10 @@
         }
     ],
     "scripts": {
-        "sniff": "phpcs",
-        "snifferfix": "phpcbf"
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "phpstan": "phpstan",
+        "test": "phpunit"
     },
     "minimum-stability": "alpha",
     "prefer-stable": true,
@@ -38,7 +41,8 @@
         "drupal/leaflet": "^10.4",
         "drupal/geofield": "^10.3",
         "drupal/views_ajax_history": "^1.8",
-        "drupal/views_filters_summary": "^3.2"
+        "drupal/views_filters_summary": "^3.2",
+        "drupal/tagify": "^1.2"
     },
     "suggest": {
         "drupal/back_to_top": "Add back to top icon on scrolling",
@@ -69,7 +73,9 @@
         "phpstan/phpstan-deprecation-rules": "*",
         "drupal/config_inspector": "^2.1",
         "drupal/markdown": "^3.1",
-        "league/commonmark": "^2.8"
+        "league/commonmark": "^2.8",
+        "drupal/editoria11y": "^2.2",
+        "rector/rector": "^2"
     },
     "config": {
         "allow-plugins": {

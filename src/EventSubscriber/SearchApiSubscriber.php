@@ -89,6 +89,20 @@ class SearchApiSubscriber implements EventSubscriberInterface {
   }
 
   /**
+   * Handle custom processors.
+   */
+  public function gatheringProcessors(GatheringPluginInfoEvent $event) {
+    $definitions = &$event->getDefinitions();
+
+    // Keep plugin id as "highlight" because existing index configuration
+    // references that id. Only swap implementation class.
+    if (isset($definitions['highlight'])) {
+      $definitions['highlight']['class'] = 'Drupal\metsis_drupal\Plugin\search_api\processor\MetsisHighlight';
+      $definitions['highlight']['provider'] = 'metsis_drupal';
+    }
+  }
+
+  /**
    * Handeling custom server features.
    *
    * @param \Drupal\search_api\Event\DeterminingServerFeaturesEvent $event
@@ -117,6 +131,7 @@ class SearchApiSubscriber implements EventSubscriberInterface {
       SearchApiEvents::MAPPING_VIEWS_HANDLERS => 'onMappingViewsHandlers',
       SearchApiEvents::GATHERING_DATA_TYPES  => 'gatheringDataTypes',
       SearchApiEvents::DETERMINING_SERVER_FEATURES => 'determeningServerFeatures',
+      SearchApiEvents::GATHERING_PROCESSORS => 'gatheringProcessors',
     ];
 
   }

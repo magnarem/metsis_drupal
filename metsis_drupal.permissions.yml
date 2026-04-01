@@ -1,2 +1,6 @@
 administer metsis:
   title: "Administer and configure METSIS"
+
+access metsis metadata export:
+  title: "Access METSIS metadata export"
+  description: "Use the METSIS metadata export form and download exported metadata files."

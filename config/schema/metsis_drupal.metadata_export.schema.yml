@@ -20,7 +20,7 @@ metsis_drupal.metadata_export:
       label: 'Export List'
       description: 'A list of export types and their labels.'
       constraints:
-          NotBlank: ~
+        NotBlank: ~
       sequence:
         type: label
         label: 'Export Type'
@@ -31,7 +31,7 @@ metsis_drupal.metadata_export:
       label: 'Export Types Descriptions'
       description: 'A list of export types and their descriptions.'
       constraints:
-          NotBlank: ~
+        NotBlank: ~
       sequence:
         type: label
         label: 'Export Type Description'

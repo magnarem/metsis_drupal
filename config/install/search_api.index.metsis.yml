@@ -135,12 +135,12 @@ field_settings:
     label: 'Data center_long name'
     datasource_id: solr_document
     property_path: data_center_long_name
-    type: string
+    type: text
   data_center_short_name:
     label: 'Data center_short name'
     datasource_id: solr_document
     property_path: data_center_short_name
-    type: string
+    type: text
   data_center_url:
     label: 'Data center_url'
     datasource_id: solr_document
@@ -150,18 +150,23 @@ field_settings:
     label: 'Dataset citation author'
     datasource_id: solr_document
     property_path: dataset_citation_author
-    type: string
+    type: text
     boost: 3.0
   dataset_citation_doi:
     label: 'Dataset citation doi'
     datasource_id: solr_document
     property_path: dataset_citation_doi
-    type: date
+    type: string
   dataset_citation_publication_date:
     label: 'Dataset citation publication date'
     datasource_id: solr_document
     property_path: dataset_citation_publication_date
-    type: string
+    type: date
+  dataset_citation_publisher:
+    label: 'Dataset citation publisher'
+    datasource_id: solr_document
+    property_path: dataset_citation_publisher
+    type: text
   dataset_citation_url:
     label: 'Dataset citation url'
     datasource_id: solr_document
@@ -243,7 +248,7 @@ field_settings:
     label: 'Iso topic category'
     datasource_id: solr_document
     property_path: iso_topic_category
-    type: boolean
+    type: string
   keywords_cfstdn:
     label: 'Keywords cfstdn'
     datasource_id: solr_document
@@ -283,7 +288,7 @@ field_settings:
     label: 'Last metadata update_datetime'
     datasource_id: solr_document
     property_path: last_metadata_update_datetime
-    type: string
+    type: date
   match_exact:
     label: 'Match exact'
     datasource_id: solr_document
@@ -311,6 +316,16 @@ field_settings:
     property_path: operational_status
     type: string
     boost: 2.0
+  personnel_name:
+    label: 'Personnel name'
+    datasource_id: solr_document
+    property_path: personnel_name
+    type: text
+  personnel_organisation:
+    label: 'Personnel organisation'
+    datasource_id: solr_document
+    property_path: personnel_organisation
+    type: text
   platform_ancillary_cloud_coverage:
     label: 'Platform ancillary cloud coverage'
     datasource_id: solr_document
@@ -320,12 +335,12 @@ field_settings:
     label: 'Platform ancillary scene coverage'
     datasource_id: solr_document
     property_path: platform_ancillary_scene_coverage
-    type: string
+    type: decimal
   platform_instrument_long_name:
     label: 'Platform instrument long name'
     datasource_id: solr_document
     property_path: platform_instrument_long_name
-    type: string
+    type: text
   platform_instrument_mode:
     label: 'Platform instrument mode'
     datasource_id: solr_document
@@ -345,17 +360,17 @@ field_settings:
     label: 'Platform instrument short name'
     datasource_id: solr_document
     property_path: platform_instrument_short_name
-    type: integer
+    type: text
   platform_long_name:
     label: 'Platform_long name'
     datasource_id: solr_document
     property_path: platform_long_name
-    type: string
+    type: text
   platform_orbit_absolute:
     label: 'Platform orbit absolute'
     datasource_id: solr_document
     property_path: platform_orbit_absolute
-    type: string
+    type: integer
   platform_orbit_direction:
     label: 'Platform orbit direction'
     datasource_id: solr_document
@@ -370,17 +385,17 @@ field_settings:
     label: 'Platform short name'
     datasource_id: solr_document
     property_path: platform_short_name
-    type: string
+    type: text
   project_long_name:
     label: 'Project_long name'
     datasource_id: solr_document
     property_path: project_long_name
-    type: string
+    type: text
   project_short_name:
     label: 'Project_short name'
     datasource_id: solr_document
     property_path: project_short_name
-    type: string
+    type: text
   quality_control:
     label: 'Quality control'
     datasource_id: solr_document
@@ -503,19 +518,18 @@ processor_settings:
   geojson_transformer:
     weights:
       postprocess_query: 0
-  language_with_fallback: {  }
-  metsis_highlight:
+  highlight:
     weights:
-      postprocess_query: -50
-      preprocess_query: 0
+      postprocess_query: 0
     prefix: '<span class="metsis-hl">'
     suffix: '</span class="metsis-hl">'
     excerpt: true
     excerpt_always: false
-    excerpt_length: 256
+    excerpt_length: 512
     exclude_fields: {  }
     highlight: server
-    highlight_partial: false
+    highlight_partial: true
+  language_with_fallback: {  }
   rendered_item: {  }
   solr_date_range:
     weights:

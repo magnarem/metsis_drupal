@@ -1,6 +1,7 @@
 "$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
 name: cc_license
 status: stable
+group: metsis
 description: Renders a Creative Commons license icon with a link to the license description.
 props:
   type: object

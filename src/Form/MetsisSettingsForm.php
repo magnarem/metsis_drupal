@@ -15,6 +15,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\metsis_drupal\MetsisConstants;
+use Drupal\metsis_drupal\Service\MetadataExportService;
 
 /**
  * Configuration form for the METSIS module.
@@ -36,6 +37,13 @@ class MetsisSettingsForm extends ConfigFormBase {
   protected $entityTypeManager;
 
   /**
+   * Metadata export service.
+   *
+   * @var \Drupal\metsis_drupal\Service\MetadataExportService
+   */
+  protected MetadataExportService $metadataExportService;
+
+  /**
    * MetsisSettingsForm constructor.
    */
   public function __construct(
@@ -43,10 +51,12 @@ class MetsisSettingsForm extends ConfigFormBase {
     TypedConfigManagerInterface $language_manager,
     MetsisHelper $metsis_helper,
     EntityTypeManagerInterface $entity_type_manager,
+    MetadataExportService $metadata_export_service,
   ) {
     parent::__construct($config_factory, $language_manager);
     $this->metsisHelper = $metsis_helper;
     $this->entityTypeManager = $entity_type_manager;
+    $this->metadataExportService = $metadata_export_service;
   }
 
   /**
@@ -57,7 +67,8 @@ class MetsisSettingsForm extends ConfigFormBase {
     $container->get('config.factory'),
     $container->get('config.typed'),
     $container->get('metsis_drupal.metsis_helper'),
-    $container->get('entity_type.manager')
+    $container->get('entity_type.manager'),
+    $container->get('metsis_drupal.metadata_export_service')
     );
   }
 
@@ -179,6 +190,43 @@ class MetsisSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Search result limit'),
       '#default_value' => $config->get('search_limit'),
     ];
+    $form['search_config']['search_meta_description'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Search page meta description'),
+      '#description' => $this->t('Used in the <meta name="description"> tag on the search results page.'),
+      '#default_value' => $config->get('search_meta_description'),
+      '#rows' => 3,
+    ];
+
+    // Metadata export configuration.
+    $form['metadata_export'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Metadata export configuration'),
+      '#group' => 'metsis_vertical_tabs',
+      '#open' => ($open_tab === 'metadata_export'),
+      '#ajax' => [
+        'callback' => '::ajaxSwitchTab',
+        'wrapper' => 'metsis-config-ajax-wrapper',
+        'event' => 'summaryToggle',
+      ],
+      '#attributes' => [
+        'data-tab-id' => 'metadata_export',
+      ],
+    ];
+
+    $export_options = $this->metadataExportService->getExportList();
+    $enabled_export_types = $config->get('enabled_export_types');
+    if (!is_array($enabled_export_types) || $enabled_export_types === []) {
+      $enabled_export_types = array_keys($export_options);
+    }
+
+    $form['metadata_export']['enabled_export_types'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Enabled export formats'),
+      '#description' => $this->t('Select metadata export formats that should be available to users.'),
+      '#options' => $export_options,
+      '#default_value' => $enabled_export_types,
+    ];
 
     // Metsis map app configuration.
     $form['map_app'] = [
@@ -195,6 +243,19 @@ class MetsisSettingsForm extends ConfigFormBase {
         'data-tab-id' => 'map_app',
       ],
     ];
+    $form['map_app']['map_default_projection'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Default map projection'),
+      '#description' => $this->t('Select the default projection used when the map app loads.'),
+      '#options' => [
+        'EPSG:4326' => $this->t('WGS 84 (EPSG:4326)'),
+        'EPSG:3857' => $this->t('Pseudo-Mercator (EPSG:3857)'),
+        'EPSG:32661' => $this->t('UPS North – WGS 84 (EPSG:32661)'),
+        'EPSG:32761' => $this->t('UPS South – WGS 84 (EPSG:32761)'),
+      ],
+      '#default_value' => $config->get('map_default_projection') ?? 'EPSG:3857',
+    ];
+
     $form['map_app']['map_default_zoom'] = [
       '#type' => 'number',
       '#title' => $this->t('Default map zoom level'),
@@ -298,10 +359,16 @@ class MetsisSettingsForm extends ConfigFormBase {
     $im_config = $this->configFactory->get('metsis_drupal.settings');
     $config = $this->config('metsis_drupal.settings');
     $config
+      ->set('map_default_projection', $form_state->getValue(['map_app', 'map_default_projection']))
       ->set('map_default_zoom', $form_state->getValue(['map_app', 'map_default_zoom']))
       ->set('map_default_center_lat', $form_state->getValue(['map_app', 'map_default_center_lat']))
       ->set('map_default_center_lon', $form_state->getValue(['map_app', 'map_default_center_lon']))
-      ->set('selected_collections', $form_state->getValue(['solr_index', 'collections']));
+      ->set('selected_collections', $form_state->getValue(['solr_index', 'collections']))
+      ->set(
+        'enabled_export_types',
+        array_values(array_filter($form_state->getValue(['metadata_export', 'enabled_export_types'], [])))
+      )
+      ->set('search_meta_description', $form_state->getValue(['search_config', 'search_meta_description']));
 
     // Only set bokeh_plot_service_url if not overridden.
     if (!($im_config->hasOverrides() && $im_config->get('bokeh_plot_service_url') !== $im_config->getRawData()['bokeh_plot_service_url'])) {

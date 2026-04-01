@@ -7,7 +7,7 @@ namespace Drupal\metsis_drupal\Utility;
 /**
  * Small utility functions for Metsis Solr implementation.
  */
-final class MetsisSolrHelper {
+final class MetsisSolrUtilities {
 
   /**
    * Converts a metadata identifier to a Solr-compatible ID field syntax.

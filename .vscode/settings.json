@@ -33,7 +33,8 @@
       "*.module": "php",
       "*.profile": "php",
       "*.test": "php",
-      "*.info": "ini"
+      "*.info": "ini",
+      "*.html": "twig"
     },
 
     "php-docblocker.defaultType": "mixed",
@@ -58,6 +59,7 @@
     "phpsab.standard": "Drupal,DrupalPractice",
 
 
+
     "twigcs.executablePath": "/var/www/html/vendor/bin/twigcs",
 
   "twigcs.enabled": true,
@@ -65,7 +67,8 @@
    "phpsab.executablePathCS": "/var/www/html/vendor/bin/phpcs",
    "phpsab.executablePathCBF": "/var/www/html/vendor/bin/phpcbf",
    "phpsab.snifferEnable": true,
-   "phpsab.fixerEnable": false,
+   "phpsab.fixerEnable": true,
+
    "phpsab.snifferMode": "onSave",
    "phpsab.debug": false,
    "phpsab.fixerArguments": [
@@ -95,5 +98,6 @@
 		"phpstan.suppressWorkspaceMessage": false,
 		"phpstan.pro": false,
 		"phpstan.tmpDir": "",
-		"phpstan.checkValidity": false
+		"phpstan.checkValidity": false,
+
 }

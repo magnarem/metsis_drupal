@@ -287,112 +287,16 @@ class MetsisHelper {
   }
 
   /**
-   * Create license icon markup for a given license code.
+   * Convert MMD metadata_identifier to Solr id field.
    *
-   * @param string $license_code
-   *   The license code.
+   * @param string $metadata_identifier
+   *   The MMD metadata_identifier.
    *
-   * @return array
-   *   The render array for the license icon component.
+   * @return string
+   *   The Solr id.
    */
-  public function getLicenseIconMarkup(string $license_code): array {
-    // Get the config for license icons mapping.
-    $license_icons_config = $this->getLicenseIconsConfig();
-    $licenses = $license_icons_config->get('license_icons');
-
-    if ($license_code === 'Not provided') {
-      return [];
-    }
-
-    // Replace _ with . to match config keys.
-    $license_type = str_replace('.', '_', $license_code);
-    if (empty($licenses)) {
-      return [];
-    }
-    if (!isset($licenses[$license_type])) {
-      $this->getLogger()->warning('No license icon mapping found for license code: @code', ['@code' => $license_code]);
-      return [];
-    }
-    $license = $licenses[$license_type];
-    $icon_path = '/' . $this->getModulePath() . '/' . $license['icon_path'];
-    $icon_alt_text = $license['icon_alt_text'] ?? 'License icon';
-
-    return [
-      '#theme' => 'metsis_license_icons_component',
-      '#license_code' => $license_code,
-      '#license_uri' => $license['license_uri'],
-      '#icon_path' => $icon_path,
-      '#icon_alt_text' => $icon_alt_text,
-    ];
-  }
-
-  /**
-   * Generate Icon markup for collection image.
-   *
-   * @param string $parent_id
-   *   The id of this collection.
-   *
-   * @return array
-   *   The render array for this component.
-   */
-  public function getCollectionIconMarkup(string $parent_id): array {
-    $image_path = '/' . $this->getModulePath() . '/assets/images/collection';
-
-    return [
-      '#theme' => 'metsis_collection_icon_component',
-      '#image_path' => $image_path,
-      '#parent_id' => $parent_id,
-    ];
-  }
-
-  /**
-   * Generate Icon markup for collection image.
-   *
-   * @param string $doi_uri
-   *   The id of this collection.
-   *
-   * @return array
-   *   The render array for this component.
-   */
-  public function getDoiIconMarkup(string $doi_uri): array {
-    // Get the path to the DOI svg icon.
-    // $doi_icon_path = '/' . $this->getModulePath() . '/assets/icons/DOI_logo.svg';
-    // return [
-    //   '#theme' => 'metsis_doi_icon_component',
-    //   '#doi_uri' => $doi_uri,
-    //   '#icon_path' => $doi_icon_path,
-    // ];.
-    return [
-      '#prefix' => "<div class=\"doi-icon-wrapper\"><a href=\"{$doi_uri}\"",
-      '#suffix' => '</a></div>',
-      '#type' => 'icon',
-      '#pack_id' => 'metsis_drupal',
-      '#icon_id' => 'doi',
-    ];
-  }
-
-  /**
-   * Generate markup for child dataset count.
-   *
-   * @param array $solr_doc
-   *   The solr document array.
-   *
-   * @return array
-   *   The render array for this component.
-   */
-  public function getChildDatasetCountMarkup(array $solr_doc): array {
-    $found_children = $solr_doc['found_children']['numFound'] ?? 0;
-    $total_children = $solr_doc['total_children']['numFound'] ?? 0;
-
-    $renderArray = [
-      // '#prefix' => '<div class="metsis-child-dataset-count">',
-      // '#suffix' => '</div>',
-      '#markup' => $this->t('@found of @total', [
-        '@found' => $found_children,
-        '@total' => $total_children,
-      ]),
-    ];
-    return $renderArray;
+  public function toSolrId($metadata_identifier) {
+    return trim(MetsisSolrUtilities::toSolrId($metadata_identifier));
   }
 
   /**

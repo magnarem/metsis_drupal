@@ -27,6 +27,7 @@ class MetsisThemeHooks {
           'solr_doc' => NULL,
           'fields' => NULL,
           'excerpt' => NULL,
+          'highlighted' => NULL,
         ],
         'template' => 'metsis-search-row-compact',
       ],
@@ -39,6 +40,7 @@ class MetsisThemeHooks {
           'solr_doc' => NULL,
           'fields' => NULL,
           'excerpt' => NULL,
+          'highlighted' => NULL,
         ],
         'template' => 'metsis-search-row-default',
       ],
@@ -51,6 +53,7 @@ class MetsisThemeHooks {
           'solr_doc' => NULL,
           'fields' => NULL,
           'excerpt' => NULL,
+          'highlighted' => NULL,
         ],
         'template' => 'metsis-search-row-detailed',
       ],
@@ -63,6 +66,7 @@ class MetsisThemeHooks {
           'solr_doc' => NULL,
           'fields' => NULL,
           'excerpt' => NULL,
+          'highlighted' => NULL,
         ],
         'template' => 'metsis-search-row-custom',
       ],
@@ -72,17 +76,7 @@ class MetsisThemeHooks {
       ],
       'input__submit__search_results_submit' => [
         'render element' => 'element',
-        'template' => 'input--submit--search-results-submit',
-      ],
-      'metsis_license_icons_component' => [
-        'variables' => [
-          'license_code' => NULL,
-          'license_uri' => NULL,
-          'icon_path' => NULL,
-          'icon_alt_text' => NULL,
-          'module_path' => NULL,
-        ],
-        'template' => 'components/metsis-license-icons-component',
+        'template' => 'components/input--submit--search-results-submit',
       ],
       'metsis_collection_icon_component' => [
         'variables' => [
@@ -90,17 +84,6 @@ class MetsisThemeHooks {
           'parent_id' => NULL,
         ],
         'template' => 'components/metsis-collection-icon-component',
-      ],
-      'metsis_doi_icon_component' => [
-        'variables' => [
-          'doi_uri' => NULL,
-          'icon_path' => NULL,
-        ],
-        'template' => 'components/metsis-doi-icon-component',
-      ],
-
-      'metsis_filter_icon_component' => [
-        'template' => 'components/metsis-filter-icon-component',
       ],
 
       // Add more theme hooks here if needed.

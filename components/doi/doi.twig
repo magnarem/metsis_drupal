@@ -9,7 +9,11 @@
   title="Open link (opens in a new window)"
   rel="noopener, noreferrer"
   target="blank">
+  {% if color %}
   {{ icon('metsis_drupal', 'doi', {'size': icon_size}) }}
+  {% else %}
+  {{ icon('metsis_drupal', 'doi-black', {'size': icon_size}) }}
+  {% endif %}
   {% if show_doi %}
   <span class="doi-identifier">{{ identifier }}</span>
   {% endif %}

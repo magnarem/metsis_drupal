@@ -21,10 +21,10 @@ metsis_drupal.license_icons:
             description: 'The URI of the license.'
             constraints:
               NotBlank: ~
-          icon_path:
+          icon_id:
             type: string
-            label: 'Icon Path'
-            description: 'The path to the license icon, relative to the Drupal root.'
+            label: 'Icon ID'
+            description: 'The icon id as defined in the metsis_drupal_cc icon pack'
             constraints:
               NotBlank: ~
           icon_alt_text:

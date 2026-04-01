@@ -309,70 +309,152 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
    * {@inheritdoc}
    */
   public function acceptExposedInput($input) {
-    // dpm($input, __FUNCTION__);.
     $identifier = $this->options['expose']['identifier'];
     if (empty($this->options['exposed'])) {
       return TRUE;
     }
+
     $rc = parent::acceptExposedInput($input);
-    /*
-     * Make sure all coordinates are set and numeric.
-     */
-    if (NULL == $input[$identifier]) {
+    if (!$rc) {
       return FALSE;
     }
-    foreach ($input[$identifier] as $key => $value) {
-      if (empty($value || empty($key))) {
-        $rc = FALSE;
-      }
-      else {
-        if (!is_numeric($value)) {
-          $rc = FALSE;
-        }
-        else {
-          $rc = TRUE;
-        }
+
+    // No exposed bbox input has been submitted yet.
+    if (!is_array($input) || !array_key_exists($identifier, $input) || !is_array($input[$identifier])) {
+      return TRUE;
+    }
+
+    $coordinates = ['minX', 'maxX', 'minY', 'maxY'];
+    $has_any_value = FALSE;
+
+    // Accept empty input on initial load; only validate once any value is set.
+    foreach ($coordinates as $coordinate) {
+      $value = trim((string) ($input[$identifier][$coordinate] ?? ''));
+      if ($value !== '') {
+        $has_any_value = TRUE;
+        break;
       }
     }
-    return $rc;
+
+    if (!$has_any_value) {
+      return TRUE;
+    }
+
+    foreach ($coordinates as $coordinate) {
+      $value = trim((string) ($input[$identifier][$coordinate] ?? ''));
+      if ($value === '' || !is_numeric($value)) {
+        return FALSE;
+      }
+    }
+
+    return TRUE;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * {@todo} Fix when webprofiler is not making problems anymore.
    */
   public function validateExposed(&$form, FormStateInterface $form_state) {
-    // parent::validateExposed($form, $form_state);.
     $identifier = $this->options['expose']['identifier'];
     if (empty($this->options['exposed'])) {
       return;
     }
 
-    // dpm($form_state->getValues(), __FUNCTION__);
-    // Validate BBox values for exposed form.
-    $coordinates = ['minX', 'maxX', 'maxY', 'minY'];
+    $coordinates = ['minX', 'maxX', 'minY', 'maxY'];
+    $values = $form_state->getValue($identifier) ?? [];
+
+    if (!is_array($values)) {
+      return;
+    }
+
+    $has_any_value = FALSE;
     foreach ($coordinates as $coordinate) {
-      $value = &$form_state->getValue([$identifier, $coordinate]);
-      // dpm($value, __FUNCTION__ . " $coordinate");
-      // dpm($form, __FILE__ . ':' . __LINE__);
-      // $elem = $form['bbox_wrapper']['bbox_wrapper']['bbox_wrapper'];
-      // dpm($elem);
-      if ($value == NULL || $value == '') {
-        // $form_state->setError($elem[$coordinate],
-        // $this->t('The @coordinate coordinate is required.',
-        // ['@coordinate' => $coordinate]));
+      $value = trim((string) ($values[$coordinate] ?? ''));
+      if ($value !== '') {
+        $has_any_value = TRUE;
+        break;
       }
-      else {
-        $value = trim($value);
-        if (!is_numeric($value)) {
-          // $form_state->setErrorByName('bbox][' . $coordinate . ']',
-          // $this->t('The @coordinate coordinate must be a number.',
-          // ['@coordinate' => $coordinate]));
-          // $form_state->setErrorByName('bbox][maxX]',
-          // $this->t('The maxX coordinate must be a number.'));
-        }
+    }
+
+    // Do not validate on initial page load when bbox fields are empty.
+    if (!$has_any_value) {
+      return;
+    }
+
+    $has_missing_values = FALSE;
+
+    // Check that all coordinates are filled.
+    foreach ($coordinates as $coordinate) {
+      $value = trim((string) ($values[$coordinate] ?? ''));
+      if (empty($value)) {
+        $has_missing_values = TRUE;
+        $form_state->setErrorByName("{$identifier}][{$coordinate}",
+          $this->t('The @coordinate coordinate is required.',
+            ['@coordinate' => $coordinate]));
       }
+    }
+
+    // If there are missing values, don't validate further.
+    if ($has_missing_values) {
+      return;
+    }
+
+    // Validate numeric values and ranges.
+    // Validate minY: must be numeric and between -90 and 90.
+    $minY = $values['minY'] ?? NULL;
+    if ($minY !== NULL && $minY !== '') {
+      if (!is_numeric($minY)) {
+        $form_state->setErrorByName("{$identifier}][minY",
+          $this->t('The minY coordinate must be a number.'));
+      }
+      elseif ((float) $minY < -90 || (float) $minY > 90) {
+        $form_state->setErrorByName("{$identifier}][minY",
+          $this->t('The minY coordinate must be between -90 and 90.'));
+      }
+    }
+
+    // Validate maxY: must be numeric and between -90 and 90.
+    $maxY = $values['maxY'] ?? NULL;
+    if ($maxY !== NULL && $maxY !== '') {
+      if (!is_numeric($maxY)) {
+        $form_state->setErrorByName("{$identifier}][maxY",
+          $this->t('The maxY coordinate must be a number.'));
+      }
+      elseif ((float) $maxY < -90 || (float) $maxY > 90) {
+        $form_state->setErrorByName("{$identifier}][maxY",
+          $this->t('The maxY coordinate must be between -90 and 90.'));
+      }
+    }
+
+    // Validate minX: must be numeric and between -180 and 180.
+    $minX = $values['minX'] ?? NULL;
+    if ($minX !== NULL && $minX !== '') {
+      if (!is_numeric($minX)) {
+        $form_state->setErrorByName("{$identifier}][minX",
+          $this->t('The minX coordinate must be a number.'));
+      }
+      elseif ((float) $minX < -180 || (float) $minX > 180) {
+        $form_state->setErrorByName("{$identifier}][minX",
+          $this->t('The minX coordinate must be between -180 and 180.'));
+      }
+    }
+
+    // Validate maxX: must be numeric and between -180 and 180.
+    $maxX = $values['maxX'] ?? NULL;
+    if ($maxX !== NULL && $maxX !== '') {
+      if (!is_numeric($maxX)) {
+        $form_state->setErrorByName("{$identifier}][maxX",
+          $this->t('The maxX coordinate must be a number.'));
+      }
+      elseif ((float) $maxX < -180 || (float) $maxX > 180) {
+        $form_state->setErrorByName("{$identifier}][maxX",
+          $this->t('The maxX coordinate must be between -180 and 180.'));
+      }
+    }
+
+    // Validate minY <= maxY constraint.
+    if (is_numeric($minY) && is_numeric($maxY) && (float) $minY > (float) $maxY) {
+      $form_state->setErrorByName("{$identifier}][minY",
+        $this->t('The minimum Latitude (minY) cannot be greater than the maximum Latitude (maxY).'));
     }
   }
 

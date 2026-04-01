@@ -7,7 +7,6 @@
 
 declare(strict_types=1);
 
-use Drupal\views\Plugin\views\filter\FilterPluginBase;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\views\ViewExecutable;
@@ -38,43 +37,6 @@ function metsis_drupal_help($route_name, RouteMatchInterface $route_match): stri
       }
   }
   return '';
-}
-
-/**
- * Implements hook_views_filters_summary_info_alter().
- */
-function metsis_drupal_views_filters_summary_info_alter(array &$info, FilterPluginBase $filter) {
-  // Handle custom summary for custom bbox filter.
-  if ($filter->getPluginId() === 'metsis_filter_bbox' && !empty($filter->value)) {
-    if (!$filter->value['minX'] == '') {
-      // Format each value: 3 decimals for floats, as-is for ints.
-      $formatted_values = array_map(function ($v) {
-        return is_float($v + 0) ? number_format((float) $v, 3, '.', '') : (string) $v;
-      }, $filter->value);
-
-      $info['value'][0] = [
-        'id' => 0,
-        'raw' => 'bbox',
-        'value' => ucfirst($filter->operator) . '(' . implode(', ', $formatted_values) . ')',
-      ];
-    }
-  }
-}
-
-/**
- * Implements hook_views_filters_summary_filter_value_alter().
- */
-function metsis_drupal_views_filters_summary_filter_value_alter(
-  mixed &$value,
-  FilterPluginBase $filter,
-) {
-
-  // For some reason, the User Permissions plugin does not properly
-  // populate the filter value.
-  if ($filter->getPluginId() === 'metsis_filter_bbox') {
-    $inputs = $filter->view->getExposedInput();
-    $value = $inputs[$filter->options['id']];
-  }
 }
 
 /**

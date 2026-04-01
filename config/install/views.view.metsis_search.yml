@@ -55,7 +55,7 @@ display:
       exposed_form:
         type: bef
         options:
-          submit_button: Filter
+          submit_button: 'Update filters'
           reset_button: false
           reset_button_label: 'Reset filters'
           exposed_sorts_label: 'Sort by'
@@ -66,7 +66,7 @@ display:
           text_input_required_format: basic_html
           bef:
             general:
-              autosubmit: true
+              autosubmit: false
               auto_submit_sort_only: false
               autosubmit_breakpoint: ''
               autosubmit_exclude_textfield: true
@@ -126,8 +126,20 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
+              facets_activity_type:
+                plugin_id: default
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
               facets_collection:
-                plugin_id: bef
+                plugin_id: default
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -138,14 +150,8 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                select_all_none: false
-                select_all_none_nested: false
-                display_inline: false
-                soft_limit: 0
-                soft_limit_label_less: 'Show less'
-                soft_limit_label_more: 'Show more'
               facets_keywords_cfstdn:
-                plugin_id: bef
+                plugin_id: bef_tagify
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -156,12 +162,9 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                select_all_none: false
-                select_all_none_nested: false
-                display_inline: false
-                soft_limit: 0
-                soft_limit_label_less: 'Show less'
-                soft_limit_label_more: 'Show more'
+                  match_operator: CONTAINS
+                  max_items: '10'
+                  placeholder: ''
               facets_keywords_gcmd:
                 plugin_id: bef
                 advanced:
@@ -181,7 +184,7 @@ display:
                 soft_limit_label_less: 'Show less'
                 soft_limit_label_more: 'Show more'
               facets_keywords_gcmdloc:
-                plugin_id: bef
+                plugin_id: default
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -192,12 +195,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                select_all_none: false
-                select_all_none_nested: false
-                display_inline: false
-                soft_limit: 0
-                soft_limit_label_less: 'Show less'
-                soft_limit_label_more: 'Show more'
               facets_keywords_gcmdprov:
                 plugin_id: bef
                 advanced:
@@ -217,7 +214,7 @@ display:
                 soft_limit_label_less: 'Show less'
                 soft_limit_label_more: 'Show more'
               facets_keywords_gemet:
-                plugin_id: bef
+                plugin_id: default
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -228,12 +225,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                select_all_none: false
-                select_all_none_nested: false
-                display_inline: false
-                soft_limit: 0
-                soft_limit_label_less: 'Show less'
-                soft_limit_label_more: 'Show more'
               facets_keywords_northemes:
                 plugin_id: bef
                 advanced:
@@ -322,7 +313,7 @@ display:
             - abstract_en
             - full_text
             - match_exact
-            - text_suggester
+            - text_keywords_stemmed
             - title_en
         bbox:
           id: bbox
@@ -387,7 +378,7 @@ display:
           expose:
             operator_id: temporal_extent_period_dr_op
             label: 'Temporal filter'
-            description: 'Filter on temporal extent'
+            description: 'Filter on date range interval'
             use_operator: true
             operator: temporal_extent_period_dr_op
             operator_limit_selection: false
@@ -444,10 +435,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        facets_collection:
-          id: facets_collection
+        facets_activity_type:
+          id: facets_activity_type
           table: search_api_index_metsis
-          field: facets_collection
+          field: facets_activity_type
           relationship: none
           group_type: group
           admin_label: ''
@@ -458,16 +449,16 @@ display:
           exposed: true
           expose:
             operator_id: ''
-            label: Collection
+            label: 'Activity type'
             description: ''
             use_operator: false
             operator: ''
             operator_limit_selection: false
             operator_list: {  }
-            identifier: collection
+            identifier: activity_type
             required: false
             remember: false
-            multiple: true
+            multiple: false
             remember_roles:
               authenticated: authenticated
           is_grouped: false
@@ -486,6 +477,53 @@ display:
           label_display: visible
           facet:
             query_operator: and
+            hard_limit: 0
+            min_count: 18
+            show_numbers: true
+            processor_configs: {  }
+        facets_collection:
+          id: facets_collection
+          table: search_api_index_metsis
+          field: facets_collection
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'MMD Collection'
+            description: 'See https://vocab.met.no/mmd/en/page/Collection_Keywords'
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: collection
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: and
+            hard_limit: 0
             min_count: 1
             show_numbers: true
             processor_configs: {  }
@@ -533,8 +571,14 @@ display:
             query_operator: and
             hard_limit: 0
             min_count: 1
-            show_numbers: false
-            processor_configs: {  }
+            show_numbers: true
+            processor_configs:
+              raw_value_widget_order:
+                processor_id: raw_value_widget_order
+                weights:
+                  sort: 50
+                settings:
+                  sort: ASC
         facets_keywords_gcmd:
           id: facets_keywords_gcmd
           table: search_api_index_metsis
@@ -577,10 +621,15 @@ display:
           label_display: visible
           facet:
             query_operator: or
-            hard_limit: 0
+            hard_limit: 20
             min_count: 1
             show_numbers: false
-            processor_configs: {  }
+            processor_configs:
+              hide_non_narrowing_result_processor:
+                processor_id: hide_non_narrowing_result_processor
+                weights:
+                  build: 40
+                settings: {  }
         facets_keywords_gcmdloc:
           id: facets_keywords_gcmdloc
           table: search_api_index_metsis

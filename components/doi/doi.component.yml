@@ -31,3 +31,10 @@ props:
         - 32
         - 24
         - 16
+    color:
+      type: boolean
+      title: DOI Logo color or black/white
+      description: Show original DOI color Logo or Black (Default Color)
+      default: true
+      examples:
+        - false

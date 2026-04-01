@@ -221,8 +221,51 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $main_query_filters = $solarium_query->getFilterQueries();
 
         // Highlighting fails with join query, so we use main query in hl.q.
-        $solarium_query->getHighlighting()->setQuery($main_query);
         $hl = $solarium_query->getHighlighting();
+
+        // Build hl.q from individual search keys to avoid join query
+        // interfering with snippet generation. Each term is prefixed with
+        // the full-text field so Solr matches highlighting correctly.
+        $search_keys = $query->getKeys();
+
+        $hl_query = $main_query;
+        if (!empty($search_keys)) {
+          $terms = $this->extractSearchTerms($search_keys);
+          if (!empty($terms)) {
+            $hl_query = implode(' ', array_map(
+              fn(string $term) => $this->buildHighlightClause($term),
+              $terms
+            ));
+          }
+        }
+        $hl->setQuery($hl_query);
+        $hl->setMethod('unified');
+        $hl->setFields([
+          'title_en',
+          'abstract_en',
+          'personnel_name',
+          'personnel_organisation',
+          'data_center_long_name',
+          'data_center_short_name',
+          'keywords_keyword',
+          'project_long_name',
+          'project_short_name',
+          'platform_instrument_long_name',
+          'platform_instrument_short_name',
+          'dataset_citation_title',
+          'dataset_citation_author',
+          'dataset_citation_publisher',
+        ]);
+        $hl->setRequireFieldMatch(FALSE);
+        $hl->setSnippets(2);
+        $hl->setFragSize(50);
+        $hl->setDefaultSummary(FALSE);
+        // $hl->setBoundaryScanner('simple');
+        // hl.bs.chars has no dedicated Solarium API method; set it directly.
+        // $solarium_query->addParam('hl.bs.chars', ">.,!? \t\n\r");
+        // Per-field overrides: shorter snippets for keyword values.
+        $hl->getField('keywords_keyword')->setSnippets(3);
+        $hl->getField('keywords_keyword')->setFragSize(2000);
 
         // Escape the main query for the join query's 'v' parameter.
         $escaped_query = $helper->escapeLocalParamValue($main_query);
@@ -260,28 +303,93 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
   /**
    * Handle the post field mapping event.
    */
-  public function postFieldMapping(PostFieldMappingEvent $event) {
-    $field_mapping = $event->getFieldMapping();
-
-  } // $bbox_filter = {
-
-  // }
-  // $this->getQuery()->setOption('bbox_filter",$field, "$minX,$maxX,$maxY,$minY", $this->operator);
+  public function postFieldMapping(PostFieldMappingEvent $event): void {
+  }
 
   /**
    * Handle the post extract results Event.
    */
   public function postExtractResults(PostExtractResultsEvent $event) {
-    $results = $event->getSearchApiResultSet();
-    // $solr_results = $event->getSolariumResult();
-    // $body = $solr_results->getResponse()->getBody();
-    // foreach ($results as $result) {
-    // if ($geojson_field = $result->getField('metsis_drupal_geojson_field')) {
-    // $gojeson = $geojson_field->getValues();
-    // dpm($gojeson, 'geojson_field');
-    // //$result->setField('metsis_drupal_geojson_field', json_decode($geojson_field, TRUE));
-    // }
-    // }
+  }
+
+  /**
+   * Recursively extracts plain string terms from Search API parsed keys.
+   *
+   * Skips negated groups and metadata keys (prefixed with '#') so only
+   * positive terms end up in the highlight query.
+   *
+   * @param array|string $keys
+   *   Parsed keys as returned by QueryInterface::getKeys().
+   *
+   * @return string[]
+   *   Flat list of individual search terms.
+   */
+  protected function extractSearchTerms(array|string $keys): array {
+    if (is_string($keys)) {
+      $terms = [];
+      preg_match_all('/"([^"]+)"|(\S+)/', trim($keys), $matches);
+      foreach ($matches[0] as $index => $_match) {
+        $phrase = $matches[1][$index] ?? '';
+        $token = $matches[2][$index] ?? '';
+        $candidate = $phrase !== '' ? $phrase : $token;
+        if ($candidate !== '') {
+          $terms[] = $candidate;
+        }
+      }
+      return $terms;
+    }
+
+    // Skip the whole group when it is negated.
+    if (!empty($keys['#negation'])) {
+      return [];
+    }
+
+    $terms = [];
+    foreach ($keys as $key => $value) {
+      // Skip metadata entries like #conjunction and #negation.
+      if (is_string($key) && str_starts_with($key, '#')) {
+        continue;
+      }
+      if (is_string($value)) {
+        $terms[] = $value;
+      }
+      elseif (is_array($value)) {
+        // Recurse into nested groups.
+        array_push($terms, ...$this->extractSearchTerms($value));
+      }
+    }
+
+    return $terms;
+  }
+
+  /**
+   * Build one hl.q clause for a term or phrase.
+   *
+   * Multi-word terms are quoted so phrase searches stay intact, e.g.
+   * full_text:"radar backscatter".
+   *
+   * @param string $term
+   *   A single parsed search token or phrase.
+   *
+   * @return string
+   *   Solr clause prefixed with full_text.
+   */
+  protected function buildHighlightClause(string $term): string {
+    $term = trim($term);
+
+    // Normalize optional wrapping quotes from parse output.
+    if (strlen($term) >= 2 && $term[0] === '"' && substr($term, -1) === '"') {
+      $term = substr($term, 1, -1);
+    }
+
+    // Escape backslashes and double quotes for Solr query parser.
+    $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $term);
+
+    if (str_contains($escaped, ' ')) {
+      return 'full_text:"' . $escaped . '"';
+    }
+
+    return 'full_text:' . $escaped;
   }
 
   /**

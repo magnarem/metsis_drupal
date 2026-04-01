@@ -39,3 +39,12 @@ metsis_drupal.bokeh_plot_form:
     _title: "Bokeh Plot Form"
   requirements:
     _permission: "access content"
+
+metsis_drupal.metadata_export_form:
+  path: "/metsis/metadata/export/{id}"
+  defaults:
+    _form: '\Drupal\metsis_drupal\Form\MetadataExportForm'
+    _title: "Metadata export"
+  requirements:
+    _permission: "access metsis metadata export"
+    id: "[A-Za-z0-9_.:-]+"

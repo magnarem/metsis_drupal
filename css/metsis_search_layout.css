@@ -1,31 +1,19 @@
-/* Scoped styles for the search-layout container */
-/*.grid-full {
-  display: unset !important;
-}*/
-/* Override grid-template-columns for .metsis-search-layout inside .grid-full */
 .metsis-search-layout {
   display: grid;
   grid-template-columns: 2fr 10fr;
-  /* First column (aside) adjusts to content, second column takes remaining space */
   grid-template-rows: auto auto;
-  /* Two rows: one for messages, one for content */
   gap: 20px;
-  /* Add spacing between grid items */
   padding: 20px;
 }
 
-.metsis-search-layout .metsis-messages-container {
+.metsis-messages-container {
   grid-column: 1 / -1;
-  /* Span both columns */
   max-width: 100%;
 }
 
 .metsis-search-layout .metsis-filters {
   grid-column: 1;
-  /* Place in the first column */
   grid-row: 2;
-  /* Place it in the second row */
-  background-color: #fff;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -33,10 +21,7 @@
 
 .metsis-search-layout .metsis-search-main-content {
   grid-column: 2;
-  /* Place in the second column */
   grid-row: 2;
-  /* Place it in the second row */
-  background-color: #fff;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -58,9 +43,7 @@
 }
 
 .metsis-search-layout .metsis-map-container-wrapper {
-  border: 1px solid #ddd;
   border-radius: 5px;
-  background-color: #eaeaea;
 }
 
 .metsis-search-layout .metsis-results-header {
@@ -78,9 +61,7 @@
 }
 
 .metsis-search-layout .metsis-result-item {
-  background-color: #fff;
   padding: 15px;
-  border: 1px solid #ddd;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1em;
@@ -88,7 +69,6 @@
 
 /* Basic styling for the fieldset and legend */
 .metsis-search-layout .accordion {
-  border: 1px solid #ccc;
   padding: 0;
   margin: 10px 0;
   border-radius: 5px;
@@ -99,8 +79,6 @@
   font-weight: bold;
   cursor: pointer;
   padding: 10px;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #ccc;
   margin: 0;
 }
 
@@ -146,64 +124,6 @@
   font-size: 1.2em;
 }
 
-.metsis-search-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  margin-bottom: 0.5em;
-}
-
-/* left figure: fixed width, keeps map aspect via height */
-.metsis-map-figure {
-  flex-shrink: 0;
-  /* fixed width */
-  width: 180px;
-  height: auto;
-  /* adjust as needed */
-  margin-right: 0.5em;
-  margin-left: 0.5em;
-  overflow: hidden;
-  float: left;
-}
-
-/* ensure leaflet/map element fills the figure */
-/* .metsis-map-figure .leaflet-container,
-.metsis-map-figure #map,
-.metsis-map-figure .metsis-map {
-  width: 100% !important;
-  height: 100% !important;
-} */
-
-/* main area: map left, content right */
-.metsis-search-main {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-/* right content grows to remaining space */
-.metsis-search-content {
-  flex-grow: 1;
-  overflow: hidden;
-  /* allow overflow handling inside */
-}
-
-/* styling for the quote */
-.metsis-search-quote {
-  font-size: 1em;
-  line-height: 1.5em;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
-  font-style: italic;
-}
-
-.metsis-search-title {
-  margin: 0 0 0.5rem 0;
-  font-size: large;
-  font-weight: bold;
-}
-
 /* styling for the search box and button */
 button.metsis-search-box__button {
   border: none;
@@ -217,172 +137,37 @@ button.metsis-search-box__button {
   justify-content: center;
 }
 
-.doi-icon-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.doi-icon-wrapper svg {
-  max-height: fit-content;
-}
-
 .metsis-search-box-container {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-/* style highlighted text */
-.metsis-hl {
-  background-color: yellow;
-}
-
-/* license icon styling */
-.metsis-license-icon-wrapper {
-  flex: 0 0 auto;
-  gap: 0.5rem;
-}
-
-.metsis-license-icon-img {
-  width: auto;
-}
-
-.metsis-collection-icon-img {
-  width: auto;
-}
-
-.metsis-icon-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-  min-width: 150px;
-  align-content: center;
-  flex-wrap: wrap;
-  gap: 0.5em;
-}
-/* .metsis-icon-wrapper > button {
-  display: block;
-  float: right;
-  max-width: 100%;
-}
-.metsis-icon-wrapper > a {
-  display: block;
-  float: right;
-  margin-bottom: 0.5rem;
-}
-
-.metsis-icon-wrapper > a > img,
-.metsis-icon-wrapper > a > picture {
-  display: block;
-  max-width: 100%;
-  float: right;
-}
-
-.metsis-icon-wrapper > img,
-.metsis-icon-wrapper > picture {
-  display: block;
-  max-width: 100%;
-  float: right;
-} */
-.metsis-collection-button {
-  white-space: nowrap;
-  /* Prevent text from wrapping */
-  overflow: hidden;
-  /* Prevent content from overflowing */
-  text-overflow: ellipsis;
-  /* Show ellipsis (...) for overflowing text */
-  width: fit-content;
-  /* Adjust width based on content */
-  max-width: 100%;
-  font-size: normal;
-  /* Prevent exceeding the parent container */
-}
-
-.metsis-collection-button svg {
-  margin-right: 4px;
-  /* Add spacing between the SVG and text */
-  vertical-align: middle;
-  /* Align the SVG with the text */
-}
-.metsis-doi-icon {
-  height: auto;
-  width: auto;
-}
-
-.metsis-collection-image {
-  display: flex;
-  /* Use flexbox to allow layout control */
-  flex-direction: column;
-  /* Stack the image and button vertically */
-  align-items: center;
-  /* Center-align the image and button */
-  text-align: center;
-  /* Ensure the text aligns nicely below the image */
-}
-
-.metsis-collection-image img {
-  display: block;
-  /* Ensure the image is treated as a block-level element */
-  margin-bottom: 0.5rem;
-  /* Add spacing between the image and the button */
-  max-width: 100%;
-  /* Ensure the image is responsive */
-  height: auto;
-  /* Maintain aspect ratio */
-}
-
-.metsis-collection-button {
-  display: flex;
-  /* Use flexbox for the button to align the SVG and text */
-  align-items: center;
-  /* Vertically align SVG and text */
-  gap: 0.5rem;
-  /* Add spacing between the SVG and the text */
-  padding: 0.5rem 1rem;
-  /* Add padding around the button */
-  font-size: 0.9rem;
-  border: none;
-  background-color: white;
-  /* Remove default border */
-  border-radius: 4px;
-  /* Rounded corners */
-  cursor: pointer;
-  /* Pointer cursor on hover */
-  font-size: 18px;
-}
-span.children-sub-text {
-  font-size: xx-small;
-  text-align: center;
-}
-
-.metsis-collection-button:hover {
-  background-color: #b7daff;
-  border: black 1px solid;
-  /* Darker blue on hover */
-}
-
-.metsis-collection-button svg {
-  /* Inherit the color from the button text */
-  width: 24px;
-  /* Icon width */
-  height: 24px;
-  /* Icon height */
-}
 /*.metsis-search-text__input */
 
-/* small screens: stack vertically */
-@media (max-width: 720px) {
-  .metsis-search-row {
-    flex-direction: column;
-  }
+.metsis-search-layout .metsis-active-filters {
+  margin-bottom: 1rem;
+  border-bottom: 1px dashed #ddd;
+}
+.metsis-search-layout .views-filters-summary .items {
+  display: unset;
+}
+.metsis-search-layout .views-filters-summary .item {
+  margin-bottom: 0.5rem;
+  /* border: 1px solid #ddd;
+  border-radius: 5px; */
+}
 
-  .metsis-map-figure {
-    width: 100%;
-    height: 220px;
-    /* taller for mobile */
-  }
+.metsis-search-layout .views-filters-summary .item span.label {
+  margin-left: 0.5rem;
+}
+.metsis-search-layout .views-filters-summary a.reset {
+  /** display block to ensure it appears on a new line and is easily clickable */
+  /* display: block; */
+  margin-left: 0.5rem;
+}
+.metsis-search-layout .metsis-results-pager-rows-footer-wrapper {
+  margin-top: 1rem;
 }
 
 /* Responsive Design */
@@ -401,7 +186,7 @@ span.children-sub-text {
     /* Move below messages */
   }
 
-  .metsis-search-layout .metsis-main-content {
+  .metsis-search-layout .metsis-search-main-content {
     grid-column: 1;
     /* Full width */
     grid-row: 3;

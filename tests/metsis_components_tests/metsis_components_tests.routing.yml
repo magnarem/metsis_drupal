@@ -5,3 +5,11 @@ metsis_components_tests.map_app_test:
     _title: "Metsis Map Test"
   requirements:
     _permission: "access content"
+
+metsis_components_tests.cc_license_component_test:
+  path: "/test/cc-license"
+  defaults:
+    _title: "Cc License Component Test"
+    _controller: '\Drupal\metsis_components_tests\Controller\CcLicenseComponentTestController'
+  requirements:
+    _permission: "access content"

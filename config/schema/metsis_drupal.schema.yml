@@ -18,6 +18,13 @@ metsis_drupal.settings:
           Regex:
             pattern: /^[A-Z]+$/
             message: 'Collection keys must be uppercase letters only.'
+    map_default_projection:
+      type: string
+      label: 'Default map projection'
+      description: 'The default OpenLayers projection used when the map app loads.'
+      constraints:
+        Choice:
+          choices: ['EPSG:4326', 'EPSG:3857', 'EPSG:32661', 'EPSG:32761']
     map_default_zoom:
       type: integer
       label: 'Default map zoom level'
@@ -49,5 +56,20 @@ metsis_drupal.settings:
       type: uri
       label: 'featureType lookup service url endpoint'
       description: 'The URL endpoint for the featureType lookup service.'
+      constraints:
+        NotBlank: ~
+    enabled_export_types:
+      type: sequence
+      label: 'Enabled metadata export types'
+      description: 'Export types available in the metadata export form.'
+      sequence:
+        type: string
+        label: 'Export type'
+      constraints:
+        NotBlank: ~
+    search_meta_description:
+      type: string
+      label: 'Search page meta description'
+      description: 'Meta description used for the METSIS search results page.'
       constraints:
         NotBlank: ~

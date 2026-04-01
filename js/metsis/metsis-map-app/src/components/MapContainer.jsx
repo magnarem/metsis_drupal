@@ -21,7 +21,7 @@ const MapContainer = ({ setMap, config, projection, children }) => {
 
   // Initialize the map and OL-Cesium
   useEffect(() => {
-    if (!mapRef.current && !projection) return;
+    if (!mapRef.current || !projection) return;
 
     // Create OpenLayers map
     console.log("Initializing OpenLayers map...", mapRef.current.id);
@@ -38,11 +38,12 @@ const MapContainer = ({ setMap, config, projection, children }) => {
     const mapControls = [fullScreenControl, scaleControl, attribution];
 
     const olMap = new Map({
-      target: mapRef.current.id,
+      target: mapRef.current,
       layers: [
         new TileLayer({
           source: new Source({
             url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            crossOrigin: "anonymous",
             attributions:
               '&#169; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors.',
           }), // OpenStreetMap tiles
@@ -82,7 +83,6 @@ const MapContainer = ({ setMap, config, projection, children }) => {
   // Pass projection as prop to children
   return (
     <div
-      id="#metsis-map"
       class="map-container"
       ref={mapRef}
       style={{ width: "100%", height: "600px", position: "relative" }}

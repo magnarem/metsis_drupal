@@ -78,6 +78,22 @@ const searchContextConfig = {
 };
 ```
 
+#### Drupal-driven defaults
+
+When used through the METSIS Drupal module, the app also reads these
+`drupalSettings` values:
+
+```javascript
+drupalSettings.metsis_drupal.map_app = {
+  default_projection: "EPSG:3857",
+  mount_selectors: ["#metsis-map-app", ".my-custom-map-target"],
+};
+```
+
+- `default_projection` overrides `features.defaultProjection` when valid.
+- `mount_selectors` tells the behavior where to render the map app.
+- If `mount_selectors` is empty, the app falls back to `#metsis-map-app`.
+
 #### Use in Application:
 
 ```javascript

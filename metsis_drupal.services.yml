@@ -60,3 +60,17 @@ services:
   # resolve to the defined service instead of attempting a no-arg instantiation.
   Drupal\metsis_drupal\Utility\MetsisHelper:
     alias: "metsis_drupal.metsis_helper"
+
+  metsis_drupal.result_row_renderer:
+    class: Drupal\metsis_drupal\Service\ResultRowRenderer
+    arguments:
+      ["@metsis_drupal.metsis_helper", "@module_handler", "@config.factory"]
+
+  metsis_drupal.metadata_export_service:
+    class: Drupal\metsis_drupal\Service\MetadataExportService
+    arguments:
+      - "@config.factory"
+      - "@entity_type.manager"
+
+  Drupal\metsis_drupal\Service\MetadataExportService:
+    alias: "metsis_drupal.metadata_export_service"
