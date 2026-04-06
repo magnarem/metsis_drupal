@@ -9,6 +9,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\metsis_drupal\Service\MetadataExportService;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,16 +26,16 @@ class MetadataExportServiceTest extends TestCase {
   /**
    * Config factory mock.
    *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected ConfigFactoryInterface $configFactory;
+  protected ConfigFactoryInterface&MockObject $configFactory;
 
   /**
    * Entity type manager mock.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected EntityTypeManagerInterface&MockObject $entityTypeManager;
 
   /**
    * Service under test.
@@ -48,6 +49,11 @@ class MetadataExportServiceTest extends TestCase {
    */
   protected function setUp(): void {
     parent::setUp();
+
+    // Match runtime convention where DRUPAL_ROOT points to PROJECT_ROOT/web.
+    if (!defined('DRUPAL_ROOT')) {
+      define('DRUPAL_ROOT', dirname(__DIR__, 4) . '/web');
+    }
 
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
@@ -231,14 +237,77 @@ class MetadataExportServiceTest extends TestCase {
   }
 
   /**
-   * Tests transformXml with valid XSLT.
+   * Tests transformXml with valid XSLT transformation.
+   *
+   * Uses actual XSLT files from vendor/metno/mmd and module's static config.
    */
   #[Test]
   public function testTransformXmlSuccess(): void {
-    // XSLT transformation requires file I/O and full Drupal integration.
-    // This is tested in kernel/functional tests.
-    // Unit test verifies method signature and error handling.
-    $xml_invalid = '<invalid';
+    // Verify DRUPAL_ROOT is defined and correct.
+    $this->assertTrue(defined('DRUPAL_ROOT'));
+    // XSLT files are at project root, not web root, so check parent directory.
+    $xslt_file = dirname(DRUPAL_ROOT) . '/vendor/metno/mmd/xslt/mmd-to-dif.xsl';
+    $this->assertFileExists($xslt_file);
+
+    // Minimal valid MMD XML expected by the XSLT.
+    $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd">
+  <mmd:metadata_identifier>test-id-001</mmd:metadata_identifier>
+  <mmd:title>Test Dataset</mmd:title>
+  <mmd:abstract>A test dataset for unit testing metadata export.</mmd:abstract>
+  <mmd:geographic_extent>
+    <mmd:rectangle>
+      <mmd:north>90</mmd:north>
+      <mmd:west>-180</mmd:west>
+      <mmd:east>180</mmd:east>
+      <mmd:south>-90</mmd:south>
+    </mmd:rectangle>
+  </mmd:geographic_extent>
+</mmd:mmd>
+XML;
+
+    // Use module's static config and actual XSLT files.
+    $metadata_config = $this->createMock(ImmutableConfig::class);
+    $metadata_config->method('get')
+      ->willReturnMap([
+        ['xslt_path', 'vendor/metno/mmd/xslt/'],
+        ['xslt_prefix', 'mmd-to-'],
+      ]);
+
+    $this->configFactory->method('get')
+      ->with('metsis_drupal.metadata_export')
+      ->willReturn($metadata_config);
+
+    // Transform MMD to DIF format using real XSLT.
+    $result = $this->service->transformXml($xml, 'dif');
+
+    $this->assertIsString($result);
+    $this->assertStringContainsString('dif:DIF', $result);
+  }
+
+  /**
+   * Tests transformXml to different export types with real XSLT files.
+   */
+  #[Test]
+  #[DataProvider('exportTypeProvider')]
+  public function testTransformXmlMultipleTypes(string $export_type, string $expected_root): void {
+    $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd">
+  <mmd:metadata_identifier>test-id-001</mmd:metadata_identifier>
+  <mmd:title>Test Dataset</mmd:title>
+  <mmd:abstract>Test abstract</mmd:abstract>
+  <mmd:geographic_extent>
+    <mmd:rectangle>
+      <mmd:north>90</mmd:north>
+      <mmd:west>-180</mmd:west>
+      <mmd:east>180</mmd:east>
+      <mmd:south>-90</mmd:south>
+    </mmd:rectangle>
+  </mmd:geographic_extent>
+</mmd:mmd>
+XML;
 
     $metadata_config = $this->createMock(ImmutableConfig::class);
     $metadata_config->method('get')
@@ -251,8 +320,21 @@ class MetadataExportServiceTest extends TestCase {
       ->with('metsis_drupal.metadata_export')
       ->willReturn($metadata_config);
 
-    $result = $this->service->transformXml($xml_invalid, 'mmd');
-    $this->assertNull($result);
+    $result = $this->service->transformXml($xml, $export_type);
+
+    $this->assertIsString($result);
+    $this->assertStringContainsString($expected_root, $result);
+  }
+
+  /**
+   * Data provider for export types and expected root elements.
+   */
+  public static function exportTypeProvider(): array {
+    return [
+      ['dif', 'dif:DIF'],
+      ['iso', 'gmd:MD_Metadata'],
+      ['dif10', 'dif:DIF'],
+    ];
   }
 
   /**
@@ -295,7 +377,7 @@ class MetadataExportServiceTest extends TestCase {
       ->with('metsis_drupal.metadata_export')
       ->willReturn($metadata_config);
 
-    $result = $this->service->transformXml($invalid_xml, 'mmd');
+    $result = $this->service->transformXml($invalid_xml, 'dif');
     $this->assertNull($result);
   }
 
@@ -353,16 +435,6 @@ class MetadataExportServiceTest extends TestCase {
 
     $result = $this->service->exportById('valid-id-123', 'mmd');
     $this->assertNull($result);
-  }
-
-  /**
-   * Tests exportById returns raw MMD for 'mmd' type export.
-   */
-  #[Test]
-  public function testExportByIdMmdType(): void {
-    // This test verifies the export logic at unit level.
-    // Full Solr integration is tested in kernel/functional tests.
-    $this->assertTrue(TRUE);
   }
 
 }

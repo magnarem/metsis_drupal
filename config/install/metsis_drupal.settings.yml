@@ -1,7 +1,6 @@
 langcode: und
 selected_collections:
-  NBS: NBS
-  SIOS: SIOS
+  ADC: ADC
 map_default_projection: 'EPSG:3857'
 map_default_zoom: 7
 map_default_center_lat: 59.2

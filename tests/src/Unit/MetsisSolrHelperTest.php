@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Drupal\metsis_drupal\Tests\Utility;
+namespace Drupal\Tests\metsis_drupal\Unit;
 
-use Drupal\metsis_drupal\Utility\MetsisSolrHelper;
+use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -12,9 +12,9 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Unittests for MetsisSolrHelper.
+ * Unit tests for MetsisSolrUtilities.
  */
-#[CoversClass(MetsisSolrHelper::class)]
+#[CoversClass(MetsisSolrUtilities::class)]
 #[Group('metsis_drupal')]
 class MetsisSolrHelperTest extends TestCase {
 
@@ -24,7 +24,7 @@ class MetsisSolrHelperTest extends TestCase {
   #[Test]
   #[DataProvider('solrIdProvider')]
   public function testToSolrId(string $input, string $expected): void {
-    $this->assertSame($expected, MetsisSolrHelper::toSolrId($input));
+    $this->assertSame($expected, MetsisSolrUtilities::toSolrId($input));
   }
 
   /**
@@ -32,13 +32,13 @@ class MetsisSolrHelperTest extends TestCase {
    */
   public static function solrIdProvider(): array {
     return [
-          ['abc:def', 'abc-def'],
-          ['abc/def', 'abc-def'],
-          ['abc.def', 'abc-def'],
-          ['abc:def/ghi.jkl', 'abc-def-ghi-jkl'],
-          [':/./', '----'],
-          ['no_special_chars', 'no_special_chars'],
-          ['', ''],
+      ['abc:def', 'abc-def'],
+      ['abc/def', 'abc-def'],
+      ['abc.def', 'abc-def'],
+      ['abc:def/ghi.jkl', 'abc-def-ghi-jkl'],
+      [':/./', '----'],
+      ['no_special_chars', 'no_special_chars'],
+      ['', ''],
     ];
   }
 

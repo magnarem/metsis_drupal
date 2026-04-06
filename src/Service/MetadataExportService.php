@@ -110,7 +110,8 @@ final class MetadataExportService {
     $query = $connector->getSelectQuery();
     $query->setQuery('id:"' . $id . '"');
     $query->setRows(1);
-    $query->setFields(['id', 'mmd_xml_file']);
+    $query->setFields(['id', 'mmd_xml_file:[xml]']);
+    $query->setResponseWriter('xml');
 
     /** @var \Solarium\QueryType\Select\Result\Result $result */
     $result = $connector->execute($query);
@@ -153,7 +154,8 @@ final class MetadataExportService {
     $xslt_path = (string) ($config->get('xslt_path') ?? 'vendor/metno/mmd/xslt/');
     $xslt_prefix = (string) ($config->get('xslt_prefix') ?? 'mmd-to-');
 
-    $styles_path = DRUPAL_ROOT . '/' . trim($xslt_path, '/') . '/' . $xslt_prefix . $type . '.xsl';
+    // DRUPAL_ROOT points to PROJECT_ROOT/web in this project.
+    $styles_path = DRUPAL_ROOT . '/../' . trim($xslt_path, '/') . '/' . $xslt_prefix . $type . '.xsl';
     if (!is_file($styles_path)) {
       return NULL;
     }
@@ -163,7 +165,7 @@ final class MetadataExportService {
       return NULL;
     }
 
-    $base_dir = DRUPAL_ROOT . '/vendor/metno/mmd/';
+    $base_dir = DRUPAL_ROOT . '/../vendor/metno/mmd/';
 
     $loader = static function ($public, $system, $context) use ($base_dir) {
       if (is_string($system) && str_contains($system, 'thesauri/mmd-vocabulary.xml')) {
@@ -175,15 +177,24 @@ final class MetadataExportService {
 
     libxml_set_external_entity_loader($loader);
 
+    $previous_use_internal_errors = libxml_use_internal_errors(TRUE);
+
     $xsl_doc = new \DOMDocument();
     if (!$xsl_doc->loadXML($style)) {
+      libxml_clear_errors();
+      libxml_use_internal_errors($previous_use_internal_errors);
       return NULL;
     }
 
     $xml_doc = new \DOMDocument();
     if (!$xml_doc->loadXML($xml)) {
+      libxml_clear_errors();
+      libxml_use_internal_errors($previous_use_internal_errors);
       return NULL;
     }
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous_use_internal_errors);
 
     $processor = new \XSLTProcessor();
     $processor->importStylesheet($xsl_doc);

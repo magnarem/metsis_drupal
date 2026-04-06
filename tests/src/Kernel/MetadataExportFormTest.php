@@ -24,6 +24,8 @@ class MetadataExportFormTest extends KernelTestBase {
    */
   protected static $modules = [
     'system',
+    'leaflet',
+    'geofield',
     'metsis_drupal',
   ];
 

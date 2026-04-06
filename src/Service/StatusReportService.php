@@ -152,8 +152,12 @@ class StatusReportService {
 
     /** @var \Solarium\Component\Result\Facet\Aggregation $uniqueParentsRes */
     $uniqueParentsRes = $facetResSet->getFacet('unique_parents');
-
-    $uniqueParents = $uniqueParentsRes->getValue();
+    if (NULL !== $uniqueParentsRes) {
+      $uniqueParents = $uniqueParentsRes->getValue();
+    }
+    else {
+      $uniqueParents = 0;
+    }
 
     // Create a new select query and query for marked parents count.
     $solarium_query = $this->createSelectQuery();

@@ -44,26 +44,11 @@ class MetsisHighlight extends Highlight {
       return;
     }
 
-    $excerpt_fulltext_fields = [
-      'title_en',
-      'abstract_en',
-      'personnel_name',
-      'personnel_organisation',
-      'data_center_long_name',
-      'data_center_short_name',
-      'keywords_keyword',
-      'project_long_name',
-      'project_short_name',
-      'platform_instrument_long_name',
-      'platform_instrument_short_name',
-      'dataset_citation_title',
-      'dataset_citation_author',
-      'dataset_citation_publisher',
-    ];
-
     $result_items = $results->getResultItems();
     if ($this->configuration['excerpt']) {
-      $this->addExcerpts($result_items, $excerpt_fulltext_fields, $keys);
+      // Pass an empty field list — addExcerpts derives fields from whatever
+      // Solr returned in highlighted_fields extra data for each item.
+      $this->addExcerpts($result_items, [], $keys);
     }
 
     // Preserve backend (Solr) highlighted fields if they already exist.
@@ -85,9 +70,13 @@ class MetsisHighlight extends Highlight {
 
   /**
    * {@inheritdoc}
+   *
+   * Uses all highlighted fields returned by the Solr backend instead of a
+   * fixed field list so that the excerpt always reflects what Solr found.
    */
   protected function addExcerpts(array $results, array $fulltext_fields, array $keys) {
-    $items = $this->getHighlightedFields($results, $fulltext_fields);
+    // NULL signals getHighlightedFields() to use every field Solr returned.
+    $items = $this->getHighlightedFields($results, NULL);
     foreach ($items as $item_id => $item) {
       if (!$item) {
         continue;
@@ -134,17 +123,17 @@ class MetsisHighlight extends Highlight {
   }
 
   /**
-   * Get the solr returned highlighted_fields extradata for all results.
+   * Get the Solr-returned highlighted_fields extra data for all results.
    *
    * @param array $results
    *   The list of results.
-   * @param array $highlight_fields
-   *   The list of fields to highlight.
+   * @param string[]|null $highlight_fields
+   *   Fields to include, or NULL to include every field Solr returned.
    *
    * @return array
-   *   The array with highlighted fields from solr.
+   *   Highlighted field values keyed by item ID then field ID.
    */
-  protected function getHighlightedFields(array $results, array $highlight_fields): array {
+  protected function getHighlightedFields(array $results, ?array $highlight_fields): array {
     $highlighted_fields = [];
     foreach ($results as $item_id => $result) {
       $highlighted_fields[$item_id] = [];
@@ -153,7 +142,10 @@ class MetsisHighlight extends Highlight {
         continue;
       }
 
-      foreach ($highlight_fields as $field) {
+      // When no whitelist is given, use every field Solr returned.
+      $fields = $highlight_fields ?? array_keys($item_highlighted_fields);
+
+      foreach ($fields as $field) {
         $values = $item_highlighted_fields[$field] ?? [];
         if (!is_array($values)) {
           $values = [$values];
@@ -168,7 +160,6 @@ class MetsisHighlight extends Highlight {
           $highlighted_fields[$item_id][$field] = $values;
         }
       }
-
     }
     return $highlighted_fields;
   }

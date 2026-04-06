@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Drupal\Tests\metsis_drupal\Unit;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\metsis_drupal\Form\MetadataExportForm;
 use Drupal\metsis_drupal\Service\MetadataExportService;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -53,10 +56,10 @@ class MetadataExportFormTest extends TestCase {
 
     // Since MetadataExportService is final, we can't mock it.
     // Create a real instance with mocked dependencies.
-    $entity_type_manager = $this->createMock('Drupal\Core\Entity\EntityTypeManagerInterface');
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
 
     // Mock the storage to prevent actual DB calls.
-    $storage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
+    $storage = $this->createMock(EntityStorageInterface::class);
     $entity_type_manager->method('getStorage')->willReturn($storage);
     $storage->method('load')->willReturn(NULL);
 
@@ -69,6 +72,12 @@ class MetadataExportFormTest extends TestCase {
       $this->metadataExportService,
       $this->configFactory
     );
+
+    // Avoid \Drupal::translation() static container access in unit tests.
+    $string_translation = $this->createMock(TranslationInterface::class);
+    $string_translation->method('translate')
+      ->willReturnCallback(static fn (string $string, array $args = []): string => strtr($string, $args));
+    $this->form->setStringTranslation($string_translation);
   }
 
   /**
@@ -169,16 +178,11 @@ class MetadataExportFormTest extends TestCase {
       'list' => 'mmd',
     ]);
 
-    $container = $this->createMock('Symfony\Component\DependencyInjection\ContainerInterface');
     $messenger = $this->createMock(MessengerInterface::class);
     $messenger->expects($this->once())->method('addError');
+    $this->form->setMessenger($messenger);
 
-    // Set the messenger on the form.
-    $form_state->set('messenger_service', $messenger);
-
-    // Note: We'd need to mock the messenger service on the container to fully test this.
-    // For now, we verify the form structure accepts the test case.
-    $this->assertTrue(TRUE);
+    $this->form->submitForm($form, $form_state);
   }
 
   /**
@@ -193,9 +197,11 @@ class MetadataExportFormTest extends TestCase {
       'list' => 'mmd',
     ]);
 
-    // The form should validate and reject the invalid ID.
-    // Full testing requires messenger setup which is done in kernel/functional tests.
-    $this->assertTrue(TRUE);
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addError');
+    $this->form->setMessenger($messenger);
+
+    $this->form->submitForm($form, $form_state);
   }
 
   /**

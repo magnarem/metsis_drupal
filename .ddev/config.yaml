@@ -9,7 +9,7 @@ additional_fqdns: []
 database:
     type: postgres
     version: "18"
-webimage_extra_packages: [bash-completion, asciinema]
+webimage_extra_packages: [bash-completion, asciinema, ripgrep, ccze]
 use_dns_when_possible: true
 composer_version: stable
 web_environment: []

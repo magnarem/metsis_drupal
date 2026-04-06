@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\EventSubscriber;
 
 use Solarium\QueryType\Select\Query\Query;
+use Solarium\Core\Query\Helper as SolariumHelper;
 use Drupal\search_api_solr\Event\PreQueryEvent;
 use Drupal\search_api_solr\Event\PostConvertedQueryEvent;
 use Drupal\search_api_solr\Event\PostExtractResultsEvent;
@@ -233,7 +234,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           $terms = $this->extractSearchTerms($search_keys);
           if (!empty($terms)) {
             $hl_query = implode(' ', array_map(
-              fn(string $term) => $this->buildHighlightClause($term),
+              fn(string $term) => $this->buildHighlightClause($term, $helper),
               $terms
             ));
           }
@@ -241,6 +242,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $hl->setQuery($hl_query);
         $hl->setMethod('unified');
         $hl->setFields([
+          'metadata_identifier',
           'title_en',
           'abstract_en',
           'personnel_name',
@@ -365,31 +367,39 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
   /**
    * Build one hl.q clause for a term or phrase.
    *
-   * Multi-word terms are quoted so phrase searches stay intact, e.g.
-   * full_text:"radar backscatter".
+   * Single tokens are escaped with Solarium's escapeTerm() so that Solr
+   * special characters such as colons in metadata identifiers
+   * (e.g. no.met.adc:43f02cf0-...) are safely backslash-escaped.
+   * Multi-word phrases are wrapped in double quotes via escapePhrase().
    *
    * @param string $term
    *   A single parsed search token or phrase.
+   * @param \Solarium\Core\Query\Helper $helper
+   *   Solarium query helper for proper Solr escaping.
    *
    * @return string
    *   Solr clause prefixed with full_text.
    */
-  protected function buildHighlightClause(string $term): string {
+  protected function buildHighlightClause(string $term, SolariumHelper $helper): string {
     $term = trim($term);
 
     // Normalize optional wrapping quotes from parse output.
     if (strlen($term) >= 2 && $term[0] === '"' && substr($term, -1) === '"') {
       $term = substr($term, 1, -1);
     }
-
-    // Escape backslashes and double quotes for Solr query parser.
-    $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $term);
-
-    if (str_contains($escaped, ' ')) {
-      return 'full_text:"' . $escaped . '"';
+    if (str_contains($term, ':')) {
+      // Multi-word phrase: escapePhrase wraps in quotes and escapes internals.
+      return 'match_exact:' . "\"{$term}\"";
     }
 
-    return 'full_text:' . $escaped;
+    if (str_contains($term, ' ')) {
+      // Multi-word phrase: escapePhrase wraps in quotes and escapes internals.
+      return 'full_text:' . $helper->escapePhrase($term);
+    }
+
+    // Single token: escapeTerm handles colons, slashes, and all other
+    // Solr query-parser special characters.
+    return 'full_text:' . $helper->escapeTerm($term);
   }
 
   /**
