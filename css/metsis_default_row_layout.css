@@ -11,6 +11,224 @@
   font-weight: bold;
 }
 
+.metsis-solr-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.metsis-solr-meta-item {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.metsis-solr-meta-label {
+  font-weight: 600;
+}
+
+.metsis-solr-meta-value {
+  overflow-wrap: anywhere;
+}
+
+.temporal-extent-wrapper {
+  margin: 0 0 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+}
+
+.temporal-extent-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.temporal-extent-title {
+  font-weight: 600;
+}
+
+.temporal-extent-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+}
+
+.temporal-extent-label {
+  font-weight: 600;
+}
+
+.temporal-extent-value {
+  overflow-wrap: anywhere;
+}
+
+.metsis-row-operations-wrapper {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.metsis-row-operations {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.metsis-row-operations-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Trigger button — sets a CSS anchor name so the popover can position itself. */
+.metsis-export-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.875rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.metsis-export-trigger:hover,
+.metsis-export-trigger:focus-visible {
+  background-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  outline-offset: 2px;
+}
+
+.metsis-plot-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.875rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.metsis-plot-trigger[data-plot-open="true"] {
+  border-style: dashed;
+}
+
+.metsis-plot-trigger:hover,
+.metsis-plot-trigger:focus-visible {
+  background-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  outline-offset: 2px;
+}
+
+/* Popover panel — display rules for native Popover API. */
+.metsis-export-popover {
+  /* Default: hidden by browser for native popover API. */
+  display: none;
+}
+
+.metsis-export-popover:popover-open {
+  /* Anchor below the trigger when CSS Anchor Positioning is available. */
+  position: fixed;
+  top: anchor(bottom);
+  left: anchor(left);
+  margin: 0.25rem 0 0 0;
+
+  /* Stack buttons vertically regardless of theme container flex direction. */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.4rem 0;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  min-width: 220px;
+  z-index: 100;
+}
+
+.metsis-export-popover[hidden] {
+  display: none;
+}
+
+/* Export option buttons — override solo theme horizontal flex layout. */
+.metsis-export-popover input.metsis-export-option {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  text-align: left;
+  white-space: normal;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: background-color 0.12s ease;
+}
+
+.metsis-export-popover input.metsis-export-option:hover,
+.metsis-export-popover input.metsis-export-option:focus-visible {
+  background-color: rgba(0, 0, 0, 0.06);
+  outline-offset: -2px;
+}
+
+.metsis-plot-container {
+  width: 100%;
+  min-height: 1px;
+  position: relative;
+}
+
+.metsis-plot-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.metsis-plot-spinner.hidden {
+  display: none;
+}
+
+.metsis-plot-target {
+  width: 100%;
+}
+
+.metsis-plot-close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid #b10000;
+  border-radius: 999px;
+  background: #fff;
+  color: #b10000;
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.metsis-plot-close:hover,
+.metsis-plot-close:focus-visible {
+  background: #b10000;
+  color: #fff;
+}
+
+.metsis-plot-close.hidden {
+  display: none;
+}
+
 /* style highlighted text */
 .metsis-hl {
   font-style: italic;
@@ -54,6 +272,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  align-self: stretch;
   margin-left: 0.5em;
   margin-right: 0.5em;
   min-width: 150px;
@@ -62,9 +281,20 @@
   gap: 0.5em;
 }
 
-.metsis-doi-icon {
-  height: auto;
-  width: auto;
+.metsis-icon-wrapper--align-left {
+  align-items: flex-start;
+}
+
+.metsis-icon-wrapper--align-center {
+  align-items: center;
+}
+
+.metsis-icon-wrapper--align-right {
+  align-items: flex-end;
+}
+
+.metsis-license-icon-slot {
+  margin-top: auto;
 }
 
 .metsis-collection-image {
@@ -82,36 +312,10 @@
 }
 
 .metsis-collection-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 18px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: fit-content;
   max-width: 100%;
-}
-
-.metsis-collection-button:hover {
-  /* background-color: #b7daff; */
-  border: black 1px solid;
-}
-
-.metsis-collection-button svg {
-  margin-right: 4px;
-  vertical-align: middle;
-  width: 24px;
-  height: 24px;
-}
-
-span.children-sub-text {
-  font-size: xx-small;
-  text-align: center;
 }
 
 /* Class used for screen readers. Hidden by default. */

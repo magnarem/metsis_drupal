@@ -121,12 +121,13 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
     parent::buildExposedForm($form, $form_state);
 
     $identifier = $this->options['expose']['identifier'];
-    if (empty($form[$identifier . '_wrapper'][$identifier])) {
+    $wrapper = $identifier . '_wrapper';
+    if (empty($form[$wrapper][$identifier])) {
       return;
     }
-    $form[$identifier . '_wrapper']['#tree'] = FALSE;
-    $form[$identifier . '_wrapper'][$identifier]['#tree'] = TRUE;
-    $form[$identifier . '_wrapper']['#attributes']['class'][] = "bbox-exposed-filter-wrapper";
+    $form[$wrapper]['#tree'] = FALSE;
+    $form[$wrapper][$identifier]['#tree'] = TRUE;
+    $form[$wrapper]['#attributes']['class'][] = "bbox-exposed-filter-wrapper";
 
     if (
     !$this->options['expose']['map_input']
@@ -137,7 +138,7 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
 
     // Check if the map_input option is enabled.
     if (!empty($this->options['expose']['map_input'])) {
-      $form[$identifier . '_wrapper']['bbox_map_filter'] = [
+      $form[$wrapper]['bbox_map_filter'] = [
         '#type' => 'container',
         '#title' => $this->t('Select bounding box on map'),
         '#tree' => FALSE,
@@ -146,7 +147,7 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
           'class' => ['bbox-map-filter-container'],
         ],
       ];
-      $form[$identifier . '_wrapper']['bbox_map_filter']['coords'] = [
+      $form[$wrapper]['bbox_map_filter']['coords'] = [
         '#type' => 'markup',
         '#markup' => '<div id="coords">
           <span class="coords">Create filter...</span>
@@ -156,11 +157,42 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
 
       if (empty($this->options['expose']['user_input'])) {
         // Hide the exposed form inputs by rendering them as hidden fields.
-        $form[$identifier . '_wrapper'][$identifier]['minX']['#type'] = 'hidden';
-        $form[$identifier . '_wrapper'][$identifier]['maxX']['#type'] = 'hidden';
-        $form[$identifier . '_wrapper'][$identifier]['maxY']['#type'] = 'hidden';
-        $form[$identifier . '_wrapper'][$identifier]['minY']['#type'] = 'hidden';
+        $form[$wrapper][$identifier]['minX']['#type'] = 'hidden';
+        $form[$wrapper][$identifier]['maxX']['#type'] = 'hidden';
+        $form[$wrapper][$identifier]['maxY']['#type'] = 'hidden';
+        $form[$wrapper][$identifier]['minY']['#type'] = 'hidden';
       }
+
+      // If both map and user input are enabled,
+      // group them into horizontal tabs.
+      // if (!empty($this->options['expose']['user_input'])) {
+      //   $form[$wrapper]['horizontal_tabs'] = [
+      //     '#type' => 'horizontal_tabs',
+      //     '#title' => $this->t('Geographic filter options'),
+      //     '#title_display' => 'invisible',
+      //     '#weight' => -10,
+      //   ];.
+      // $form[$wrapper]['bbox_map_filter_tab'] = [
+      //     '#type' => 'details',
+      //     '#title' => $this->t('Map'),
+      //     '#group' => 'horizontal_tabs',
+      //     '#open' => TRUE,
+      //   ];
+      // if (isset($form[$wrapper]['bbox_map_filter'])) {
+      //     $form[$wrapper]['bbox_map_filter_tab']['bbox_map_filter'] = $form[$wrapper]['bbox_map_filter'];
+      //     unset($form[$wrapper]['bbox_map_filter']);
+      //   }.
+      // $form[$wrapper]['bbox_coordinates_tab'] = [
+      //     '#type' => 'details',
+      //     '#title' => $this->t('Coordinates'),
+      //     '#group' => 'horizontal_tabs',
+      //     '#open' => empty($this->options['expose']['user_input_collapsed']),
+      //   ];
+      // if (isset($form[$wrapper][$identifier])) {
+      //     $form[$wrapper]['bbox_coordinates_tab'][$identifier] = $form[$wrapper][$identifier];
+      //     unset($form[$wrapper][$identifier]);
+      //   }
+      // }.
       $form = BubbleableMetadata::mergeAttachments($form, [
         '#attached' => [
           'library' => [

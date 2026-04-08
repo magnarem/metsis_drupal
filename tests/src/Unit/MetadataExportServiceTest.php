@@ -9,6 +9,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\metsis_drupal\Service\MetadataExportService;
+use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -190,7 +191,7 @@ class MetadataExportServiceTest extends TestCase {
   }
 
   /**
-   * Tests isValidIdentifier with various input patterns.
+   * Tests shared identifier validation with various input patterns.
    *
    * @param string $id
    *   Test identifier.
@@ -200,11 +201,7 @@ class MetadataExportServiceTest extends TestCase {
   #[Test]
   #[DataProvider('validIdentifierProvider')]
   public function testIsValidIdentifier(string $id, bool $expected): void {
-    $reflection = new \ReflectionClass($this->service);
-    $method = $reflection->getMethod('isValidIdentifier');
-    $method->setAccessible(TRUE);
-
-    $result = $method->invoke($this->service, $id);
+    $result = MetsisSolrUtilities::isValidIdentifier($id);
     $this->assertSame($expected, $result);
   }
 

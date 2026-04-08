@@ -11,7 +11,7 @@ use Drupal\Core\Hook\Attribute\Hook;
 /**
  * Class to handle the page attachments alter hook for the search page.
  */
-class SearchPageMetaTagHook {
+class SearchPageHook {
   /**
    * The route match service.
    *

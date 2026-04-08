@@ -10,6 +10,11 @@ namespace Drupal\metsis_drupal\Utility;
 final class MetsisSolrUtilities {
 
   /**
+   * Allowed metadata/Solr identifier pattern.
+   */
+  private const SOLR_ID_PATTERN = '/^[A-Za-z0-9_.:-]+$/';
+
+  /**
    * Converts a metadata identifier to a Solr-compatible ID field syntax.
    *
    * This function replaces ':', '/', and '.' with '-' in the input string.
@@ -31,6 +36,19 @@ final class MetsisSolrUtilities {
     $solr_id = str_replace($idReplacements, '-', $id);
 
     return $solr_id;
+  }
+
+  /**
+   * Validate metadata identifier format used across search/export features.
+   *
+   * @param string $id
+   *   Candidate identifier.
+   *
+   * @return bool
+   *   TRUE when identifier is non-empty and follows the allowed pattern.
+   */
+  public static function isValidIdentifier(string $id): bool {
+    return $id !== '' && preg_match(self::SOLR_ID_PATTERN, $id) === 1;
   }
 
 }

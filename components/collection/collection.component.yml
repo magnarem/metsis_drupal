@@ -1,0 +1,37 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: collection
+status: stable
+group: metsis
+description: Renders the collection icon used for parent dataset actions.
+props:
+  type: object
+  properties:
+    width:
+      type: integer
+      title: Width
+      description: Width of the collection icon.
+      default: 120
+      examples:
+        - 120
+    height:
+      type: integer
+      title: Height
+      description: Height of the collection icon.
+      default: 42
+      examples:
+        - 42
+    color:
+      type: string
+      title: Color
+      description: CSS color value for the badge stroke and text (e.g. "#0053a6" or "red").
+      default: "#0053a6"
+      examples:
+        - "#0053a6"
+        - "currentColor"
+    icon_alt_text:
+      type: string
+      title: Icon alt text
+      description: Accessible text label for the collection icon.
+      default: Collection
+      examples:
+        - Collection

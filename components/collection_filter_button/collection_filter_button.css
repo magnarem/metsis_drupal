@@ -1,0 +1,35 @@
+/*
+  The icon is absolutely positioned over the left edge of the themed <input>.
+  The input retains every theme class (button, solo-button, btn-animate, …) and
+  is only given extra padding-left to make room for the icon. No theme CSS is
+  mirrored here, so this works across themes.
+
+  The icon color is synced to the button's computed text color via JavaScript
+  on mouseenter, mouseleave, focus, and blur events.
+*/
+[data-component-id="metsis_drupal:collection_filter_button"].collection-filter-button {
+  display: inline-block;
+  position: relative;
+}
+
+/* Icon floats over the input, vertically centred, pointer-events off */
+/* Color is synced by JavaScript to match button's computed text color */
+[data-component-id="metsis_drupal:collection_filter_button"] .collection-filter-button__icon {
+  position: absolute;
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  width: var(--cfb-icon-size, 20px);
+  height: var(--cfb-icon-size, 20px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Push the input text right to clear the icon: icon-size + left-offset + gap */
+[data-component-id="metsis_drupal:collection_filter_button"] input[type="submit"] {
+  padding-left: calc(var(--cfb-icon-size, 20px) + 0.9rem) !important;
+  width: 100%;
+}

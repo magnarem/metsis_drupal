@@ -188,32 +188,78 @@ final class ResultRowRenderer {
    * @return array
    *   The render array for this field.
    */
-  public function getTemporalExtentMarkup(array $solr_doc, bool $add_icon = TRUE, string $default_icon = 'date-time') {
-    $date_string = '';
+  public function getTemporalExtentMarkup(array $solr_doc, bool $add_icon = TRUE, string $default_icon = 'date-time'): array {
+    $start_date = '';
+    $end_date = '';
+
     if (!empty($solr_doc['temporal_extent_start_date'])) {
-      $date_string .= $solr_doc['temporal_extent_start_date'][0];
+      $start_date = (string) $solr_doc['temporal_extent_start_date'][0];
     }
     if (!empty($solr_doc['temporal_extent_end_date'])) {
-      $date_string .= $this->t('@to', ['@to' => ' to ']);
-      $date_string .= $solr_doc['temporal_extent_end_date'][0];
+      $end_date = (string) $solr_doc['temporal_extent_end_date'][0];
     }
+
+    if ($start_date === '' && $end_date === '') {
+      return [];
+    }
+
     $build = [
-      '#type' => 'container',
+      '#type' => 'fieldset',
+      '#title' => $this->t('Temporal extent'),
       '#attributes' => [
-        'class' => 'temporal-extent-wrapper',
+        'class' => ['temporal-extent-wrapper'],
       ],
     ];
-    $build['icon'] = [
-      '#type' => 'icon',
-      '#pack_id' => 'metsis_drupal',
-      '#icon_id' => $default_icon,
-    ];
-    $build['temporal_extent'] = [
-      '#type' => 'markup',
-      '#markup' => "<span class=\"temporal_extent\">{$date_string}</span>",
-    ];
-    return $build;
 
+    $build['heading'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['temporal-extent-heading'],
+      ],
+    ];
+
+    if ($add_icon) {
+      $build['heading']['icon'] = [
+        '#type' => 'icon',
+        '#pack_id' => 'metsis_drupal',
+        '#icon_id' => $default_icon,
+      ];
+    }
+    if ($start_date !== '') {
+      $build['heading']['start_date'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['temporal-extent-row'],
+        ],
+        'label' => [
+          '#type' => 'markup',
+          '#markup' => '<span class="temporal-extent-label">' . $this->t('Start date:') . '</span>',
+        ],
+        'value' => [
+          '#type' => 'markup',
+          '#markup' => '<span class="temporal-extent-value">' . $start_date . '</span>',
+        ],
+      ];
+    }
+
+    if ($end_date !== '') {
+      $build['heading']['end_date'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['temporal-extent-row'],
+        ],
+        'label' => [
+          '#type' => 'markup',
+          '#markup' => '<span class="temporal-extent-label">' . $this->t('End date:') . '</span>',
+        ],
+        'value' => [
+          '#type' => 'markup',
+          '#markup' => '<span class="temporal-extent-value">' . $end_date . '</span>',
+        ],
+      ];
+    }
+
+    return $build;
   }
 
   /**

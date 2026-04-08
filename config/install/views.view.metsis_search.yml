@@ -78,6 +78,17 @@ display:
               secondary_label: 'Advanced options'
               secondary_open: false
               reset_button_always_show: false
+            sort:
+              plugin_id: bef
+              advanced:
+                combine: false
+                combine_rewrite: ''
+                combine_param: sort_bef_combine
+                reset: false
+                reset_label: ''
+                collapsible: false
+                collapsible_label: 'Sort options'
+                is_secondary: false
             filter:
               search_api_fulltext:
                 plugin_id: default
@@ -151,7 +162,7 @@ display:
                   hide_label: false
                   field_classes: ''
               facets_keywords_cfstdn:
-                plugin_id: bef_tagify
+                plugin_id: default
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -162,9 +173,6 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
-                  match_operator: CONTAINS
-                  max_items: '10'
-                  placeholder: ''
               facets_keywords_gcmd:
                 plugin_id: bef
                 advanced:
@@ -443,12 +451,17 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: ''
-            label: Parent/Collection
-            description: 'Parent/Collection filter'
-            operator: ''
+            operator_id: related_dataset_op
+            label: 'Metsis Parent/Child filter'
+            description: null
+            use_operator: false
+            operator: related_dataset_op
+            operator_limit_selection: false
+            operator_list: {  }
             identifier: related_dataset
             required: false
+            remember: false
+            multiple: false
           is_grouped: false
           group_info:
             label: ''

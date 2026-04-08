@@ -18,11 +18,11 @@
  */
 #}
 {{ attach_library('metsis_drupal/metsis_default_row_layout') }}
-{# { dump(fields) } #}
-{# { dump(highlighted) } #}
-	<article id="{{ fields.id }}" class="metsis-search-row">
-  <div id="metadata-identifier" class="hidden" hidden>{{ fields.metadata_identifier }}</div>
-  <div class="metsis-search-title">
+{# {{ dump(fields) }} #}
+{# {{ dump(solr_doc) }} #}
+{% set icon_alignment = 'right' %}
+	<article id="{{ fields.id }}" class="metsis-search-row"> <div id="metadata-identifier" class="hidden" hidden>{{ fields.metadata_identifier }}</div>
+	<div class="metsis-search-title">
 		{% if fields.landing_page is not empty %}
 			<a href="{{ fields.landing_page }}" target="_blank" rel="noopener" title="Go to dataset landing page (opens in a new window)" aria-label="Go to dataset landing page">{{ fields.title }}
 				<span class="sr-only">(opens in a new window)</span>
@@ -31,7 +31,45 @@
 			{{ fields.title }}
 		{% endif %}
 	</div>
-  {{ fields.temporal_extent }}
+	{% if solr_doc is defined and solr_doc is not empty %}
+		{% set solr_meta_fields = [
+			{
+				'label': 'Projects',
+				'singular_label': 'Project',
+				'field': 'project_long_name'
+			},
+			{
+				'label': 'Institutions',
+				'singular_label': 'Institution',
+				'field': 'personnel_organisation'
+			},
+			{
+				'label': 'Last metadata update',
+				'singular_label': null,
+				'field': 'last_metadata_update_datetime'
+			}
+		] %}
+		<div class="metsis-solr-meta" aria-label="Additional dataset metadata">
+			{% for item in solr_meta_fields %}
+				{% set highlighted_value = highlighted[item.field] ?? null %}
+				{% set raw_value = highlighted_value is not empty ? highlighted_value : (solr_doc[item.field] ?? null) %}
+				{% if raw_value is not empty %}
+					{% set output_label = item.label %}
+					{% set original_value = solr_doc[item.field] ?? null %}
+					{% if item.singular_label is not empty and original_value is iterable and original_value|length == 1 %}
+						{% set output_label = item.singular_label %}
+					{% endif %}
+					{% set is_highlighted = highlighted_value is not empty %}
+					{% set rendered_value = raw_value is iterable ? raw_value|join(', ') : raw_value %}
+					<div class="metsis-solr-meta-item">
+						<span class="metsis-solr-meta-label">{{ output_label }}:</span>
+						<span class="metsis-solr-meta-value">{{ is_highlighted ? rendered_value|raw : rendered_value }}</span>
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+	{% endif %}
+	{{ fields.temporal_extent }}
 	<div class="metsis-search-main">
 		{% if fields.thumbnail is defined and fields.thumbnail is not empty %}
 			<div class="metsis-map-figure">
@@ -48,28 +86,29 @@
 				{{ fields.abstract }}
 			</div>
 		</div>
-		<div class="metsis-icon-wrapper">
+		<div class="metsis-icon-wrapper metsis-icon-wrapper--align-{{ icon_alignment }}">
 			{% if fields.doi_icon %}
 				{{ fields.doi_icon }}
 			{% endif %}
 
-			{% if fields.license_icon is defined and fields.license_icon is not empty %}
-				{{ fields.license_icon }}
-			{% endif %}
 			{% if fields.parent is defined and fields.parent is not empty %}
 				<div class="metsis-collection-image">
-					{{ fields.parent }}
-					<button class="metsis-collection-button" title="Filter on this collection" data-collection-id="{{ fields.metadata_identifier }}">
-						<svg width="24px" height="24px" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M21 6H19M21 12H16M21 18H16M7 20V13.5612C7 13.3532 7 13.2492 6.97958 13.1497C6.96147 13.0615 6.93151 12.9761 6.89052 12.8958C6.84431 12.8054 6.77934 12.7242 6.64939 12.5617L3.35061 8.43826C3.22066 8.27583 3.15569 8.19461 3.10948 8.10417C3.06849 8.02393 3.03853 7.93852 3.02042 7.85026C3 7.75078 3 7.64677 3 7.43875V5.6C3 5.03995 3 4.75992 3.10899 4.54601C3.20487 4.35785 3.35785 4.20487 3.54601 4.10899C3.75992 4 4.03995 4 4.6 4H13.4C13.9601 4 14.2401 4 14.454 4.10899C14.6422 4.20487 14.7951 4.35785 14.891 4.54601C15 4.75992 15 5.03995 15 5.6V7.43875C15 7.64677 15 7.75078 14.9796 7.85026C14.9615 7.93852 14.9315 8.02393 14.8905 8.10417C14.8443 8.19461 14.7793 8.27583 14.6494 8.43826L11.3506 12.5617C11.2207 12.7242 11.1557 12.8054 11.1095 12.8958C11.0685 12.9761 11.0385 13.0615 11.0204 13.1497C11 13.2492 11 13.3532 11 13.5612V17L7 20Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						</svg>
-						{{ fields.children_count }}<span class="children-sub-text">children found</span>
-					</button>
-
+					{% include 'metsis_drupal:collection' with {
+						icon_alt_text: 'Collection',
+            color: '#0053a6'
+					} only %}
 				</div>
 			{% endif %}
 
+			{% if fields.license_icon is defined and fields.license_icon is not empty %}
+				<div class="metsis-license-icon-slot">
+					{{ fields.license_icon }}
+				</div>
+			{% endif %}
 		</div>
-
 	</div>
-</article>
+	{% if operations is defined and operations is not empty %}
+		<div class="metsis-row-operations-wrapper">
+			{{ operations }}
+		</div>
+	{% endif %}</article>

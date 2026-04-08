@@ -1,10 +1,44 @@
-[data-component-id="metsis:doi"] .doi-icon-wrapper {
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   max-height: fit-content;
 }
 
-[data-component-id="metsis:doi"] .doi-icon-wrapper svg {
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  border-radius: 999px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper svg {
   max-height: fit-content;
+  transition: filter 0.2s ease;
+}
+
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:hover,
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:focus-visible {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+  cursor: pointer;
+}
+
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:hover svg,
+[data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:focus-visible svg {
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.28));
+}
+
+.metsis-icon-wrapper--align-left > [data-component-id="metsis_drupal:doi"].doi-icon-wrapper {
+  align-self: flex-start;
+}
+
+.metsis-icon-wrapper--align-center > [data-component-id="metsis_drupal:doi"].doi-icon-wrapper {
+  align-self: center;
+}
+
+.metsis-icon-wrapper--align-right > [data-component-id="metsis_drupal:doi"].doi-icon-wrapper {
+  align-self: flex-end;
 }

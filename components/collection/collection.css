@@ -1,0 +1,18 @@
+[data-component-id="metsis_drupal:collection"].collection-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-component-id="metsis_drupal:collection"].collection-icon-wrapper svg {
+  display: block;
+}
+
+[data-component-id="metsis_drupal:collection"] .visually-hidden {
+  position: absolute;
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}

@@ -1,0 +1,24 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: collection_filter_button
+status: stable
+group: metsis
+description: >
+  Wraps a themed Drupal button (#type button) in a row with the collection
+  filter icon. Pass the button as the `button` slot.
+props:
+  type: object
+  properties:
+    icon_size:
+      type: integer
+      title: Icon size (px)
+      description: Width and height of the filter-parent icon.
+      default: 20
+      examples:
+        - 20
+        - 24
+slots:
+  button:
+    title: Button
+    description: A rendered Drupal button element (#type button).
+libraries:
+  - metsis_drupal/collection_filter_button

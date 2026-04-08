@@ -7,6 +7,7 @@ namespace Drupal\metsis_drupal\Service;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\metsis_drupal\MetsisConstants;
+use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
 
 /**
  * Service for exporting METSIS metadata to supported XML formats.
@@ -51,6 +52,18 @@ final class MetadataExportService {
   }
 
   /**
+   * Returns per-type descriptions from config.
+   *
+   * @return array<string, string>
+   *   Descriptions keyed by export machine name.
+   */
+  public function getDescriptions(): array {
+    $config = $this->configFactory->get('metsis_drupal.metadata_export');
+    $descriptions = $config->get('export_types_descriptions') ?? [];
+    return is_array($descriptions) ? $descriptions : [];
+  }
+
+  /**
    * Returns export types enabled in settings.
    *
    * @return string[]
@@ -81,7 +94,7 @@ final class MetadataExportService {
   }
 
   /**
-   * Retrieves base64-encoded MMD metadata from Solr by document id.
+   * Retrieves MMD metadata xml string from Solr by document id.
    *
    * @param string $id
    *   Solr document id.
@@ -91,7 +104,7 @@ final class MetadataExportService {
    */
   public function getMmd(string $id): ?string {
     // Reject malformed ids early; this blocks query parser abuse attempts.
-    if (!$this->isValidIdentifier($id)) {
+    if (!MetsisSolrUtilities::isValidIdentifier($id)) {
       return NULL;
     }
 
@@ -110,32 +123,30 @@ final class MetadataExportService {
     $query = $connector->getSelectQuery();
     $query->setQuery('id:"' . $id . '"');
     $query->setRows(1);
-    $query->setFields(['id', 'mmd_xml_file:[xml]']);
+    $query->setFields(['mmd_xml_file:[xml]']);
     $query->setResponseWriter('xml');
 
     /** @var \Solarium\QueryType\Select\Result\Result $result */
     $result = $connector->execute($query);
-    foreach ($result as $doc) {
-      $fields = $doc->getFields();
-      if (isset($fields['mmd_xml_file']) && is_string($fields['mmd_xml_file']) && $fields['mmd_xml_file'] !== '') {
-        return $fields['mmd_xml_file'];
+
+    $dom = new \DOMDocument();
+    $dom->loadXML($result->getResponse()->getBody());
+
+    // Find the <raw> element.
+    $xpath = new \DOMXPath($dom);
+    $rawNode = $xpath->query('//raw[@name="mmd_xml_file"]')->item(0);
+
+    // Extract the inner XML content.
+    $rawXmlContent = '';
+    if ($rawNode) {
+      foreach ($rawNode->childNodes as $child) {
+        $rawXmlContent .= $dom->saveXML($child);
       }
     }
 
-    return NULL;
-  }
+    // Output the raw XML content.
+    return html_entity_decode($rawXmlContent);
 
-  /**
-   * Validate external identifier format.
-   *
-   * @param string $id
-   *   Candidate Solr id.
-   *
-   * @return bool
-   *   TRUE when id is safe and supported.
-   */
-  private function isValidIdentifier(string $id): bool {
-    return $id !== '' && preg_match('/^[A-Za-z0-9_.:-]+$/', $id) === 1;
   }
 
   /**
@@ -170,6 +181,14 @@ final class MetadataExportService {
     $loader = static function ($public, $system, $context) use ($base_dir) {
       if (is_string($system) && str_contains($system, 'thesauri/mmd-vocabulary.xml')) {
         $resolved = realpath($base_dir . 'thesauri/mmd-vocabulary.xml');
+        return $resolved ?: $system;
+      }
+      if (is_string($system) && str_contains($system, 'thesauri/theme.en.rdf')) {
+        $resolved = realpath($base_dir . 'thesauri/theme.en.rdf');
+        return $resolved ?: $system;
+      }
+      if (is_string($system) && str_contains($system, 'thesauri/nasjonal-temainndeling.rdf')) {
+        $resolved = realpath($base_dir . 'thesauri/nasjonal-temainndeling.rdf');
         return $resolved ?: $system;
       }
       return $system;
@@ -220,16 +239,34 @@ final class MetadataExportService {
       return NULL;
     }
 
-    $decoded = base64_decode($mmd, TRUE);
-    if (!is_string($decoded)) {
+    if ($type === 'mmd') {
+      return $mmd;
+    }
+
+    return $this->transformXml($mmd, $type);
+  }
+
+  /**
+   * Build export payload for given mmd xml string and export type.
+   *
+   * @param string $mmd
+   *   MMD XML string.
+   * @param string $type
+   *   Export type key.
+   *
+   * @return string|null
+   *   Exported XML payload or NULL when unavailable.
+   */
+  public function exportByMmd(string $mmd, string $type): ?string {
+    if (empty($mmd)) {
       return NULL;
     }
 
     if ($type === 'mmd') {
-      return $decoded;
+      return $mmd;
     }
 
-    return $this->transformXml($decoded, $type);
+    return $this->transformXml($mmd, $type);
   }
 
 }

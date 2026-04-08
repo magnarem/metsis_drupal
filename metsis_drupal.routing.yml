@@ -48,3 +48,25 @@ metsis_drupal.metadata_export_form:
   requirements:
     _permission: "access metsis metadata export"
     id: "[A-Za-z0-9_.:-]+"
+
+metsis_drupal.metadata_export_download:
+  path: "/metsis/metadata/export/download/{id}/{type}"
+  defaults:
+    _controller: '\Drupal\metsis_drupal\Controller\MetadataExportController::download'
+    _title: "Metadata export download"
+  requirements:
+    _permission: "access metsis metadata export"
+    id: "[A-Za-z0-9_.:-]+"
+    type: "[a-z0-9_-]+"
+
+metsis_drupal.metadata_export_htmx_redirect:
+  path: "/metsis/metadata/export/htmx/{id}/{type}"
+  defaults:
+    _controller: '\Drupal\metsis_drupal\Controller\MetadataExportController::htmxRedirect'
+    _title: "HTMX Metadata export download redirect"
+  requirements:
+    _permission: "access metsis metadata export"
+    id: "[A-Za-z0-9_.:-]+"
+    type: "[a-z0-9_-]+"
+  options:
+    _htmx_route: true

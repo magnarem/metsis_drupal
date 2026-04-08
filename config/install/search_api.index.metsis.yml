@@ -156,7 +156,7 @@ field_settings:
     label: 'Dataset citation doi'
     datasource_id: solr_document
     property_path: dataset_citation_doi
-    type: string
+    type: text
   dataset_citation_publication_date:
     label: 'Dataset citation publication date'
     datasource_id: solr_document

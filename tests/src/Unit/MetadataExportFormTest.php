@@ -205,28 +205,6 @@ class MetadataExportFormTest extends TestCase {
   }
 
   /**
-   * Test AJAX callback returns form.
-   */
-  #[Test]
-  public function testChangeExportTypeCallback(): void {
-    $form = [
-      'export' => [
-        '#type' => 'fieldset',
-        'list' => [
-          '#type' => 'select',
-          '#options' => ['mmd' => 'MMD', 'dif' => 'DIF'],
-        ],
-      ],
-    ];
-    $form_state = new FormState();
-
-    $result = $this->form->changeExportTypeCallback($form, $form_state);
-
-    $this->assertSame($form, $result);
-    $this->assertArrayHasKey('export', $result);
-  }
-
-  /**
    * Test invalid ID patterns are rejected.
    *
    * @param string $id

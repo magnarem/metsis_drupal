@@ -35,6 +35,11 @@ metsis_default_row_layout:
   css:
     component:
       css/metsis_default_row_layout.css: {}
+  js:
+    js/metsis-export-popover.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
 
 metsis_search_ajax:
   version: 1.x

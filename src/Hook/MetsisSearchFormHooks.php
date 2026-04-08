@@ -57,37 +57,6 @@ class MetsisSearchFormHooks {
       }
       $form['search-box-container']['#weight'] = -100;
 
-      /* Add horizontal tabs for the bbox filter */
-      // If (isset($form['bbox_wrapper'])) {
-      //   // Add a horizontal tabs container to the bbox_wrapper.
-      //   $form['bbox_wrapper']['horizontal_tabs'] = [
-      //     '#type' => 'horizontal_tabs',
-      //     '#title' => $this->t('Geographic Filter Options'),
-      //     '#title_display' => 'invisible',
-      //   ];.
-      // // Move `bbox_map_filter` into another new tab.
-      //   $form['bbox_wrapper']['bbox_map_filter_tab'] = [
-      //     '#type' => 'details',
-      //     '#title' => $this->t('Map'),
-      //     '#group' => 'horizontal_tabs',
-      //     '#open' => TRUE,
-      //   ];
-      // // Move the `bbox_map_filter` element into the `bbox_map_filter_tab`.
-      //   $form['bbox_wrapper']['bbox_map_filter_tab']['bbox_map_filter'] = $form['bbox_wrapper']['bbox_map_filter'];
-      //   unset($form['bbox_wrapper']['bbox_map_filter']);
-      // // Move `bbox` into a new tab.
-      //   $form['bbox_wrapper']['bbox_tab'] = [
-      //     '#type' => 'details',
-      //     '#title' => $this->t('Coordinates'),
-      //     '#group' => 'horizontal_tabs',
-      //     '#open' => FALSE,
-      //   ];
-      // // Move the original `bbox` element into the `bbox_tab`.
-      //   $form['bbox_wrapper']['bbox_tab']['bbox'] = $form['bbox_wrapper']['bbox'];
-      //   unset($form['bbox_wrapper']['bbox']);
-      // }.
-      dump($form, __FUNCTION__);
-
       unset($form['#disable_inline_form_errors']);
     }
 

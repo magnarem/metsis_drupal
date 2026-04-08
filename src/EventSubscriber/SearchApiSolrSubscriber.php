@@ -252,11 +252,14 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           'keywords_keyword',
           'project_long_name',
           'project_short_name',
+          'platform_long_name',
+          'platform_short_name',
           'platform_instrument_long_name',
           'platform_instrument_short_name',
           'dataset_citation_title',
           'dataset_citation_author',
           'dataset_citation_publisher',
+          'dataset_citation_doi',
         ]);
         $hl->setRequireFieldMatch(FALSE);
         $hl->setSnippets(2);
@@ -389,17 +392,17 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     }
     if (str_contains($term, ':')) {
       // Multi-word phrase: escapePhrase wraps in quotes and escapes internals.
-      return 'match_exact:' . "\"{$term}\"";
+      return 'match_exact:' . "\"{$term}\"" . ' OR full_text:' . "\"{$term}\"";
     }
 
     if (str_contains($term, ' ')) {
       // Multi-word phrase: escapePhrase wraps in quotes and escapes internals.
-      return 'full_text:' . $helper->escapePhrase($term);
+      return 'full_text:' . $helper->escapePhrase($term) . ' OR match_exact:' . $helper->escapePhrase($term);
     }
 
     // Single token: escapeTerm handles colons, slashes, and all other
     // Solr query-parser special characters.
-    return 'full_text:' . $helper->escapeTerm($term);
+    return 'full_text:' . $helper->escapeTerm($term) . ' OR match_exact:' . $helper->escapeTerm($term);
   }
 
   /**
@@ -421,6 +424,9 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     // Add bbox filter if exits in main query.
     // And to the metsis state for bbox filter.
     // dpm($filters);
+    if (isset($filters['metsis_parent_filter'])) {
+      unset($filters['metsis_parent_filter']);
+    }
     // Some helpers.
     $pattern = '/\+\w+_dataset:"[^"]+"/';
     foreach ($filters as $filter) {
@@ -457,6 +463,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     }
     // Filter on related children.
     $child_query_filters[] = '{!terms f=related_dataset_id v=$row.id}';
+
+    // dpm($child_query_filters);
     return $child_query_filters;
   }
 
