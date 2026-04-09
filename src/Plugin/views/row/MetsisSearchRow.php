@@ -218,7 +218,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
 
         $operations['controls']['collection_filter'] = [
           '#type' => 'component',
-          '#component' => 'metsis_drupal:collection_filter_button',
+          '#component' => 'metsis_drupal:icon_button',
           '#props' => [
             'icon_size' => 20,
           ],
@@ -292,7 +292,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
               ? $description
               : $info['label'];
 
-            $operations['popover']['item_' . $type_key] = [
+            $export_button = [
               '#type' => 'button',
               '#value' => $link_label,
               '#attributes' => [
@@ -300,18 +300,33 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
                 'rel' => 'nofollow noarchive noopener noreferrer',
                 'referrerpolicy' => 'no-referrer',
                 'data-nosnippet' => 'true',
+                'title' => $this->t('Click to download @format metadata', ['@format' => $info['label']]),
               // Content-Disposition: attachment from the controller will
               // trigger the download; the download attribute provides the
               // suggested filename as a fallback hint.
                 'download' => $metadata_identifier . '_' . $type_key . '.xml',
               ],
             ];
-            (new Htmx()
+            (new Htmx())
               ->get($htmx_url)
               ->swap('none')
+              ->indicator('#metsis-export-spinner')
               ->onlyMainContent()
               ->redirectHeader($download_url)
-              ->applyTo($operations['popover']['item_' . $type_key]));
+              ->applyTo($export_button);
+
+            $operations['popover']['item_' . $type_key] = [
+              '#type' => 'component',
+              '#component' => 'metsis_drupal:icon_button',
+              '#props' => [
+                'icon_size' => 16,
+                'icon_pack' => 'metsis_drupal',
+                'icon_id' => 'download',
+              ],
+              '#slots' => [
+                'button' => $export_button,
+              ],
+            ];
 
           }
 

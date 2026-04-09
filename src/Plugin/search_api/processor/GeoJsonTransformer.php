@@ -63,7 +63,9 @@ class GeoJsonTransformer extends ProcessorPluginBase {
         if (is_array($values) && count($values) == 1) {
           $values = $values[0];
         }
-
+        if (empty($values)) {
+          continue;
+        }
         $geojsonString = (string) $values;
         $geoJsonArray = json_decode($geojsonString, TRUE);
         // Check if the value is an GeoJsonArray.

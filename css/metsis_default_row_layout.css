@@ -3,10 +3,11 @@
   flex-direction: column;
   gap: 0.5em;
   margin-bottom: 0.5em;
+  border-top: 1px solid currentColor;
 }
 
 .metsis-search-title {
-  margin: 0 0 0.5rem 0;
+  margin-top: 0.5em;
   font-size: large;
   font-weight: bold;
 }
@@ -31,39 +32,9 @@
   overflow-wrap: anywhere;
 }
 
-.temporal-extent-wrapper {
-  margin: 0 0 0.5rem 0;
-  padding: 0.5rem 0.75rem;
-}
-
-.temporal-extent-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.35rem;
-}
-
-.temporal-extent-title {
-  font-weight: 600;
-}
-
-.temporal-extent-row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  margin-bottom: 0.15rem;
-}
-
-.temporal-extent-label {
-  font-weight: 600;
-}
-
-.temporal-extent-value {
-  overflow-wrap: anywhere;
-}
 
 .metsis-row-operations-wrapper {
-  border-top: 1px solid #e0e0e0;
+
   padding-top: 0.5rem;
   margin-top: 0.25rem;
 }
@@ -149,7 +120,7 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   padding: 0.4rem 0;
-  background: #fff;
+  background: currentColor;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   min-width: 220px;
   z-index: 100;
@@ -159,7 +130,13 @@
   display: none;
 }
 
-/* Export option buttons — override solo theme horizontal flex layout. */
+/* Export option buttons — override solo theme horizontal flex layout.
+   The icon_button wrapper takes the inset; the input fills 100% inside it. */
+.metsis-export-popover [data-component-id="metsis_drupal:icon_button"] {
+  width: calc(100% - 0.5rem);
+  margin: 0.125rem 0.25rem;
+}
+
 .metsis-export-popover input.metsis-export-option {
   display: block;
   width: 100%;
@@ -169,7 +146,7 @@
   text-align: left;
   white-space: normal;
   border: none;
-  border-radius: 0;
+  border-radius: 4px;
   background: transparent;
   box-shadow: none;
   transition: background-color 0.12s ease;

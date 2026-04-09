@@ -1,9 +1,8 @@
 {% set icon_label = icon_alt_text|default('Collection') %}
 {% set icon_width = width|default(120) %}
-{% set icon_height = height|default(42) %}
 {% set icon_color = color|default('#0053a6') %}
 
 <div {{ attributes.addClass('collection-icon-wrapper').setAttribute('style', 'color: ' ~ icon_color) }}>
   <span class="visually-hidden">{{ icon_label }}</span>
-  {{ icon('parent', 'collection', {width: icon_width, height: icon_height}) }}
+  {{ icon('parent', 'collection', {width: icon_width}) }}
 </div>

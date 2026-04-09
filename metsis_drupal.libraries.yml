@@ -51,6 +51,26 @@ metsis_search_ajax:
     - core/jquery
     - core/drupalSettings
 
+temporal_extent:
+  version: 1.x
+  css:
+    component:
+      components/temporal_extent/temporal_extent.css: {}
+  dependencies:
+    - core/drupal
+
+icon_button:
+  version: 1.x
+  css:
+    component:
+      components/icon_button/icon_button.css: {}
+  js:
+    components/icon_button/icon_button.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/jquery
+
 metsis_bokeh_form:
   version: 1.x
   css:

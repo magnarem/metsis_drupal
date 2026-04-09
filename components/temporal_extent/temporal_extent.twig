@@ -1,0 +1,38 @@
+{% set has_end = end_date is defined and end_date is not empty %}
+{% set show_icon = add_icon is not defined or add_icon %}
+{% set is_short = short_notation is defined and short_notation %}
+{% set is_compact = compact_labels is not defined or compact_labels %}
+{% set row_class = is_compact ? 'temporal-extent-row' : 'temporal-extent-row temporal-extent-row--stacked' %}
+
+{% if is_short %}
+  <span {{ attributes.addClass('temporal-extent-short') }}>
+    {{- start_date -}}
+    {%- if has_end %} {{ 'to'|t }} {{ end_date }}{% endif -%}
+  </span>
+{% else %}
+  <div {{ attributes.addClass('temporal-extent-wrapper') }}
+    role="group"
+    aria-label="{{ 'Temporal extent'|t }}"
+  >
+    <div class="temporal-extent-legend">
+      {% if show_icon %}
+        <span class="temporal-extent-icon" aria-hidden="true">
+          {{ icon('metsis_drupal', icon_id|default('date-time'), {size: 24}) }}
+        </span>
+      {% endif %}
+      <span class="temporal-extent-title">{{ 'Temporal extent'|t }}</span>
+    </div>
+    <div class="temporal-extent-body">
+      <div class="{{ row_class }}">
+        <span class="temporal-extent-label">{{ 'Start date:'|t }}</span>
+        <span class="temporal-extent-value">{{ start_date }}</span>
+      </div>
+      {% if has_end %}
+        <div class="{{ row_class }}">
+          <span class="temporal-extent-label">{{ 'End date:'|t }}</span>
+          <span class="temporal-extent-value">{{ end_date }}</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

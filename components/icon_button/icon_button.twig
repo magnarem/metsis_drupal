@@ -1,0 +1,13 @@
+{% set size = icon_size|default(20) %}
+{% set icon_pack_name = icon_pack|default('metsis_drupal') %}
+{% set icon_name = icon_id|default('filter-parent') %}
+<div {{ attributes.addClass('icon-button') }} style="--icon-button-size: {{ size }}px;">
+  {#
+    Icon is overlaid on top of the themed <input> using absolute positioning.
+    The input keeps all its theme classes; we only add padding-left to make room.
+  #}
+  <span class="icon-button__icon" aria-hidden="true">
+    {{ icon(icon_pack_name, icon_name, {size: size}) }}
+  </span>
+  {% block button %}{% endblock %}
+</div>

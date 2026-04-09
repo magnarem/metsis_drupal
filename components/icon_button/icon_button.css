@@ -7,20 +7,20 @@
   The icon color is synced to the button's computed text color via JavaScript
   on mouseenter, mouseleave, focus, and blur events.
 */
-[data-component-id="metsis_drupal:collection_filter_button"].collection-filter-button {
+[data-component-id="metsis_drupal:icon_button"].icon-button {
   display: inline-block;
   position: relative;
 }
 
 /* Icon floats over the input, vertically centred, pointer-events off */
 /* Color is synced by JavaScript to match button's computed text color */
-[data-component-id="metsis_drupal:collection_filter_button"] .collection-filter-button__icon {
+[data-component-id="metsis_drupal:icon_button"] .icon-button__icon {
   position: absolute;
   top: 50%;
   left: 0.5rem;
   transform: translateY(-50%);
-  width: var(--cfb-icon-size, 20px);
-  height: var(--cfb-icon-size, 20px);
+  width: var(--icon-button-size, 20px);
+  height: var(--icon-button-size, 20px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -29,7 +29,7 @@
 }
 
 /* Push the input text right to clear the icon: icon-size + left-offset + gap */
-[data-component-id="metsis_drupal:collection_filter_button"] input[type="submit"] {
-  padding-left: calc(var(--cfb-icon-size, 20px) + 0.9rem) !important;
+[data-component-id="metsis_drupal:icon_button"] input[type="submit"] {
+  padding-left: calc(var(--icon-button-size, 20px) + 0.9rem) !important;
   width: 100%;
 }

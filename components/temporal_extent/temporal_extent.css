@@ -1,0 +1,66 @@
+/*
+  Temporal extent SDC component styles.
+  All rules are scoped with [data-component-id] to prevent leaking.
+*/
+
+/* Fieldset-like wrapper */
+[data-component-id="metsis_drupal:temporal_extent"].temporal-extent-wrapper {
+  border-left: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem 0.5rem;
+  margin: 0 0 0.5rem 0;
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* Legend row: icon + "Temporal extent" heading */
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid currentColor;
+}
+
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-title {
+  font-weight: 600;
+}
+
+/* Inline label+value row (compact_labels = true, default) */
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+  font-size: 0.9rem;
+}
+
+/* Stacked label+value row (compact_labels = false) */
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-row--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+}
+
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-value {
+  overflow-wrap: anywhere;
+}
+
+/* Short / inline notation */
+[data-component-id="metsis_drupal:temporal_extent"].temporal-extent-short {
+  font-size: 0.9rem;
+}

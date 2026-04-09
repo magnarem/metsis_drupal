@@ -36,23 +36,28 @@
 			{
 				'label': 'Projects',
 				'singular_label': 'Project',
-				'field': 'project_long_name'
+				'field': 'project_long_name',
+				'render_field': null
 			},
 			{
 				'label': 'Institutions',
 				'singular_label': 'Institution',
-				'field': 'personnel_organisation'
+				'field': 'personnel_organisation',
+				'render_field': null
 			},
 			{
 				'label': 'Last metadata update',
 				'singular_label': null,
-				'field': 'last_metadata_update_datetime'
+				'field': 'last_metadata_update_datetime',
+				'render_field': 'last_metadata_update'
 			}
 		] %}
 		<div class="metsis-solr-meta" aria-label="Additional dataset metadata">
 			{% for item in solr_meta_fields %}
 				{% set highlighted_value = highlighted[item.field] ?? null %}
-				{% set raw_value = highlighted_value is not empty ? highlighted_value : (solr_doc[item.field] ?? null) %}
+				{% set preferred_field = item.render_field ?? null %}
+				{% set preferred_value = preferred_field is not empty ? (fields[preferred_field] ?? null) : null %}
+				{% set raw_value = preferred_value is not empty ? preferred_value : (highlighted_value is not empty ? highlighted_value : (solr_doc[item.field] ?? null)) %}
 				{% if raw_value is not empty %}
 					{% set output_label = item.label %}
 					{% set original_value = solr_doc[item.field] ?? null %}
@@ -95,7 +100,9 @@
 				<div class="metsis-collection-image">
 					{% include 'metsis_drupal:collection' with {
 						icon_alt_text: 'Collection',
-            color: '#0053a6'
+            color: '#0053a6',
+            width: 88,
+
 					} only %}
 				</div>
 			{% endif %}

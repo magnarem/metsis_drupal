@@ -1,0 +1,39 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: icon_button
+status: stable
+group: metsis
+description: >
+  Wraps a themed Drupal button (#type button) with an inline icon.
+  Pass the button as the `button` slot.
+props:
+  type: object
+  properties:
+    icon_size:
+      type: integer
+      title: Icon size (px)
+      description: Width and height of the icon.
+      default: 20
+      examples:
+        - 20
+        - 24
+    icon_pack:
+      type: string
+      title: Icon pack ID
+      description: Icon pack to use for the button icon.
+      default: metsis_drupal
+      examples:
+        - metsis_drupal
+    icon_id:
+      type: string
+      title: Icon ID
+      description: Icon identifier in the selected icon pack.
+      default: filter-parent
+      examples:
+        - filter-parent
+        - download
+slots:
+  button:
+    title: Button
+    description: A rendered Drupal button element (#type button).
+libraries:
+  - metsis_drupal/icon_button

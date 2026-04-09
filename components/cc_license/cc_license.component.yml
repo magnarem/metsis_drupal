@@ -30,3 +30,10 @@ props:
       description: The alt text for the icon (The long descriptive name of the license).
       # @todo Add examples here.
       examples: []
+    width:
+      type: integer
+      title: Width
+      description: Width of the license icon. Height is auto-scaled to preserve aspect ratio.
+      default: 88
+      examples:
+        - 120

@@ -8,14 +8,14 @@
 (function ($, Drupal, once) {
   "use strict";
 
-  Drupal.behaviors.collectionFilterButtonIconSync = {
+  Drupal.behaviors.iconButtonIconSync = {
     attach: function (context) {
       once(
-        "metsis-collection-filter-button-sync",
-        "[data-component-id='metsis_drupal:collection_filter_button']",
+        "metsis-icon-button-sync",
+        "[data-component-id='metsis_drupal:icon_button']",
         context,
       ).forEach((wrapper) => {
-        const icon = wrapper.querySelector(".collection-filter-button__icon");
+        const icon = wrapper.querySelector(".icon-button__icon");
         const button = wrapper.querySelector("input[type='submit']");
 
         if (!icon || !button) {

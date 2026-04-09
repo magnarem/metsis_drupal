@@ -26,7 +26,7 @@ props:
       type: integer
       title: Icon Size
       description: The size of the icon
-      default: 32
+      default: 24
       examples:
         - 32
         - 24

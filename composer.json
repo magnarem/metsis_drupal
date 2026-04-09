@@ -90,7 +90,8 @@
             "phpstan/extension-installer": true,
             "php-http/discovery": true,
             "tbachert/spi": true,
-            "wikimedia/composer-merge-plugin": true
+            "wikimedia/composer-merge-plugin": true,
+            "phpdocumentor/shim": true
         }
     }
 }

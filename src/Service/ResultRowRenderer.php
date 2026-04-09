@@ -146,9 +146,60 @@ final class ResultRowRenderer {
         ],
       ];
     }
+
+    $fields['last_metadata_update'] = $this->getLatestMetadataUpdate($solr_doc);
     $fields['temporal_extent'] = $this->getTemporalExtentMarkup($solr_doc);
 
     return $fields;
+  }
+
+  /**
+   * Returns the latest value from last_metadata_update_datetime.
+   *
+   * Keeps source multivalue data in $solr_doc untouched and only provides a
+   * derived single value for template rendering.
+   *
+   * @param array $solr_doc
+   *   The raw Solr document.
+   *
+   * @return string
+   *   The latest datetime string, or empty string when unavailable.
+   */
+  private function getLatestMetadataUpdate(array $solr_doc): string {
+    if (empty($solr_doc['last_metadata_update_datetime'])) {
+      return '';
+    }
+
+    $values = $solr_doc['last_metadata_update_datetime'];
+    if (!\is_array($values)) {
+      return \is_string($values) ? $values : '';
+    }
+
+    $latest_value = '';
+    $latest_timestamp = NULL;
+    $string_values = [];
+
+    foreach ($values as $value) {
+      if (!\is_string($value) || $value === '') {
+        continue;
+      }
+      $string_values[] = $value;
+      $timestamp = strtotime($value);
+      if ($timestamp === FALSE) {
+        continue;
+      }
+      if ($latest_timestamp === NULL || $timestamp > $latest_timestamp) {
+        $latest_timestamp = $timestamp;
+        $latest_value = $value;
+      }
+    }
+
+    if ($latest_value !== '') {
+      return $latest_value;
+    }
+
+    sort($string_values);
+    return $string_values !== [] ? (string) end($string_values) : '';
   }
 
   /**
@@ -184,11 +235,23 @@ final class ResultRowRenderer {
    * @param string $default_icon
    *   The icon_id to use. (optional)
    *   Default: date-time.
+   * @param bool $short_notation
+   *   Render as compact inline string instead of fieldset-like block.
+   *   Default: False.
+   * @param bool $compact_labels
+   *   When short_notation is false, put label and value on the same line.
+   *   Default: True.
    *
    * @return array
    *   The render array for this field.
    */
-  public function getTemporalExtentMarkup(array $solr_doc, bool $add_icon = TRUE, string $default_icon = 'date-time'): array {
+  public function getTemporalExtentMarkup(
+    array $solr_doc,
+    bool $add_icon = TRUE,
+    string $default_icon = 'date-time',
+    bool $short_notation = FALSE,
+    bool $compact_labels = TRUE,
+  ): array {
     $start_date = '';
     $end_date = '';
 
@@ -199,67 +262,22 @@ final class ResultRowRenderer {
       $end_date = (string) $solr_doc['temporal_extent_end_date'][0];
     }
 
-    if ($start_date === '' && $end_date === '') {
+    if ($start_date === '') {
       return [];
     }
 
-    $build = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Temporal extent'),
-      '#attributes' => [
-        'class' => ['temporal-extent-wrapper'],
+    return [
+      '#type' => 'component',
+      '#component' => 'metsis_drupal:temporal_extent',
+      '#props' => [
+        'start_date' => $start_date,
+        'end_date' => $end_date,
+        'add_icon' => $add_icon,
+        'icon_id' => $default_icon,
+        'short_notation' => $short_notation,
+        'compact_labels' => $compact_labels,
       ],
     ];
-
-    $build['heading'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => ['temporal-extent-heading'],
-      ],
-    ];
-
-    if ($add_icon) {
-      $build['heading']['icon'] = [
-        '#type' => 'icon',
-        '#pack_id' => 'metsis_drupal',
-        '#icon_id' => $default_icon,
-      ];
-    }
-    if ($start_date !== '') {
-      $build['heading']['start_date'] = [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => ['temporal-extent-row'],
-        ],
-        'label' => [
-          '#type' => 'markup',
-          '#markup' => '<span class="temporal-extent-label">' . $this->t('Start date:') . '</span>',
-        ],
-        'value' => [
-          '#type' => 'markup',
-          '#markup' => '<span class="temporal-extent-value">' . $start_date . '</span>',
-        ],
-      ];
-    }
-
-    if ($end_date !== '') {
-      $build['heading']['end_date'] = [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => ['temporal-extent-row'],
-        ],
-        'label' => [
-          '#type' => 'markup',
-          '#markup' => '<span class="temporal-extent-label">' . $this->t('End date:') . '</span>',
-        ],
-        'value' => [
-          '#type' => 'markup',
-          '#markup' => '<span class="temporal-extent-value">' . $end_date . '</span>',
-        ],
-      ];
-    }
-
-    return $build;
   }
 
   /**
@@ -327,6 +345,7 @@ final class ResultRowRenderer {
         'license_url' => $license['license_uri'],
         'icon_id' => $license['icon_id'],
         'icon_alt_text' => $license['icon_alt_text'],
+        'width' => 88,
       ],
     ];
   }

@@ -1,6 +1,6 @@
 {% set show_doi = show_doi_identifier|default(false) %}
 {% set classes = 'doi-icon-wrapper' %}
-{% set icon_size = size|default(32) %}
+{% set icon_size = size|default(24) %}
 {% set identifier = doi_url|replace({'https://doi.org/': ''}) %}
 <div {{ attributes.addClass(classes) }}>
 

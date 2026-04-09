@@ -1,0 +1,55 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: temporal_extent
+status: stable
+group: metsis
+description: >
+  Renders a temporal extent block with start date and optional end date.
+  Supports a short inline notation and a long fieldset-like notation with
+  configurable label layout.
+props:
+  type: object
+  required:
+    - start_date
+  properties:
+    start_date:
+      type: string
+      title: Start date
+      description: ISO 8601 start date string of the temporal extent.
+      examples:
+        - "2021-05-05T11:20:00Z"
+    end_date:
+      type: string
+      title: End date
+      description: ISO 8601 end date string. Optional; omit or leave empty if open-ended.
+      default: ""
+      examples:
+        - "2023-10-01T00:00:00Z"
+    short_notation:
+      type: boolean
+      title: Short notation
+      description: >
+        When true renders as a compact inline string:
+        "start_date to end_date" or just "start_date" when no end date.
+      default: false
+    compact_labels:
+      type: boolean
+      title: Compact labels
+      description: >
+        Only applies when short_notation is false.
+        When true the label and value are on the same line.
+        When false they are stacked on separate lines.
+      default: true
+    add_icon:
+      type: boolean
+      title: Add icon
+      description: Show the date-time icon in the section header.
+      default: true
+    icon_id:
+      type: string
+      title: Icon ID
+      description: Icon identifier within the metsis_drupal icon pack.
+      default: date-time
+      examples:
+        - date-time
+libraries:
+  - metsis_drupal/temporal_extent

@@ -35,16 +35,11 @@ metsis_drupal_cc:
       title: "Width"
       type: "integer"
       default: 120
-    height:
-      title: "Height"
-      type: "integer"
-      default: 42
   template: >
     <svg
       {{ attributes
           .setAttribute('viewBox', attributes.viewBox|default('0 0 120 42'))
           .setAttribute('width', width|default('120'))
-          .setAttribute('height', height|default('42'))
           .setAttribute('aria-hidden', 'true')
       }}
     >

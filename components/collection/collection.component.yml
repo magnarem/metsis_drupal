@@ -9,17 +9,10 @@ props:
     width:
       type: integer
       title: Width
-      description: Width of the collection icon.
+      description: Width of the collection icon. Height is auto-scaled to preserve aspect ratio.
       default: 120
       examples:
         - 120
-    height:
-      type: integer
-      title: Height
-      description: Height of the collection icon.
-      default: 42
-      examples:
-        - 42
     color:
       type: string
       title: Color
