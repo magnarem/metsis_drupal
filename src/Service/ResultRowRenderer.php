@@ -10,6 +10,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Drupal\metsis_drupal\LoggerTrait;
+use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 
 /**
  * This class handles the rendering of a dataset result row.
@@ -55,17 +56,26 @@ final class ResultRowRenderer {
   protected $moduleExtension;
 
   /**
+   * The Met vocabulary service.
+   *
+   * @var \Drupal\metsis_drupal\Service\MetVocabServiceInterface
+   */
+  protected MetVocabServiceInterface $metVocabService;
+
+  /**
    * Constructs a ResultRowRenderer object.
    */
   public function __construct(
     MetsisHelper $metsis_helper,
     ModuleHandlerInterface $module_handler,
     ConfigFactoryInterface $config_factory,
+    MetVocabServiceInterface $met_vocab_service,
   ) {
     $this->metsisHelper = $metsis_helper;
     $this->moduleExtension = $module_handler->getModule('metsis_drupal');
     $this->configFactory = $config_factory;
     $this->licenseIconsConfig = $config_factory->get('metsis_drupal.license_icons');
+    $this->metVocabService = $met_vocab_service;
 
   }
 

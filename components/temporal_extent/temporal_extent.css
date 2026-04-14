@@ -5,8 +5,8 @@
 
 /* Fieldset-like wrapper */
 [data-component-id="metsis_drupal:temporal_extent"].temporal-extent-wrapper {
-  border-left: 1px solid currentColor;
-  border-right: 1px solid currentColor;
+  /* border-left: 1px solid currentColor;
+  border-right: 1px solid currentColor; */
   border-radius: 4px;
   padding: 0.4rem 0.75rem 0.5rem;
   margin: 0 0 0.5rem 0;

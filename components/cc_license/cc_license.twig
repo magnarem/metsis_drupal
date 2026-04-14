@@ -1,4 +1,5 @@
-<div {{ attributes.addClass('cc-license-wrapper') }}>
+{% set icon_width = width|default(120) %}
+<div {{ attributes.addClass('cc-license-wrapper').setAttribute('style', '--cc-icon-width: ' ~ icon_width ~ ';') }}>
   <a href="{{ license_url }}"
      title="{{ icon_alt_text }} License"
      target="_blank"
@@ -6,6 +7,6 @@
      class="cc-license-link"
      aria-label="{{ icon_alt_text }} License (opens in new window)"> <!-- Accessible aria-label -->
     <span class="visually-hidden">{{ icon_alt_text }} License</span> <!-- Hidden text for screen readers -->
-    {{ icon('metsis_drupal_cc', icon_id, {'width': width}) }}
+    {{ icon('metsis_drupal_cc', icon_id, {'width': icon_width}) }}
   </a>
 </div>

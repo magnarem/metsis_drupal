@@ -62,6 +62,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'geographic_extent_rectangle_west',
     'geographic_extent_rectangle_east',
     'use_constraint_identifier',
+    'use_constraint_license_text',
     'iso_topic_category',
     'activity_type',
     'dataset_production_status',
@@ -80,6 +81,10 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'found_children:[subquery]',
     'parent:[subquery]',
     'thumbnail_url',
+    'personnel_json:[json]',
+    'data_access_json:[json]',
+    'platform_json:[json]',
+    'related_information_json:[json]',
   ];
 
   /**

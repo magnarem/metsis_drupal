@@ -31,6 +31,7 @@
         "ext-dom": "*",
         "ext-json": "*",
         "ext-simplexml": "*",
+        "easyrdf/easyrdf": "^1",
         "drupal/search_api": "^1.39",
         "drupal/search_api_solr": "^4.3",
         "drupal/search_api_solr_nlp": "^1.1",

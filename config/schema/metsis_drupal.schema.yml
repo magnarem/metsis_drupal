@@ -73,3 +73,17 @@ metsis_drupal.settings:
       description: 'Meta description used for the METSIS search results page.'
       constraints:
         NotBlank: ~
+    vocab_source_path:
+      type: string
+      label: 'Met vocabulary source path'
+      description: 'Relative (from project root) or absolute path to the MMD Turtle vocabulary file.'
+      constraints:
+        NotBlank: ~
+    vocab_cache_ttl:
+      type: integer
+      label: 'Vocabulary cache TTL (seconds)'
+      description: 'How long the parsed vocabulary index is kept in the cache bin.'
+      constraints:
+        Range:
+          min: 3600
+          max: 604800

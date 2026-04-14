@@ -1,4 +1,10 @@
 [data-component-id="metsis_drupal:doi"].doi-icon-wrapper {
+  --doi-icon-size: 24;
+  --doi-hover-lift: clamp(0.5px, calc(var(--doi-icon-size) * 0.035 * 1px), 1.5px);
+  --doi-box-shadow-y: clamp(1px, calc(var(--doi-icon-size) * 0.08 * 1px), 4px);
+  --doi-box-shadow-blur: clamp(4px, calc(var(--doi-icon-size) * 0.32 * 1px), 14px);
+  --doi-svg-shadow-y: clamp(0.5px, calc(var(--doi-icon-size) * 0.04 * 1px), 2px);
+  --doi-svg-shadow-blur: clamp(2px, calc(var(--doi-icon-size) * 0.16 * 1px), 8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -21,14 +27,16 @@
 
 [data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:hover,
 [data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:focus-visible {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-  transform: translateY(-1px);
+  box-shadow: 0 var(--doi-box-shadow-y) var(--doi-box-shadow-blur)
+    rgba(0, 0, 0, 0.22);
+  transform: translateY(calc(-1 * var(--doi-hover-lift)));
   cursor: pointer;
 }
 
 [data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:hover svg,
 [data-component-id="metsis_drupal:doi"].doi-icon-wrapper a:focus-visible svg {
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.28));
+  filter: drop-shadow(0 var(--doi-svg-shadow-y) var(--doi-svg-shadow-blur)
+    rgba(0, 0, 0, 0.24));
 }
 
 .metsis-icon-wrapper--align-left > [data-component-id="metsis_drupal:doi"].doi-icon-wrapper {

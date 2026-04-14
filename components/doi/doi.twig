@@ -2,7 +2,7 @@
 {% set classes = 'doi-icon-wrapper' %}
 {% set icon_size = size|default(24) %}
 {% set identifier = doi_url|replace({'https://doi.org/': ''}) %}
-<div {{ attributes.addClass(classes) }}>
+<div {{ attributes.addClass(classes).setAttribute('style', '--doi-icon-size: ' ~ icon_size ~ ';') }}>
 
 <a href="{{ doi_url }}"
   aria-label="DOI Link"

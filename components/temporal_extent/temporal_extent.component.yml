@@ -51,5 +51,3 @@ props:
       default: date-time
       examples:
         - date-time
-libraries:
-  - metsis_drupal/temporal_extent

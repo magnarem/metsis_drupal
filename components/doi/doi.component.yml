@@ -19,7 +19,7 @@ props:
       type: string
       title: DOI Url
       description: The DOI full url
-      format: url-reference
+      # format: url-reference
       examples:
         - "https://doi.org/10.1000/182"
     size:

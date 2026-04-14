@@ -35,5 +35,8 @@ slots:
   button:
     title: Button
     description: A rendered Drupal button element (#type button).
-libraries:
-  - metsis_drupal/icon_button
+libraryOverrides:
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/jquery

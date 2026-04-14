@@ -64,7 +64,7 @@ services:
   metsis_drupal.result_row_renderer:
     class: Drupal\metsis_drupal\Service\ResultRowRenderer
     arguments:
-      ["@metsis_drupal.metsis_helper", "@module_handler", "@config.factory"]
+      ["@metsis_drupal.metsis_helper", "@module_handler", "@config.factory", "@metsis_drupal.met_vocab_service"]
 
   metsis_drupal.metadata_export_service:
     class: Drupal\metsis_drupal\Service\MetadataExportService
@@ -74,3 +74,29 @@ services:
 
   Drupal\metsis_drupal\Service\MetadataExportService:
     alias: "metsis_drupal.metadata_export_service"
+
+  # --- Met vocabulary service -------------------------------------------------
+
+  # Dedicated cache bin for the parsed MMD vocabulary index (24 h TTL).
+  cache.metsis_vocab:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    factory: ['@cache_factory', 'get']
+    arguments: ['metsis_vocab']
+    tags: []
+
+  metsis_drupal.met_vocab_service:
+    class: Drupal\metsis_drupal\Service\MetVocabService
+    arguments:
+      - "@config.factory"
+      - "@cache.metsis_vocab"
+      - "@datetime.time"
+
+  # Alias the interface so type-hinted injections resolve to this service.
+  Drupal\metsis_drupal\Service\MetVocabServiceInterface:
+    alias: "metsis_drupal.met_vocab_service"
+
+  # Cron hook class — explicit registration needed for constructor DI.
+  metsis_drupal.cron_hook:
+    class: Drupal\metsis_drupal\Hook\CronHook
+    arguments:
+      - "@metsis_drupal.met_vocab_service"
