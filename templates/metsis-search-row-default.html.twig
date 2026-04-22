@@ -34,9 +34,15 @@
 	{% if solr_doc is defined and solr_doc is not empty %}
 		{% set solr_meta_fields = [
 			{
+				'label': 'Last metadata update',
+				'singular_label': null,
+        'field': 'last_metadata_updated_date',
+				'render_field': 'last_metadata_update'
+			},
+      {
 				'label': 'Projects',
 				'singular_label': 'Project',
-				'field': 'project_long_name',
+				'field': 'project_name',
 				'render_field': null
 			},
 			{
@@ -45,11 +51,17 @@
 				'field': 'personnel_organisation',
 				'render_field': null
 			},
-			{
-				'label': 'Last metadata update',
-				'singular_label': null,
-				'field': 'last_metadata_update_datetime',
-				'render_field': 'last_metadata_update'
+      {
+				'label': 'Platforms',
+				'singular_label': 'Platform',
+				'field': 'platform_name',
+				'render_field': null
+			},
+      {
+				'label': 'Instruments',
+				'singular_label': 'Instrument',
+				'field': 'platform_instrument_name',
+				'render_field': null
 			}
 		] %}
 		<div class="metsis-solr-meta" aria-label="Additional dataset metadata">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Plugin\views\row;
 
 use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Htmx\Htmx;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
@@ -350,6 +351,9 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $operations = [
       '#type' => 'container',
       '#attributes' => ['class' => ['metsis-row-operations']],
+      '#attached' => [
+        'library' => ['core/drupal.dialog.ajax'],
+      ],
       'controls' => [
         '#type' => 'container',
         '#attributes' => ['class' => ['metsis-row-operations-controls']],
@@ -361,6 +365,11 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $operations['controls']['collection_filter'] = $this->buildCollectionFilter($solr_doc, $dataset_identifier);
     }
 
+    // Add metadata preview link opened in a Drupal modal.
+    if ($metadata_identifier !== '') {
+      $this->buildMetadataModalTrigger($operations, $metadata_identifier);
+    }
+
     // Add export options if metadata identifier present.
     if ($metadata_identifier !== '' && $row_id !== '') {
       $this->buildExportOptions($operations, $metadata_identifier, $row_id, $popover_id);
@@ -370,6 +379,34 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $this->buildPlotTrigger($operations, $solr_doc, $row_id);
 
     return $operations;
+  }
+
+  /**
+   * Build metadata modal trigger link.
+   *
+   * @param array $operations
+   *   The operations array to mutate.
+   * @param string $metadata_identifier
+   *   The Solr document id.
+   */
+  private function buildMetadataModalTrigger(array &$operations, string $metadata_identifier): void {
+    $metadata_url = Url::fromRoute('metsis_drupal.metadata_document', [
+      'id' => $metadata_identifier,
+    ]);
+
+    $operations['controls']['metadata_modal'] = [
+      '#type' => 'link',
+      '#title' => $this->t('View metadata'),
+      '#url' => $metadata_url,
+      '#attributes' => [
+        'class' => ['use-ajax', 'button', 'button--small', 'metsis-metadata-modal-trigger'],
+        'data-dialog-type' => 'modal',
+        'data-dialog-options' => Json::encode([
+          'width' => 960,
+          'title' => (string) $this->t('Metadata document'),
+        ]),
+      ],
+    ];
   }
 
   /**

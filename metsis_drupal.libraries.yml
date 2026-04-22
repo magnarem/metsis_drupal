@@ -37,6 +37,7 @@ metsis_default_row_layout:
       css/metsis_default_row_layout.css: {}
   js:
     js/metsis-export-popover.js: {}
+    js/metsis-bokeh-plot-behaviours.js: {}
   dependencies:
     - core/drupal
     - core/once
@@ -60,3 +61,9 @@ metsis_bokeh_form:
     js/bokeh-plot-form-behaviours.js: {}
   dependencies:
     - core/drupal
+
+metsis_metadata_document:
+  version: 1.x
+  css:
+    component:
+      css/metsis_metadata_document.css: {}

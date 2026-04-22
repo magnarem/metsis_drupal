@@ -10,7 +10,6 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Drupal\metsis_drupal\LoggerTrait;
-use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 
 /**
  * This class handles the rendering of a dataset result row.

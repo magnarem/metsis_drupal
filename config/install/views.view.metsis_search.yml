@@ -162,7 +162,7 @@ display:
                   hide_label: false
                   field_classes: ''
               facets_keywords_cfstdn:
-                plugin_id: default
+                plugin_id: bef
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -173,6 +173,12 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
               facets_keywords_gcmd:
                 plugin_id: bef
                 advanced:
@@ -192,7 +198,7 @@ display:
                 soft_limit_label_less: 'Show less'
                 soft_limit_label_more: 'Show more'
               facets_keywords_gcmdloc:
-                plugin_id: default
+                plugin_id: bef
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -203,6 +209,12 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
               facets_keywords_gcmdprov:
                 plugin_id: bef
                 advanced:
@@ -222,7 +234,7 @@ display:
                 soft_limit_label_less: 'Show less'
                 soft_limit_label_more: 'Show more'
               facets_keywords_gemet:
-                plugin_id: default
+                plugin_id: bef
                 advanced:
                   rewrite:
                     filter_rewrite_values: ''
@@ -233,7 +245,85 @@ display:
                   is_secondary: false
                   hide_label: false
                   field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
               facets_keywords_northemes:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_observation_facility:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_data_center_name:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_personnel_name_facet:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+                soft_limit: 0
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_personnel_organisation_facet:
                 plugin_id: bef
                 advanced:
                   rewrite:
@@ -849,6 +939,190 @@ display:
           label_display: visible
           facet:
             query_operator: or
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_observation_facility:
+          id: facets_observation_facility
+          table: search_api_index_metsis
+          field: facets_observation_facility
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Observation facility'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: observation_facility
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: and
+            hard_limit: 0
+            min_count: 1
+            show_numbers: true
+            processor_configs: {  }
+        facets_data_center_name:
+          id: facets_data_center_name
+          table: search_api_index_metsis
+          field: facets_data_center_name
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Data center'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: data_center_name
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: and
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_personnel_name_facet:
+          id: facets_personnel_name_facet
+          table: search_api_index_metsis
+          field: facets_personnel_name_facet
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Personnel
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: personnel_name_facet
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: and
+            hard_limit: 0
+            min_count: 1
+            show_numbers: false
+            processor_configs: {  }
+        facets_personnel_organisation_facet:
+          id: facets_personnel_organisation_facet
+          table: search_api_index_metsis
+          field: facets_personnel_organisation_facet
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Institution
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: personnel_organisation_facet
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: and
             hard_limit: 0
             min_count: 1
             show_numbers: false

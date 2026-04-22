@@ -18,6 +18,18 @@ class MetsisThemeHooks {
   public function themeHook(): array {
     return [
     // Register the main row template for your custom Views row plugin.
+      'metsis_metadata_document' => [
+        'variables' => [
+          'id' => NULL,
+          'title' => '',
+          'abstract' => '',
+          'metadata_updates' => [],
+          'summary' => [],
+          'sections' => [],
+          'raw' => [],
+        ],
+        'template' => 'metsis-metadata-document',
+      ],
       'metsis_search_row_compact' => [
         'variables' => [
           'row' => NULL,

@@ -1,0 +1,89 @@
+{#
+/**
+ * @file
+ * Theme for rendering one METSIS Solr metadata document.
+ */
+#}
+<article class="metsis-metadata" aria-labelledby="metsis-metadata-title">
+  <header class="metsis-metadata__header">
+    <p class="metsis-metadata__eyebrow">Metadata document</p>
+    <h1 id="metsis-metadata-title" class="metsis-metadata__title">{{ title }}</h1>
+    <p class="metsis-metadata__abstract"><em>{{ abstract }}</em></p>
+  </header>
+
+  {% if metadata_updates %}
+    <section class="metsis-metadata__section" aria-label="Metadata update info">
+      <h2>Metadata update info</h2>
+      <ol class="metsis-metadata__updates-list">
+        {% for update in metadata_updates %}
+          <li>
+            {% if update.datetime is not empty %}
+              <strong>{{ update.datetime }}</strong>
+            {% endif %}
+            {% if update.type is not empty %}
+              {% if update.datetime is not empty %} : {% endif %}
+              {{ update.type }}
+            {% endif %}
+            {% if update.note is not empty %}
+              {% if update.datetime is not empty or update.type is not empty %} - {% endif %}
+              {{ update.note }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    </section>
+  {% endif %}
+
+  <section class="metsis-metadata__summary" aria-label="Summary">
+    <h2>Core metadata</h2>
+    <dl class="metsis-metadata__dl">
+      {% for label, value in summary %}
+        {% if value is not empty %}
+          <div class="metsis-metadata__dl-row">
+            <dt>{{ label }}</dt>
+            <dd>{{ value }}</dd>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </dl>
+  </section>
+
+  {% for section in sections %}
+    <section class="metsis-metadata__section" aria-labelledby="section-{{ loop.index }}">
+      <h2 id="section-{{ loop.index }}">{{ section.title }}</h2>
+
+      {% if section.is_structured %}
+        <details class="metsis-metadata__details" open>
+          <summary>Structured value from {{ section.field }}</summary>
+          <pre class="metsis-metadata__pre">{{ section.value_pretty }}</pre>
+        </details>
+      {% else %}
+        <dl class="metsis-metadata__dl">
+          {% for label, value in section.value %}
+            <div class="metsis-metadata__dl-row">
+              <dt>{{ label }}</dt>
+              <dd>{{ value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+    </section>
+  {% endfor %}
+
+  {% if raw %}
+    <section class="metsis-metadata__section" aria-label="Remaining fields">
+      <h2>Remaining fields</h2>
+      <details class="metsis-metadata__details">
+        <summary>Show raw scalar fields</summary>
+        <dl class="metsis-metadata__dl">
+          {% for label, value in raw %}
+            <div class="metsis-metadata__dl-row">
+              <dt>{{ label }}</dt>
+              <dd>{{ value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </details>
+    </section>
+  {% endif %}
+</article>

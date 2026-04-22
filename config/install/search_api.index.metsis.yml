@@ -71,6 +71,7 @@ field_settings:
     datasource_id: solr_document
     property_path: abstract_en
     type: text
+    boost: 1.2
   access_constraint:
     label: 'Access constraint'
     datasource_id: solr_document
@@ -80,6 +81,16 @@ field_settings:
     label: 'Activity type'
     datasource_id: solr_document
     property_path: activity_type
+    type: string
+  alternate_identifier:
+    label: 'Alternate identifier'
+    datasource_id: solr_document
+    property_path: alternate_identifier
+    type: string
+  alternate_identifier_type:
+    label: 'Alternate identifier type'
+    datasource_id: solr_document
+    property_path: alternate_identifier_type
     type: string
   bbox:
     label: Bbox
@@ -101,30 +112,15 @@ field_settings:
     datasource_id: solr_document
     property_path: data_access_url_http
     type: string
-  data_access_url_http_desc:
-    label: 'Data access url http desc'
-    datasource_id: solr_document
-    property_path: data_access_url_http_desc
-    type: string
   data_access_url_ogc_wms:
     label: 'Data access url ogc wms'
     datasource_id: solr_document
     property_path: data_access_url_ogc_wms
     type: string
-  data_access_url_ogc_wms_desc:
-    label: 'Data access url ogc wms desc'
-    datasource_id: solr_document
-    property_path: data_access_url_ogc_wms_desc
-    type: string
   data_access_url_opendap:
     label: 'Data access url opendap'
     datasource_id: solr_document
     property_path: data_access_url_opendap
-    type: string
-  data_access_url_opendap_desc:
-    label: 'Data access url opendap desc'
-    datasource_id: solr_document
-    property_path: data_access_url_opendap_desc
     type: string
   data_access_wms_layers:
     label: 'Data access_wms layers'
@@ -136,6 +132,11 @@ field_settings:
     datasource_id: solr_document
     property_path: data_center_long_name
     type: text
+  data_center_name:
+    label: 'Data center name'
+    datasource_id: solr_document
+    property_path: data_center_name
+    type: string
   data_center_short_name:
     label: 'Data center_short name'
     datasource_id: solr_document
@@ -146,37 +147,31 @@ field_settings:
     datasource_id: solr_document
     property_path: data_center_url
     type: string
-  dataset_citation_author:
-    label: 'Dataset citation author'
-    datasource_id: solr_document
-    property_path: dataset_citation_author
-    type: text
-    boost: 3.0
   dataset_citation_doi:
     label: 'Dataset citation doi'
     datasource_id: solr_document
     property_path: dataset_citation_doi
-    type: text
+    type: string
   dataset_citation_publication_date:
     label: 'Dataset citation publication date'
     datasource_id: solr_document
     property_path: dataset_citation_publication_date
     type: date
-  dataset_citation_publisher:
-    label: 'Dataset citation publisher'
+  dataset_citation_title:
+    label: 'Dataset citation title'
     datasource_id: solr_document
-    property_path: dataset_citation_publisher
+    property_path: dataset_citation_title
     type: text
-  dataset_citation_url:
-    label: 'Dataset citation url'
-    datasource_id: solr_document
-    property_path: dataset_citation_url
-    type: string
   dataset_production_status:
     label: 'Dataset production status'
     datasource_id: solr_document
     property_path: dataset_production_status
     type: string
+  descriptions:
+    label: Descriptions
+    datasource_id: solr_document
+    property_path: descriptions
+    type: text
   feature_type:
     label: 'Feature type'
     datasource_id: solr_document
@@ -187,7 +182,6 @@ field_settings:
     datasource_id: solr_document
     property_path: full_text
     type: text
-    boost: 1.3
   geographic_extent_ectangle_east:
     label: 'Geographic extent_rectangle_east'
     datasource_id: solr_document
@@ -218,6 +212,7 @@ field_settings:
     datasource_id: solr_document
     property_path: geometry_geojson
     type: geojson
+    boost: 1.3
   geometry_wkt:
     label: 'Geometry wkt'
     datasource_id: solr_document
@@ -243,7 +238,6 @@ field_settings:
     datasource_id: solr_document
     property_path: isParent
     type: boolean
-    boost: 1.3
   iso_topic_category:
     label: 'Iso topic category'
     datasource_id: solr_document
@@ -264,6 +258,11 @@ field_settings:
     datasource_id: solr_document
     property_path: keywords_gcmdloc
     type: string
+  keywords_gcmdplt:
+    label: 'Keywords gcmdplt'
+    datasource_id: solr_document
+    property_path: keywords_gcmdplt
+    type: string
   keywords_gcmdprov:
     label: 'Keywords gcmdprov'
     datasource_id: solr_document
@@ -279,26 +278,46 @@ field_settings:
     datasource_id: solr_document
     property_path: keywords_keyword
     type: text
+  keywords_none:
+    label: 'Keywords none'
+    datasource_id: solr_document
+    property_path: keywords_none
+    type: string
   keywords_northemes:
     label: 'Keywords northemes'
     datasource_id: solr_document
     property_path: keywords_northemes
     type: string
-  last_metadata_update_datetime:
-    label: 'Last metadata update_datetime'
+  keywords_vocabulary:
+    label: 'Keywords vocabulary'
     datasource_id: solr_document
-    property_path: last_metadata_update_datetime
+    property_path: keywords_vocabulary
+    type: string
+  last_metadata_created_date:
+    label: 'Last metadata created date'
+    datasource_id: solr_document
+    property_path: last_metadata_created_date
+    type: date
+  last_metadata_updated_date:
+    label: 'Last metadata updated date'
+    datasource_id: solr_document
+    property_path: last_metadata_updated_date
     type: date
   match_exact:
     label: 'Match exact'
     datasource_id: solr_document
     property_path: match_exact
     type: text
-    boost: 3.0
+    boost: 2.0
   metadata_identifier:
     label: 'Metadata identifier'
     datasource_id: solr_document
     property_path: metadata_identifier
+    type: string
+  metadata_source:
+    label: 'Metadata source'
+    datasource_id: solr_document
+    property_path: metadata_source
     type: string
   metadata_status:
     label: 'Metadata status'
@@ -310,22 +329,41 @@ field_settings:
     datasource_id: solr_document
     property_path: mmd_xml_file
     type: solr_string_storage
+  observation_facility:
+    label: 'Observation facility'
+    datasource_id: solr_document
+    property_path: observation_facility
+    type: string
   operational_status:
     label: 'Operational status'
     datasource_id: solr_document
     property_path: operational_status
     type: string
-    boost: 2.0
   personnel_name:
     label: 'Personnel name'
     datasource_id: solr_document
     property_path: personnel_name
     type: text
+  personnel_name_facet:
+    label: 'Personnel name facet'
+    datasource_id: solr_document
+    property_path: personnel_name_facet
+    type: string
   personnel_organisation:
     label: 'Personnel organisation'
     datasource_id: solr_document
     property_path: personnel_organisation
     type: text
+  personnel_organisation_facet:
+    label: 'Personnel organisation facet'
+    datasource_id: solr_document
+    property_path: personnel_organisation_facet
+    type: string
+  personnel_role:
+    label: 'Personnel role'
+    datasource_id: solr_document
+    property_path: personnel_role
+    type: string
   platform_ancillary_cloud_coverage:
     label: 'Platform ancillary cloud coverage'
     datasource_id: solr_document
@@ -345,6 +383,17 @@ field_settings:
     label: 'Platform instrument mode'
     datasource_id: solr_document
     property_path: platform_instrument_mode
+    type: string
+    boost: 2.0
+  platform_instrument_name:
+    label: 'Platform instrument name'
+    datasource_id: solr_document
+    property_path: platform_instrument_name
+    type: text
+  platform_instrument_name_facet:
+    label: 'Platform instrument name facet'
+    datasource_id: solr_document
+    property_path: platform_instrument_name_facet
     type: string
   platform_instrument_polarisation:
     label: 'Platform instrument polarisation'
@@ -366,6 +415,16 @@ field_settings:
     datasource_id: solr_document
     property_path: platform_long_name
     type: text
+  platform_name:
+    label: 'Platform name'
+    datasource_id: solr_document
+    property_path: platform_name
+    type: text
+  platform_name_facet:
+    label: 'Platform name facet'
+    datasource_id: solr_document
+    property_path: platform_name_facet
+    type: string
   platform_orbit_absolute:
     label: 'Platform orbit absolute'
     datasource_id: solr_document
@@ -375,12 +434,12 @@ field_settings:
     label: 'Platform orbit direction'
     datasource_id: solr_document
     property_path: platform_orbit_direction
-    type: integer
+    type: string
   platform_orbit_relative:
     label: 'Platform orbit relative'
     datasource_id: solr_document
     property_path: platform_orbit_relative
-    type: string
+    type: integer
   platform_short_name:
     label: 'Platform short name'
     datasource_id: solr_document
@@ -391,6 +450,16 @@ field_settings:
     datasource_id: solr_document
     property_path: project_long_name
     type: text
+  project_name:
+    label: 'Project name'
+    datasource_id: solr_document
+    property_path: project_name
+    type: text
+  project_name_facet:
+    label: 'Project name facet'
+    datasource_id: solr_document
+    property_path: project_name_facet
+    type: string
   project_short_name:
     label: 'Project_short name'
     datasource_id: solr_document
@@ -406,30 +475,30 @@ field_settings:
     datasource_id: solr_document
     property_path: related_dataset
     type: mmd_parent_id
+  related_dataset_auxiliary:
+    label: 'Related dataset auxiliary'
+    datasource_id: solr_document
+    property_path: related_dataset_auxiliary
+    type: string
   related_dataset_id:
     label: 'Related dataset id'
     datasource_id: solr_document
     property_path: related_dataset_id
     type: string
-  related_url_data_server_landing_page:
-    label: 'Related url data server landing page'
+  related_information_type:
+    label: 'Related information type'
     datasource_id: solr_document
-    property_path: related_url_data_server_landing_page
-    type: string
-  related_url_data_server_landing_page_desc:
-    label: 'Related url data server landing page desc'
-    datasource_id: solr_document
-    property_path: related_url_data_server_landing_page_desc
+    property_path: related_information_type
     type: string
   related_url_landing_page:
     label: 'Related url landing page'
     datasource_id: solr_document
     property_path: related_url_landing_page
     type: string
-  related_url_landing_page_desc:
-    label: 'Related url landing page desc'
+  spatial_representation:
+    label: 'Spatial representation'
     datasource_id: solr_document
-    property_path: related_url_landing_page_desc
+    property_path: spatial_representation
     type: string
   storage_information_file_format:
     label: 'Storage information file format'
@@ -441,7 +510,6 @@ field_settings:
     datasource_id: solr_document
     property_path: temporal_extent_end_date
     type: date
-    boost: 1.4
   temporal_extent_period_dr:
     label: 'Temporal extent period dr'
     datasource_id: solr_document
@@ -452,45 +520,45 @@ field_settings:
     datasource_id: solr_document
     property_path: temporal_extent_start_date
     type: date
-    boost: 1.3
   text_keywords_stemmed:
     label: 'Keywords stemmed'
     datasource_id: solr_document
     property_path: text_keywords_stemmed
     type: text
+    boost: 2.0
   text_suggester:
     label: 'Text suggester'
     datasource_id: solr_document
     property_path: text_suggester
     type: solr_text_suggester
+    boost: 1.3
   thumbnail_url:
     label: 'Thumbnail URL'
     datasource_id: solr_document
     property_path: thumbnail_url
     type: string
-    boost: 1.5
   timestamp:
     label: Timestamp
     datasource_id: solr_document
     property_path: timestamp
     type: date
-    boost: 1.5
   title:
     label: Title
     datasource_id: solr_document
     property_path: title
     type: string
-    boost: 1.5
   title_en:
     label: 'Title en'
     datasource_id: solr_document
     property_path: title_en
     type: text
+    boost: 1.5
   use_constraint_identifier:
     label: 'Use constraint_identifier'
     datasource_id: solr_document
     property_path: use_constraint_identifier
     type: string
+    boost: 1.3
   use_constraint_license_text:
     label: 'Use constraint license text'
     datasource_id: solr_document
@@ -501,6 +569,7 @@ field_settings:
     datasource_id: solr_document
     property_path: use_constraint_resource
     type: string
+    boost: 1.4
 datasource_settings:
   solr_document:
     id_field: id

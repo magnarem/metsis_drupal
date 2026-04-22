@@ -81,6 +81,5 @@ function metsis_drupal_views_post_render(ViewExecutable $view, array &$output, C
  * Implements hook_search_api_field_type_mapping_alter().
  */
 function metsis_drupal_search_api_field_type_mapping_alter(array &$mapping) {
-
   // $mapping['location'] = 'geofield';
 }

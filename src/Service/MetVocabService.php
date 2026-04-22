@@ -48,6 +48,8 @@ final class MetVocabService implements MetVocabServiceInterface {
    *   Config factory, used to read vocab_source_path and vocab_cache_ttl.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The metsis_vocab cache bin.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The datetime.time service.
    */
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
@@ -380,7 +382,7 @@ final class MetVocabService implements MetVocabServiceInterface {
       'uri'        => $uri,
       'labels'     => $this->extractLiterals($resource, 'skos:prefLabel'),
       'alt_labels' => $this->extractLiteralsMulti($resource, 'skos:altLabel'),
-      'definitions'=> $this->extractLiterals($resource, 'skos:definition'),
+      'definitions' => $this->extractLiterals($resource, 'skos:definition'),
       'broader'    => $broader,
       'see_also'   => $see_also,
       // Filled by back-link pass in indexGraph().

@@ -26,7 +26,8 @@ use PHPUnit\Framework\TestCase;
  *  - getParent() broader-concept traversal.
  *  - Language fallback order (requested → en → first available).
  *  - Unknown concept / collection graceful return of NULL.
- *  - refresh(force: FALSE) respects a warm cache, refresh(force: TRUE) rebuilds.
+ *  - refresh(force: FALSE) respects a warm cache.
+ *  - refresh(force: TRUE) rebuilds the index.
  */
 #[CoversClass(MetVocabService::class)]
 #[Group('metsis_drupal')]
@@ -91,10 +92,9 @@ class MetVocabServiceTest extends TestCase {
     $this->service = new MetVocabService($this->configFactory, $this->cache, $time);
   }
 
-  // ---------------------------------------------------------------------------
-  // lookupByLabel
-  // ---------------------------------------------------------------------------
-
+  /**
+   * Test that lookupByLabel returns a concept for a known preferred label.
+   */
   #[Test]
   public function lookupByLabelReturnsConceptForKnownPrefLabel(): void {
     $result = $this->service->lookupByLabel('Use_Constraint', 'CC-BY-4.0');
@@ -107,6 +107,11 @@ class MetVocabServiceTest extends TestCase {
     $this->assertStringStartsWith('https://vocab.met.no/mmd/', $result['uri']);
   }
 
+  /**
+   * Test that lookupByLabel matches alternative label values.
+   *
+   * This verifies that alternative labels are indexed and matched correctly.
+   */
   #[Test]
   public function lookupByLabelMatchesAltLabel(): void {
     // "GCMD Science Keywords" is an altLabel for the GCMDSK concept.
@@ -116,16 +121,22 @@ class MetVocabServiceTest extends TestCase {
     $this->assertSame('GCMDSK', $result['pref_label']);
   }
 
+  /**
+   * Test that lookupByLabel is case insensitive.
+   */
   #[Test]
   public function lookupByLabelIsCaseInsensitive(): void {
-    $lower  = $this->service->lookupByLabel('Use_Constraint', 'cc-by-4.0');
-    $upper  = $this->service->lookupByLabel('Use_Constraint', 'CC-BY-4.0');
+    $lower = $this->service->lookupByLabel('Use_Constraint', 'cc-by-4.0');
+    $upper = $this->service->lookupByLabel('Use_Constraint', 'CC-BY-4.0');
 
     $this->assertNotNull($lower);
     $this->assertNotNull($upper);
     $this->assertSame($lower['uri'], $upper['uri']);
   }
 
+  /**
+   * Test that lookupByLabel returns null for an unknown label.
+   */
   #[Test]
   public function lookupByLabelReturnsNullForUnknownLabel(): void {
     $result = $this->service->lookupByLabel('Use_Constraint', 'THIS-DOES-NOT-EXIST');
@@ -133,6 +144,9 @@ class MetVocabServiceTest extends TestCase {
     $this->assertNull($result);
   }
 
+  /**
+   * Test that lookupByLabel returns null for an unknown collection.
+   */
   #[Test]
   public function lookupByLabelReturnsNullForUnknownCollection(): void {
     $result = $this->service->lookupByLabel('NonExistent_Collection', 'CC-BY-4.0');
@@ -140,10 +154,9 @@ class MetVocabServiceTest extends TestCase {
     $this->assertNull($result);
   }
 
-  // ---------------------------------------------------------------------------
-  // lookupByUri
-  // ---------------------------------------------------------------------------
-
+  /**
+   * Test that lookupByUri returns a concept for a known URI.
+   */
   #[Test]
   public function lookupByUriReturnsConceptForKnownUri(): void {
     $uri    = 'https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0';
@@ -154,6 +167,9 @@ class MetVocabServiceTest extends TestCase {
     $this->assertSame('CC-BY-4.0', $result['pref_label']);
   }
 
+  /**
+   * Test that lookupByUri returns null for an unknown URI.
+   */
   #[Test]
   public function lookupByUriReturnsNullForUnknownUri(): void {
     $result = $this->service->lookupByUri('https://vocab.met.no/mmd/NoSuchConcept');
@@ -161,10 +177,9 @@ class MetVocabServiceTest extends TestCase {
     $this->assertNull($result);
   }
 
-  // ---------------------------------------------------------------------------
-  // getGroup
-  // ---------------------------------------------------------------------------
-
+  /**
+   * Test that getGroup returns collection metadata.
+   */
   #[Test]
   public function getGroupReturnsCollectionMetadata(): void {
     $group = $this->service->getGroup('Use_Constraint');
@@ -176,6 +191,9 @@ class MetVocabServiceTest extends TestCase {
     $this->assertStringContainsString('Use_Constraint', $group['uri']);
   }
 
+  /**
+   * Test that getGroup accepts a full URI as input.
+   */
   #[Test]
   public function getGroupAcceptsFullUri(): void {
     $uri   = 'https://vocab.met.no/mmd/Use_Constraint';
@@ -185,15 +203,17 @@ class MetVocabServiceTest extends TestCase {
     $this->assertSame('Use Constraint', $group['label']);
   }
 
+  /**
+   * Test that getGroup returns null for an unknown collection.
+   */
   #[Test]
   public function getGroupReturnsNullForUnknownCollection(): void {
     $this->assertNull($this->service->getGroup('Ghost_Collection'));
   }
 
-  // ---------------------------------------------------------------------------
-  // getParent
-  // ---------------------------------------------------------------------------
-
+  /**
+   * Test that getParent returns null when there is no skos:broader.
+   */
   #[Test]
   public function getParentReturnsNullWhenNoSkosBoader(): void {
     // Top-level concepts in MMD vocab have no broader; CC-BY-4.0 is one.
@@ -205,15 +225,17 @@ class MetVocabServiceTest extends TestCase {
     $this->assertThat($parent, $this->logicalOr($this->isNull(), $this->isArray()));
   }
 
+  /**
+   * Test that getParent returns null for an unknown URI.
+   */
   #[Test]
   public function getParentReturnsNullForUnknownUri(): void {
     $this->assertNull($this->service->getParent('https://example.com/unknown'));
   }
 
-  // ---------------------------------------------------------------------------
-  // Language fallback
-  // ---------------------------------------------------------------------------
-
+  /**
+   * Test that lookup returns English label when requested language is missing.
+   */
   #[Test]
   public function lookupReturnsEnglishLabelWhenRequestedLangMissing(): void {
     // Request a language that does not exist; should fall back to 'en'.
@@ -223,10 +245,6 @@ class MetVocabServiceTest extends TestCase {
     $this->assertNotEmpty($result['pref_label']);
   }
 
-  // ---------------------------------------------------------------------------
-  // Concept info shape
-  // ---------------------------------------------------------------------------
-
   /**
    * Assert the returned concept info array has all required keys.
    */
@@ -235,7 +253,17 @@ class MetVocabServiceTest extends TestCase {
     $result = $this->service->lookupByLabel('Use_Constraint', 'CC-BY-4.0');
 
     $this->assertNotNull($result);
-    foreach (['uri', 'pref_label', 'alt_labels', 'definition', 'group_uri', 'group_label', 'see_also', 'broader'] as $key) {
+    $required_keys = [
+      'uri',
+      'pref_label',
+      'alt_labels',
+      'definition',
+      'group_uri',
+      'group_label',
+      'see_also',
+      'broader',
+    ];
+    foreach ($required_keys as $key) {
       $this->assertArrayHasKey($key, $result, "Missing key: $key");
     }
     $this->assertIsArray($result['alt_labels']);
@@ -243,10 +271,9 @@ class MetVocabServiceTest extends TestCase {
     $this->assertIsArray($result['broader']);
   }
 
-  // ---------------------------------------------------------------------------
-  // refresh()
-  // ---------------------------------------------------------------------------
-
+  /**
+   * Test that refresh with force flag rebuilds cache and calls set().
+   */
   #[Test]
   public function refreshForceRebuildsCacheAndCallsSet(): void {
     $this->cache->expects($this->once())
@@ -256,10 +283,22 @@ class MetVocabServiceTest extends TestCase {
     $this->service->refresh(force: TRUE);
   }
 
+  /**
+   * Test that refresh does not rebuild the cache when it is still valid.
+   *
+   * This verifies that the TTL is respected and unnecessary parsing is avoided.
+   */
   #[Test]
   public function refreshRespectsTtlWhenCacheIsWarm(): void {
     // Simulate a warm cache.
-    $warm = (object) ['data' => ['version' => 1, 'concepts' => [], 'groups' => [], 'group_uri_map' => [], 'label_index' => []]];
+    $cache_data = [
+      'version' => 1,
+      'concepts' => [],
+      'groups' => [],
+      'group_uri_map' => [],
+      'label_index' => [],
+    ];
+    $warm = (object) ['data' => $cache_data];
     $warmCache = $this->createMock(CacheBackendInterface::class);
     $warmCache->method('get')->willReturn($warm);
     // set() must NOT be called — cache is still valid.
@@ -267,7 +306,11 @@ class MetVocabServiceTest extends TestCase {
 
     $time = $this->createMock(TimeInterface::class);
     $time->method('getRequestTime')->willReturn(time());
-    $svc = new MetVocabService($this->configFactory, $warmCache, $time);
+    $svc = new MetVocabService(
+      $this->configFactory,
+      $warmCache,
+      $time
+    );
     $svc->refresh(force: FALSE);
   }
 

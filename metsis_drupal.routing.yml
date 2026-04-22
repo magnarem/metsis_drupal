@@ -70,3 +70,12 @@ metsis_drupal.metadata_export_htmx_redirect:
     type: "[a-z0-9_-]+"
   options:
     _htmx_route: true
+
+metsis_drupal.metadata_document:
+  path: "/metsis/metadata/{id}"
+  defaults:
+    _controller: '\Drupal\metsis_drupal\Controller\MetadataDocumentController::view'
+    _title: "Metadata document"
+  requirements:
+    _permission: "access content"
+    id: "[A-Za-z0-9_.:-]+"

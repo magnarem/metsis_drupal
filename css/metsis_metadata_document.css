@@ -1,0 +1,108 @@
+.metsis-metadata {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.45;
+}
+
+.metsis-metadata__header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid;
+  padding-bottom: 1rem;
+}
+
+.metsis-metadata__eyebrow {
+  margin: 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metsis-metadata__title {
+  margin: 0.25rem 0;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.2;
+}
+
+.metsis-metadata__id {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.metsis-metadata__section,
+.metsis-metadata__summary {
+  margin-top: 1.25rem;
+}
+
+.metsis-metadata__section h2,
+.metsis-metadata__summary h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.25rem;
+}
+
+.metsis-metadata__updates-list {
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.metsis-metadata__updates-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed;
+}
+
+.metsis-metadata__updates-list li:last-child {
+  border-bottom: 0;
+}
+
+.metsis-metadata__dl {
+  margin: 0;
+}
+
+.metsis-metadata__dl-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed;
+}
+
+.metsis-metadata__dl-row dt {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.metsis-metadata__dl-row dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.metsis-metadata__details {
+  border: 1px solid;
+  padding: 0.5rem 0.75rem;
+}
+
+.metsis-metadata__details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.metsis-metadata__pre {
+  margin: 0.65rem 0 0;
+  padding: 0.75rem;
+  border: 1px dashed;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 720px) {
+  .metsis-metadata__dl-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

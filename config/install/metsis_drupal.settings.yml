@@ -4,9 +4,11 @@ selected_collections:
   ADC: ADC
   APPL: APPL
   DAM: DAM
+  NBS: NBS
   NSDN: NSDN
   SESS2025: SESS2025
   SIOS: SIOS
+  SIOSIN: SIOSIN
 map_default_projection: 'EPSG:3857'
 map_default_zoom: 7
 map_default_center_lat: 59.2
@@ -20,5 +22,5 @@ enabled_export_types:
   - geonorge
   - dcatap
 search_meta_description: 'Search scientific datasets on biodiversity, geology, hydrology, cloud cover, weather, climate, atmospheric conditions, climate change, precipitation, permafrost, sea ice and other key environmental topics — powered by ISO 19115 standards.'
-vocab_source_path: 'vendor/metno/mmd/thesauri/mmd-vocabulary.ttl'
+vocab_source_path: vendor/metno/mmd/thesauri/mmd-vocabulary.ttl
 vocab_cache_ttl: 86400
