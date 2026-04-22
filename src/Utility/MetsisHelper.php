@@ -13,6 +13,7 @@ use Solarium\QueryType\Select\Query\Query;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\metsis_drupal\LoggerTrait;
 use Drupal\metsis_drupal\Service\FeatureTypeLookupService;
+use Drupal\metsis_drupal\Service\MetVocabService;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\search_api_solr\SearchApiSolrException;
@@ -103,6 +104,13 @@ class MetsisHelper {
   protected $featureTypeLookup;
 
   /**
+   * The MET MMD Vocabulary Service ().
+   *
+   * @var \Drupal\metsis_drupal\Service\MetVocabService
+   */
+  protected MetVocabService $metVocabService;
+
+  /**
    * Constructor.
    *
    * EntityTypeManager is injected so we can load the Search API index once
@@ -115,6 +123,7 @@ class MetsisHelper {
     ModuleHandlerInterface $module_handler,
     ConfigFactoryInterface $config_factory,
     FeatureTypeLookupService $feature_type_lookup_service,
+    MetVocabService $met_vocab_service,
   ) {
     $this->leaflet = $leaflet;
     $this->renderer = $renderer;
@@ -124,6 +133,7 @@ class MetsisHelper {
     $this->featureTypeLookup = $feature_type_lookup_service;
     $this->metadataExportConfig = $config_factory->get('metsis_drupal.metadata_export');
     $this->licenseIconsConfig = $config_factory->get('metsis_drupal.license_icons');
+    $this->metVocabService = $met_vocab_service;
     $this->index = $entity_type_manager->getStorage('search_api_index')
       ->load(MetsisConstants::METSIS_SOLR_INDEX_ID);
     if ($this->index) {
@@ -188,7 +198,21 @@ class MetsisHelper {
    *   An array of collections in Solr metsis Index.
    */
   public function getCollections(): array {
-    // Create the select query.
+    // Try to fetch from vocabulary first.
+    $concepts = $this->metVocabService->getGroupConcepts('Collection_Keywords', 'en');
+    $collections = [];
+    if (!empty($concepts)) {
+      foreach ($concepts as $c) {
+        $label = $c['pref_label'] ?? '';
+        if ($label !== '') {
+          $collections[$label] = $label;
+        }
+      }
+      asort($collections);
+      return $collections;
+    }
+
+    // Fall back to Solr query.
     $solarium_query = $this->createSelectQuery();
 
     /** @var \Solarium\Component\FacetSet $facetSet */

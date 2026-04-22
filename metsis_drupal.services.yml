@@ -48,6 +48,7 @@ services:
       - "@module_handler"
       - "@config.factory"
       - "@metsis_drupal.feature_type_lookup_service"
+      - "@metsis_drupal.met_vocab_service"
 
   metsis_drupal.status_report_service:
     class: Drupal\metsis_drupal\Service\StatusReportService
