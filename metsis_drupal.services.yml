@@ -82,8 +82,10 @@ services:
   cache.metsis_vocab:
     class: Drupal\Core\Cache\CacheBackendInterface
     factory: ['@cache_factory', 'get']
+    tags:
+      - { name: cache.bin }
+
     arguments: ['metsis_vocab']
-    tags: []
 
   metsis_drupal.met_vocab_service:
     class: Drupal\metsis_drupal\Service\MetVocabService

@@ -30,6 +30,25 @@ final class MetVocabService implements MetVocabServiceInterface {
   private const CACHE_CID = 'metsis_vocab:index';
 
   /**
+   * Cache key for the lightweight meta index (group keys + counts only).
+   */
+  private const INDEX_META_CID = 'metsis_vocab:index_meta';
+
+  /**
+   * Cache ID prefix for per-group payloads.
+   *
+   * Full CID: GROUP_CID_PREFIX . $group_key.
+   */
+  private const GROUP_CID_PREFIX = 'metsis_vocab:group:';
+
+  /**
+   * Cache ID prefix for per-concept payloads.
+   *
+   * Full CID: CONCEPT_CID_PREFIX . md5($concept_uri).
+   */
+  private const CONCEPT_CID_PREFIX = 'metsis_vocab:concept:';
+
+  /**
    * Index schema version. Increment when the stored array shape changes.
    */
   private const INDEX_VERSION = 1;
@@ -153,9 +172,21 @@ final class MetVocabService implements MetVocabServiceInterface {
       $this->getLogger()->debug('MetVocabService: cache still valid, skipping cron refresh.');
       return;
     }
-    $this->index = NULL;
+    // Delete per-group CIDs using the existing full index (if present).
+    $cached = $this->cache->get(self::CACHE_CID);
+    if ($cached !== FALSE && is_array($cached->data) && isset($cached->data['groups'])) {
+      $cids = [];
+      foreach (array_keys($cached->data['groups']) as $key) {
+        $cids[] = self::GROUP_CID_PREFIX . $key;
+      }
+      if (!empty($cids)) {
+        $this->cache->deleteMultiple($cids);
+      }
+    }
+    $this->cache->delete(self::INDEX_META_CID);
     $this->cache->delete(self::CACHE_CID);
-    // Trigger rebuild so the new index is immediately warm.
+    $this->index = NULL;
+    // Rebuild and warm all caches immediately.
     $this->getIndex();
   }
 
@@ -226,6 +257,28 @@ final class MetVocabService implements MetVocabServiceInterface {
         'MetVocabService: built index — @c concepts in @g groups.',
         ['@c' => count($index['concepts']), '@g' => count($index['groups'])],
       );
+      // Warm per-group and per-concept caches so individual lookups can
+      // deserialise only the slice they need instead of the full index.
+      $ttl = (int) ($this->configFactory
+        ->get('metsis_drupal.settings')
+        ->get('vocab_cache_ttl') ?? 86400);
+      $expire = $this->time->getRequestTime() + $ttl;
+      $meta = ['version' => self::INDEX_VERSION, 'groups' => []];
+      foreach ($index['groups'] as $key => $group) {
+        $meta['groups'][$key] = [
+          'uri'          => $group['uri'],
+          'label'        => $this->resolveLang($group['labels'], 'en'),
+          'member_count' => count($group['member_uris']),
+        ];
+        $this->cache->set(self::GROUP_CID_PREFIX . $key, $group, $expire, ['metsis_vocab']);
+        foreach ($group['member_uris'] as $member_uri) {
+          $concept = $index['concepts'][$member_uri] ?? NULL;
+          if ($concept !== NULL) {
+            $this->cache->set(self::CONCEPT_CID_PREFIX . md5($member_uri), $concept, $expire, ['metsis_vocab']);
+          }
+        }
+      }
+      $this->cache->set(self::INDEX_META_CID, $meta, $expire, ['metsis_vocab']);
       return $index;
     }
     catch (\Throwable $e) {
