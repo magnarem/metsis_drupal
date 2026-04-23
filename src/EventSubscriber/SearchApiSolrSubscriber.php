@@ -286,17 +286,27 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $hl->getField('keywords_keyword')->setSnippets(3);
         $hl->getField('keywords_keyword')->setFragSize(2000);
 
+        // Use lucene query parser. To make use of join and subquerires.
+        // Parent/Child matching. Only needed when we have query terms.
+        $solarium_query->addParam('defType', 'lucene');
         if ($main_query !== '*:*') {
-          $escaped_query = $helper->escapeLocalParamValue($main_query);
-          $child_q_join = '_query_:"{!join from=related_dataset_id to=id v=' . $escaped_query . '}"';
-          $solarium_query->setQuery('(' . $main_query . ') OR ' . $child_q_join);
+          $parent_query_param = 'metsis_parent_text_q';
+          $child_query_param = 'metsis_child_text_q';
+          $child_join_param = 'metsis_child_join_q';
+          // Keep the original Search API Solr query intact.
+          // Reuse it by reference. Use bool query parser
+          // to avoid escaping issues with the join local param syntax.
+          $solarium_query->addParam($parent_query_param, $main_query);
+          $solarium_query->addParam($child_query_param, $main_query);
+          $solarium_query->addParam(
+          $child_join_param,
+            '{!join from=related_dataset_id to=id v=$' . $child_query_param . '}'
+          );
+          $solarium_query->setQuery(
+            '{!bool should=$' . $parent_query_param . ' should=$' . $child_join_param . '}'
+          );
         }
 
-        // Escape the main query for the join query's 'v' parameter.
-        // $escaped_query = $helper->escapeLocalParamValue($main_query);
-        // Construct the parent/child join query.
-        // $child_q_join = "{!join from=related_dataset_id to=id v=$escaped_query}";
-        // $solarium_query->setQuery($main_query . ' || (' . $child_q_join . ')');.
         // Rewrite facet-generated filter queries so parents are kept when a
         // matching child carries the selected facet value.
         $this->expandFacetFiltersToChildren($solarium_query, $helper);
@@ -481,12 +491,17 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     }
 
     foreach ($rewrites as $filter_key => $parts) {
-      $escaped = $helper->escapeLocalParamValue($parts['query_body']);
-      $child_join = "{!join from=related_dataset_id to=id v=$escaped}";
-      $rewritten_body = '(' . $parts['query_body'] . ' OR ' . $child_join . ')';
+      $body_param = $this->buildSolrParamName('metsis_facet_body', (string) $filter_key);
+      $join_param = $this->buildSolrParamName('metsis_facet_join', (string) $filter_key);
 
-      // Replace filter in-place, preserving the original tags so Solarium
-      // renders the {!tag=facet:...} local params correctly on output.
+      $solarium_query->addParam($body_param, $parts['query_body']);
+      $solarium_query->addParam(
+      $join_param,
+      '{!join from=related_dataset_id to=id v=$' . $body_param . '}'
+      );
+
+      $rewritten_body = '{!bool should=$' . $body_param . ' should=$' . $join_param . '}';
+
       $solarium_query->removeFilterQuery($filter_key);
       $new_filter = $solarium_query->createFilterQuery($filter_key);
       $new_filter->setQuery($rewritten_body);
@@ -511,6 +526,21 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     }
 
     return ['', $query];
+  }
+
+  /**
+   * Builds a Solr parameter name by combining a prefix and suffix.
+   *
+   * @param string $prefix
+   *   The prefix for the parameter name.
+   * @param string $suffix
+   *   The suffix for the parameter name.
+   *
+   * @return string
+   *   The combined and sanitized parameter name.
+   */
+  protected function buildSolrParamName(string $prefix, string $suffix): string {
+    return preg_replace('/[^A-Za-z0-9_]+/', '_', $prefix . '_' . $suffix);
   }
 
   /**

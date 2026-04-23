@@ -76,48 +76,42 @@ final class MetVocabService implements MetVocabServiceInterface {
     private readonly TimeInterface $time,
   ) {}
 
-  // ---------------------------------------------------------------------------
-  // MetVocabServiceInterface implementation.
-  // ---------------------------------------------------------------------------
-
   /**
    * {@inheritdoc}
    */
   public function lookupByLabel(string $collection_key, string $label, string $lang = 'en'): ?array {
-    $index = $this->getIndex();
-    $key = $this->resolveGroupKey($collection_key, $index);
+    $key = $this->resolveCachedGroupKey($collection_key);
     if ($key === NULL) {
       return NULL;
     }
+    $group = $this->getCachedGroup($key);
+    if ($group === NULL) {
+      return NULL;
+    }
     $lower = mb_strtolower($label);
-    $uri = $index['label_index'][$key][$lower] ?? NULL;
+    $uri = $group['label_index'][$lower] ?? NULL;
     if ($uri === NULL) {
       return NULL;
     }
-    return $this->buildConceptInfo($uri, $lang, $index);
+    return $this->buildConceptInfoFromCache($uri, $lang);
   }
 
   /**
    * {@inheritdoc}
    */
   public function lookupByUri(string $uri, string $lang = 'en'): ?array {
-    $index = $this->getIndex();
-    if (!isset($index['concepts'][$uri])) {
-      return NULL;
-    }
-    return $this->buildConceptInfo($uri, $lang, $index);
+    return $this->buildConceptInfoFromCache($uri, $lang);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getGroup(string $collection_key, string $lang = 'en'): ?array {
-    $index = $this->getIndex();
-    $key = $this->resolveGroupKey($collection_key, $index);
+    $key = $this->resolveCachedGroupKey($collection_key);
     if ($key === NULL) {
       return NULL;
     }
-    $group = $index['groups'][$key] ?? NULL;
+    $group = $this->getCachedGroup($key);
     if ($group === NULL) {
       return NULL;
     }
@@ -133,30 +127,28 @@ final class MetVocabService implements MetVocabServiceInterface {
    * {@inheritdoc}
    */
   public function getParent(string $uri, string $lang = 'en'): ?array {
-    $index = $this->getIndex();
-    $concept = $index['concepts'][$uri] ?? NULL;
+    $concept = $this->getCachedConcept($uri);
     if ($concept === NULL || empty($concept['broader'])) {
       return NULL;
     }
-    return $this->buildConceptInfo($concept['broader'][0], $lang, $index);
+    return $this->buildConceptInfoFromCache($concept['broader'][0], $lang);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getGroupConcepts(string $collection_key, string $lang = 'en'): array {
-    $index = $this->getIndex();
-    $key = $this->resolveGroupKey($collection_key, $index);
+    $key = $this->resolveCachedGroupKey($collection_key);
     if ($key === NULL) {
       return [];
     }
-    $group = $index['groups'][$key] ?? NULL;
+    $group = $this->getCachedGroup($key);
     if ($group === NULL) {
       return [];
     }
     $result = [];
     foreach ($group['member_uris'] as $member_uri) {
-      $info = $this->buildConceptInfo($member_uri, $lang, $index);
+      $info = $this->buildConceptInfoFromCache($member_uri, $lang);
       if ($info !== NULL) {
         $result[] = $info;
       }
@@ -172,12 +164,15 @@ final class MetVocabService implements MetVocabServiceInterface {
       $this->getLogger()->debug('MetVocabService: cache still valid, skipping cron refresh.');
       return;
     }
-    // Delete per-group CIDs using the existing full index (if present).
+    // Delete per-group and per-concept CIDs using the existing full index.
     $cached = $this->cache->get(self::CACHE_CID);
-    if ($cached !== FALSE && is_array($cached->data) && isset($cached->data['groups'])) {
+    if ($cached !== FALSE && is_array($cached->data)) {
       $cids = [];
-      foreach (array_keys($cached->data['groups']) as $key) {
+      foreach (array_keys($cached->data['groups'] ?? []) as $key) {
         $cids[] = self::GROUP_CID_PREFIX . $key;
+      }
+      foreach (array_keys($cached->data['concepts'] ?? []) as $uri) {
+        $cids[] = self::CONCEPT_CID_PREFIX . md5((string) $uri);
       }
       if (!empty($cids)) {
         $this->cache->deleteMultiple($cids);
@@ -189,10 +184,6 @@ final class MetVocabService implements MetVocabServiceInterface {
     // Rebuild and warm all caches immediately.
     $this->getIndex();
   }
-
-  // ---------------------------------------------------------------------------
-  // Internal helpers.
-  // ---------------------------------------------------------------------------
 
   /**
    * Return the cached index, rebuilding from source when missing or stale.
@@ -222,6 +213,94 @@ final class MetVocabService implements MetVocabServiceInterface {
       ['metsis_vocab'],
     );
     return $this->index;
+  }
+
+  /**
+   * Return the lightweight cached meta index, warming it from the full index.
+   *
+   * @return array|null
+   *   The cached meta index or NULL when it could not be resolved.
+   */
+  private function getMetaIndex(): ?array {
+    $cached = $this->cache->get(self::INDEX_META_CID);
+    if ($cached !== FALSE
+        && is_array($cached->data)
+        && ($cached->data['version'] ?? 0) === self::INDEX_VERSION) {
+      return $cached->data;
+    }
+
+    $this->warmDedicatedCaches($this->getIndex());
+    $cached = $this->cache->get(self::INDEX_META_CID);
+    if ($cached !== FALSE
+        && is_array($cached->data)
+        && ($cached->data['version'] ?? 0) === self::INDEX_VERSION) {
+      return $cached->data;
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Resolve a group key from the dedicated cached meta index.
+   *
+   * @param string $collection_key
+   *   Group key (last path segment) or full group URI.
+   *
+   * @return string|null
+   *   Internal group key, or NULL when not found.
+   */
+  private function resolveCachedGroupKey(string $collection_key): ?string {
+    $meta = $this->getMetaIndex();
+    if ($meta === NULL) {
+      return NULL;
+    }
+    if (isset($meta['groups'][$collection_key])) {
+      return $collection_key;
+    }
+    if (isset($meta['group_uri_map'][$collection_key])) {
+      return $meta['group_uri_map'][$collection_key];
+    }
+    return NULL;
+  }
+
+  /**
+   * Return a cached group payload by group key.
+   *
+   * @param string $group_key
+   *   The internal group key.
+   *
+   * @return array|null
+   *   The cached group payload or NULL when not found.
+   */
+  private function getCachedGroup(string $group_key): ?array {
+    $cached = $this->cache->get(self::GROUP_CID_PREFIX . $group_key);
+    if ($cached !== FALSE && is_array($cached->data)) {
+      return $cached->data;
+    }
+
+    $this->warmDedicatedCaches($this->getIndex());
+    $cached = $this->cache->get(self::GROUP_CID_PREFIX . $group_key);
+    return ($cached !== FALSE && is_array($cached->data)) ? $cached->data : NULL;
+  }
+
+  /**
+   * Return a cached concept payload by URI.
+   *
+   * @param string $uri
+   *   The concept URI.
+   *
+   * @return array|null
+   *   The cached concept payload or NULL when not found.
+   */
+  private function getCachedConcept(string $uri): ?array {
+    $cached = $this->cache->get(self::CONCEPT_CID_PREFIX . md5($uri));
+    if ($cached !== FALSE && is_array($cached->data)) {
+      return $cached->data;
+    }
+
+    $this->warmDedicatedCaches($this->getIndex());
+    $cached = $this->cache->get(self::CONCEPT_CID_PREFIX . md5($uri));
+    return ($cached !== FALSE && is_array($cached->data)) ? $cached->data : NULL;
   }
 
   /**
@@ -257,28 +336,7 @@ final class MetVocabService implements MetVocabServiceInterface {
         'MetVocabService: built index — @c concepts in @g groups.',
         ['@c' => count($index['concepts']), '@g' => count($index['groups'])],
       );
-      // Warm per-group and per-concept caches so individual lookups can
-      // deserialise only the slice they need instead of the full index.
-      $ttl = (int) ($this->configFactory
-        ->get('metsis_drupal.settings')
-        ->get('vocab_cache_ttl') ?? 86400);
-      $expire = $this->time->getRequestTime() + $ttl;
-      $meta = ['version' => self::INDEX_VERSION, 'groups' => []];
-      foreach ($index['groups'] as $key => $group) {
-        $meta['groups'][$key] = [
-          'uri'          => $group['uri'],
-          'label'        => $this->resolveLang($group['labels'], 'en'),
-          'member_count' => count($group['member_uris']),
-        ];
-        $this->cache->set(self::GROUP_CID_PREFIX . $key, $group, $expire, ['metsis_vocab']);
-        foreach ($group['member_uris'] as $member_uri) {
-          $concept = $index['concepts'][$member_uri] ?? NULL;
-          if ($concept !== NULL) {
-            $this->cache->set(self::CONCEPT_CID_PREFIX . md5($member_uri), $concept, $expire, ['metsis_vocab']);
-          }
-        }
-      }
-      $this->cache->set(self::INDEX_META_CID, $meta, $expire, ['metsis_vocab']);
+      $this->warmDedicatedCaches($index);
       return $index;
     }
     catch (\Throwable $e) {
@@ -444,61 +502,64 @@ final class MetVocabService implements MetVocabServiceInterface {
   }
 
   /**
-   * Assemble a public concept info array from the index.
+   * Assemble a public concept info array using the dedicated cache entries.
    *
    * @param string $uri
    *   The concept URI.
    * @param string $lang
    *   Language preference.
-   * @param array $index
-   *   The full vocabulary index.
    *
    * @return array|null
-   *   Concept info array or NULL when URI not present in index.
+   *   Concept info array or NULL when the concept is not cached.
    */
-  private function buildConceptInfo(string $uri, string $lang, array $index): ?array {
-    $concept = $index['concepts'][$uri] ?? NULL;
+  private function buildConceptInfoFromCache(string $uri, string $lang): ?array {
+    $concept = $this->getCachedConcept($uri);
     if ($concept === NULL) {
       return NULL;
     }
 
-    $group_uri = $concept['group_uri'];
-    $group_key = $group_uri !== NULL
-      ? ($index['group_uri_map'][$group_uri] ?? NULL)
-      : NULL;
-    $group = $group_key !== NULL ? ($index['groups'][$group_key] ?? NULL) : NULL;
+    $group = NULL;
+    if (!empty($concept['group_uri'])) {
+      $group_key = $this->resolveCachedGroupKey($concept['group_uri']);
+      if ($group_key !== NULL) {
+        $group = $this->getCachedGroup($group_key);
+      }
+    }
 
-    // Build shallow broader list (no recursion).
     $broader = [];
     foreach ($concept['broader'] as $broader_uri) {
-      $b = $index['concepts'][$broader_uri] ?? NULL;
-      if ($b === NULL) {
+      $broader_concept = $this->getCachedConcept($broader_uri);
+      if ($broader_concept === NULL) {
         continue;
       }
-      $b_group_uri = $b['group_uri'] ?? NULL;
-      $b_group_key = $b_group_uri !== NULL
-        ? ($index['group_uri_map'][$b_group_uri] ?? NULL)
-        : NULL;
-      $b_group = $b_group_key !== NULL ? ($index['groups'][$b_group_key] ?? NULL) : NULL;
+
+      $broader_group = NULL;
+      if (!empty($broader_concept['group_uri'])) {
+        $broader_group_key = $this->resolveCachedGroupKey($broader_concept['group_uri']);
+        if ($broader_group_key !== NULL) {
+          $broader_group = $this->getCachedGroup($broader_group_key);
+        }
+      }
+
       $broader[] = [
-        'uri'         => $b['uri'],
-        'pref_label'  => $this->resolveLang($b['labels'], $lang),
-        'alt_labels'  => $this->resolveLangMulti($b['alt_labels'], $lang),
-        'definition'  => $this->resolveLang($b['definitions'], $lang),
-        'group_uri'   => $b_group_uri ?? '',
-        'group_label' => $b_group !== NULL
-          ? $this->resolveLang($b_group['labels'], $lang)
+        'uri'         => $broader_concept['uri'],
+        'pref_label'  => $this->resolveLang($broader_concept['labels'], $lang),
+        'alt_labels'  => $this->resolveLangMulti($broader_concept['alt_labels'], $lang),
+        'definition'  => $this->resolveLang($broader_concept['definitions'], $lang),
+        'group_uri'   => $broader_concept['group_uri'] ?? '',
+        'group_label' => $broader_group !== NULL
+          ? $this->resolveLang($broader_group['labels'], $lang)
           : '',
-        'see_also'    => $b['see_also'] ?? [],
+        'see_also'    => $broader_concept['see_also'] ?? [],
       ];
     }
 
     return [
-      'uri'         => $uri,
+      'uri'         => $concept['uri'],
       'pref_label'  => $this->resolveLang($concept['labels'], $lang),
       'alt_labels'  => $this->resolveLangMulti($concept['alt_labels'], $lang),
       'definition'  => $this->resolveLang($concept['definitions'], $lang),
-      'group_uri'   => $group_uri ?? '',
+      'group_uri'   => $concept['group_uri'] ?? '',
       'group_label' => $group !== NULL
         ? $this->resolveLang($group['labels'], $lang)
         : '',
@@ -507,9 +568,45 @@ final class MetVocabService implements MetVocabServiceInterface {
     ];
   }
 
-  // ---------------------------------------------------------------------------
-  // Low-level helpers.
-  // ---------------------------------------------------------------------------
+  /**
+   * Populate the dedicated meta, group, and concept caches from an index.
+   *
+   * @param array $index
+   *   The full vocabulary index.
+   */
+  private function warmDedicatedCaches(array $index): void {
+    $ttl = (int) ($this->configFactory
+      ->get('metsis_drupal.settings')
+      ->get('vocab_cache_ttl') ?? 86400);
+    $expire = $this->time->getRequestTime() + $ttl;
+    $meta = [
+      'version'       => self::INDEX_VERSION,
+      'groups'        => [],
+      'group_uri_map' => [],
+    ];
+
+    foreach ($index['groups'] as $key => $group) {
+      $meta['groups'][$key] = [
+        'uri'          => $group['uri'],
+        'label'        => $this->resolveLang($group['labels'], 'en'),
+        'member_count' => count($group['member_uris']),
+      ];
+      $meta['group_uri_map'][$group['uri']] = $key;
+
+      $group_payload = $group;
+      $group_payload['label_index'] = $index['label_index'][$key] ?? [];
+      $this->cache->set(self::GROUP_CID_PREFIX . $key, $group_payload, $expire, ['metsis_vocab']);
+
+      foreach ($group['member_uris'] as $member_uri) {
+        $concept = $index['concepts'][$member_uri] ?? NULL;
+        if ($concept !== NULL) {
+          $this->cache->set(self::CONCEPT_CID_PREFIX . md5($member_uri), $concept, $expire, ['metsis_vocab']);
+        }
+      }
+    }
+
+    $this->cache->set(self::INDEX_META_CID, $meta, $expire, ['metsis_vocab']);
+  }
 
   /**
    * Extract a single literal per language for a property.
@@ -611,29 +708,6 @@ final class MetVocabService implements MetVocabServiceInterface {
    */
   private function uriToKey(string $uri): string {
     return basename($uri);
-  }
-
-  /**
-   * Resolve a user-supplied key or full URI to an internal group key.
-   *
-   * @param string $collection_key
-   *   Group key (last path segment) or full group URI.
-   * @param array $index
-   *   The vocabulary index.
-   *
-   * @return string|null
-   *   Internal group key, or NULL when not found.
-   */
-  private function resolveGroupKey(string $collection_key, array $index): ?string {
-    // Direct key match.
-    if (isset($index['groups'][$collection_key])) {
-      return $collection_key;
-    }
-    // Attempt reverse lookup via full URI.
-    if (isset($index['group_uri_map'][$collection_key])) {
-      return $index['group_uri_map'][$collection_key];
-    }
-    return NULL;
   }
 
   /**

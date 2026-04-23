@@ -53,7 +53,7 @@ interface MetVocabServiceInterface {
    * Look up a concept by its full URI.
    *
    * @param string $uri
-   *   Full concept URI, e.g. "https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0".
+   *   Full concept URI ex. "https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0".
    * @param string $lang
    *   ISO 639-1 language preference.
    *

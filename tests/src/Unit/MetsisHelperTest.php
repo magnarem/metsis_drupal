@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Tests\Utility;
 
 use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Drupal\metsis_drupal\Service\MetVocabService;
 use PHPUnit\Framework\TestCase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -41,7 +42,8 @@ class MetsisHelperTest extends TestCase {
     $entityStorage->method('load')->willReturn(NULL);
     $featureTypeLookup = $this->createMock(FeatureTypeLookupService::class);
     $featureTypeLookup->method('lookup')->willReturn('timeSeries');
-    return new MetsisHelper($entityTypeManager, $leaflet, $renderer, $moduleHandler, $configFactory, $featureTypeLookup);
+    $metVocabService = $this->createMock(MetVocabService::class);
+    return new MetsisHelper($entityTypeManager, $leaflet, $renderer, $moduleHandler, $configFactory, $featureTypeLookup, $metVocabService);
   }
 
   /**
