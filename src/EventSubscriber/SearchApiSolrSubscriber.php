@@ -291,22 +291,47 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $solarium_query->addParam('defType', 'lucene');
         if ($main_query !== '*:*') {
           $parent_query_param = 'metsis_parent_text_q';
-          $child_query_param = 'metsis_child_text_q';
-          $child_join_param = 'metsis_child_join_q';
-          // Keep the original Search API Solr query intact.
-          // Reuse it by reference. Use bool query parser
-          // to avoid escaping issues with the join local param syntax.
+          $child_query_param  = 'metsis_child_text_q';
+          $child_join_param   = 'metsis_child_join_q';
+
           $solarium_query->addParam($parent_query_param, $main_query);
           $solarium_query->addParam($child_query_param, $main_query);
+
+          // Parents that have at least one matching child.
           $solarium_query->addParam(
           $child_join_param,
-            '{!join from=related_dataset_id to=id v=$' . $child_query_param . '}'
+          '{!join from=related_dataset_id to=id defType=lucene v=$' . $child_query_param . '}'
           );
-          $solarium_query->setQuery(
-            '{!bool should=$' . $parent_query_param . ' should=$' . $child_join_param . '}'
-          );
-        }
 
+          if ($query->getOption('metsis_parent_filter')) {
+            $parent_fallback_source = 'metsis_parent_fallback_source_q';
+            $parent_to_child_fallback = 'metsis_parent_to_child_fallback_q';
+
+            // Parent must match text, but only when it has NO matching child.
+            $solarium_query->addParam(
+              $parent_fallback_source,
+              '{!bool must=$' . $parent_query_param . ' must_not=$' . $child_join_param . '}'
+            );
+
+            // Convert those parent matches to their children.
+            $solarium_query->addParam(
+              $parent_to_child_fallback,
+              '{!join from=id to=related_dataset_id defType=lucene v=$' . $parent_fallback_source . '}'
+            );
+
+            // Child mode: matching children,
+            // or fallback-all-children when no chi ld matched.
+            $solarium_query->setQuery(
+              '{!bool should=$' . $child_query_param . ' should=$' . $parent_to_child_fallback . '}'
+            );
+          }
+          else {
+            // Parent mode: parent text matches OR parent has matching child.
+            $solarium_query->setQuery(
+              '{!bool should=$' . $parent_query_param . ' should=$' . $child_join_param . '}'
+            );
+          }
+        }
         // Rewrite facet-generated filter queries so parents are kept when a
         // matching child carries the selected facet value.
         $this->expandFacetFiltersToChildren($solarium_query, $helper);
@@ -327,7 +352,26 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         }
 
         // Construct the child found/child total subqueries.
-        $solarium_query->addParam('found_children.q', $main_query);
+        // Count children that match text directly, and also include all
+        // children for this row when the parent row itself matches text.
+        // These params must live in the found_children.* namespace to be
+        // visible inside the [subquery] request context.
+        $solarium_query->addParam('found_children.defType', 'lucene');
+        $solarium_query->addParam('found_children.child_text_q', $main_query);
+        $solarium_query->addParam('found_children.parent_row_q', '{!term f=id v=$row.id}');
+        $solarium_query->addParam('found_children.parent_text_q', $main_query);
+        $solarium_query->addParam(
+          'found_children.parent_source_q',
+          '{!bool must=$parent_row_q must=$parent_text_q}'
+        );
+        $solarium_query->addParam(
+          'found_children.parent_match_q',
+          '{!join from=id to=related_dataset_id defType=lucene v=$parent_source_q}'
+        );
+        $solarium_query->addParam(
+          'found_children.q',
+          '{!bool should=$child_text_q should=$parent_match_q}'
+        );
         $child_query_filters = $this->createChildQueryFilters($main_query_filters);
         $solarium_query->addParam('found_children.fq', $child_query_filters);
         $solarium_query->addParam('found_children.rows', '0');
@@ -354,6 +398,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $solarium_query->addParam('parent.fl', 'id,metadata_identifier,title, abstract, related_url_landing*,temporal*date*');
       }
     }
+
   }
 
   /**
