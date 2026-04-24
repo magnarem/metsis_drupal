@@ -36,7 +36,7 @@
 {# Attach my map app #}
 {{ attach_library('metsis_drupal/metsis_map') }}
 
-{# { dump(exposed) } #}
+{# {{ dump(rows) }} #}
 
 {# Define some default css classes for the metsis search components #}
 {% set metsis_search_layout = [
@@ -108,8 +108,10 @@
 
     {{ attachment_before }}
     </div>
-    {# Result Map container #}
+    {# Result Map container. Only show if there are rows #}
+    {% if rows is not empty %}
     <div id="metsis-map-app"></div>
+    {% endif %}
     {# Pager #}
     {{ pager }}
     {# Pager, results and footer wrapper #}
