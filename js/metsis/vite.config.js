@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
 import path from "path";
 import { fileURLToPath } from "url";
+// import { compression } from 'vite-plugin-compression2'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,9 +24,11 @@ export default defineConfig({
         olCss: path.resolve(__dirname, "node_modules/ol/ol.css"),
       },
       output: {
-        manualChunks: {
-          ol: ["ol"],
-        },
+/*        manualChunks(id) {
+          if (id.includes("node_modules/ol")) {
+            return "ol"; // Place OpenLayers (ol) in its own chunk
+          }
+        },*/
       },
     },
     outDir: path.resolve(__dirname, "dist"), // Output to the module's dist directory
