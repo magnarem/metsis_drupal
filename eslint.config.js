@@ -1,6 +1,6 @@
 import js from "@eslint/js";
 import globals from "globals";
-import tseslint from "typescript-eslint";
+import * as parser from "@typescript-eslint/parser";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
@@ -9,6 +9,15 @@ export default defineConfig([
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: {
+      parser: parser,
+      parserOptions: {
+        ecmaVersion: 2020, // Use modern ECMAScript features
+        sourceType: "module", // Enable ES modules
+        ecmaFeatures: {
+          jsx: true, // Enable JSX support
+        },
+        tsconfigRootDir: import.meta.dirname,
+      },
       globals: {
         ...globals.browser,
         Drupal: "writable",
@@ -17,16 +26,20 @@ export default defineConfig([
         jQuery: "readonly",
         Bokeh: "readonly",
       },
-      parserOptions: {
-        tsconfigRootDir: import.meta.dirname,
-      },
     },
   },
-  tseslint.configs.recommended,
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      "no-unused-vars": "off",
+    },
+  },
   globalIgnores([
     ".ddev",
     "web/**",
     "vendor/**",
+    "docs/**",
+    "bla/**",
     "**/node_modules",
     "**/dist",
     ".phpdoc",

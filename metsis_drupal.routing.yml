@@ -79,3 +79,11 @@ metsis_drupal.metadata_document:
   requirements:
     _permission: "access content"
     id: "[A-Za-z0-9_.:-]+"
+
+metsis_drupal.wms:
+  path: "/metsis/wms/{id}"
+  defaults:
+    _title: "Wms"
+    _controller: '\Drupal\metsis_drupal\Controller\WmsController'
+  requirements:
+    _permission: "access content"

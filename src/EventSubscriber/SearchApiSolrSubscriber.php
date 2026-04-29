@@ -12,6 +12,7 @@ use Drupal\search_api_solr\Event\PostConvertedQueryEvent;
 use Drupal\search_api_solr\Event\PostExtractResultsEvent;
 use Drupal\search_api_solr\Event\SearchApiSolrEvents;
 use Drupal\search_api_solr\Event\PostFieldMappingEvent;
+use Drupal\search_api_solr\Utility\Utility;
 use Drupal\metsis_drupal\LoggerTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -226,11 +227,21 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
       /** @var \Drupal\search_api\Query\QueryInterface $query */
       $query = $event->getSearchApiQuery();
 
-      // Search within children if we have a metsis search.
+      /* Get the parse mode */
+      $parse_mode = $query->getParseMode();
+      $parse_mode_id = $parse_mode->getPluginId();
+
+      /* Search within children if we have a metsis search */
       if ($query->hasTag('metsis')) {
 
         $main_query = $solarium_query->getQuery();
-
+        if ($parse_mode_id === 'edismax') {
+          $normalized_main_query = $this->normalizeNestedTextQuery($main_query);
+        }
+        else {
+          $normalized_main_query = $main_query;
+        }
+        // Get the main query filters to pass to the child subquery.
         $main_query_filters = $solarium_query->getFilterQueries();
 
         // Highlighting fails with join query, so we use main query in hl.q.
@@ -253,38 +264,45 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         }
         $hl->setQuery($hl_query);
         $hl->setMethod('unified');
-        $hl->setFields([
-          'metadata_identifier',
-          'title_en',
-          'abstract_en',
-          'personnel_name',
-          'personnel_organisation',
-          'data_center_long_name',
-          'data_center_short_name',
-          'keywords_keyword',
-          'project_name',
-          'project_long_name',
-          'project_short_name',
-          'platform_name',
-          'platform_long_name',
-          'platform_short_name',
-          'platform_instrument_name',
-          'platform_instrument_long_name',
-          'platform_instrument_short_name',
-          'dataset_citation_title',
-          'dataset_citation_doi',
-          'descriptions',
-        ]);
-        $hl->setRequireFieldMatch(FALSE);
-        $hl->setSnippets(2);
-        $hl->setFragSize(50);
+        // $hl->setFields([
+        //   'metadata_identifier',
+        //   'related_dataset',
+        //   'activity_type',
+        //   'title_hl',
+        //   'abstract_hl',
+        //   'personnel_name',
+        //   'personnel_organisation',
+        //   'data_center_long_name',
+        //   'data_center_short_name',
+        //   'keywords_keyword',
+        //   'project_name',
+        //   'project_long_name',
+        //   'project_short_name',
+        //   'platform_name',
+        //   'platform_long_name',
+        //   'platform_short_name',
+        //   'platform_instrument_name',
+        //   'platform_instrument_long_name',
+        //   'platform_instrument_short_name',
+        //   'dataset_citation_title',
+        //   'dataset_citation_doi',
+        //   'use_constraint_license_text',
+        //   'related_information_description',
+        //   'descriptions',
+        // ]);
+        // $hl->setRequireFieldMatch(TRUE);
+        // $hl->setSnippets(2);
+        // $hl->setFragSize(50);
+        $hl->setHighlightMultiTerm(TRUE);
         $hl->setDefaultSummary(FALSE);
+        $hl->setUsePhraseHighlighter(TRUE);
+        $hl->setMergeContiguous(TRUE);
         // $hl->setBoundaryScanner('simple');
         // hl.bs.chars has no dedicated Solarium API method; set it directly.
         // $solarium_query->addParam('hl.bs.chars', ">.,!? \t\n\r");
         // Per-field overrides: shorter snippets for keyword values.
-        $hl->getField('keywords_keyword')->setSnippets(3);
-        $hl->getField('keywords_keyword')->setFragSize(2000);
+        // $hl->getField('keywords_keyword')->setSnippets(3);
+        // $hl->getField('keywords_keyword')->setFragSize(2000);
 
         // Use lucene query parser. To make use of join and subquerires.
         // Parent/Child matching. Only needed when we have query terms.
@@ -294,8 +312,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           $child_query_param  = 'metsis_child_text_q';
           $child_join_param   = 'metsis_child_join_q';
 
-          $solarium_query->addParam($parent_query_param, $main_query);
-          $solarium_query->addParam($child_query_param, $main_query);
+          $solarium_query->addParam($parent_query_param, $normalized_main_query);
+          $solarium_query->addParam($child_query_param, $normalized_main_query);
 
           // Parents that have at least one matching child.
           $solarium_query->addParam(
@@ -357,9 +375,9 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // These params must live in the found_children.* namespace to be
         // visible inside the [subquery] request context.
         $solarium_query->addParam('found_children.defType', 'lucene');
-        $solarium_query->addParam('found_children.child_text_q', $main_query);
+        $solarium_query->addParam('found_children.child_text_q', $normalized_main_query);
         $solarium_query->addParam('found_children.parent_row_q', '{!term f=id v=$row.id}');
-        $solarium_query->addParam('found_children.parent_text_q', $main_query);
+        $solarium_query->addParam('found_children.parent_text_q', $normalized_main_query);
         $solarium_query->addParam(
           'found_children.parent_source_q',
           '{!bool must=$parent_row_q must=$parent_text_q}'
@@ -396,7 +414,18 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $solarium_query->addParam('parent.fq', 'isParent:"true"');
         $solarium_query->addParam('parent.rows', '1');
         $solarium_query->addParam('parent.fl', 'id,metadata_identifier,title, abstract, related_url_landing*,temporal*date*');
+
+        /*
+         * Add some extra edismax query parameters.
+         */
+        $solarium_query->addParam('pf', 'full_text^5 match_exact^10');
+        $solarium_query->addParam('ps', 2);
+        $solarium_query->addParam('qs', 2);
+        $solarium_query->addParam('mm', '3<90%');
+
+        $solarium_query->addParam('debugQuery', 'false');
       }
+
     }
 
   }
@@ -635,6 +664,25 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     $child_query_filters[] = '{!term f=related_dataset_id v=$row.id}';
 
     return $child_query_filters;
+  }
+
+  /**
+   * Normalizes a nested text query by removing outer parentheses and local params.
+   *
+   * @param string $query
+   *   The query string to normalize.
+   *
+   * @return string
+   *   The normalized query string.
+   */
+  protected function normalizeNestedTextQuery(string $query): string {
+    $query = trim($query);
+
+    if (preg_match('/^\((\{![^}]+\}.*)\)$/s', $query, $matches) === 1) {
+      return trim($matches[1]);
+    }
+
+    return $query;
   }
 
 }

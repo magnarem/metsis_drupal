@@ -32,9 +32,7 @@
   overflow-wrap: anywhere;
 }
 
-
 .metsis-row-operations-wrapper {
-
   padding-top: 0.5rem;
   margin-top: 0.25rem;
 }
@@ -65,7 +63,9 @@
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .metsis-export-trigger:hover,
@@ -85,7 +85,9 @@
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .metsis-plot-trigger[data-plot-open="true"] {
@@ -290,7 +292,9 @@
   line-height: 1;
   cursor: pointer;
   opacity: 0.75;
-  transition: opacity 0.12s ease, background-color 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    background-color 0.12s ease;
   anchor-name: --metsis-tooltip-anchor;
 }
 

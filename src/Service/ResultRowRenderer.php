@@ -98,9 +98,9 @@ final class ResultRowRenderer {
     $fields['title'] = [
       '#markup' => $solr_doc['title'] ?? '',
     ];
-    if (!empty($highlighted['title_en'])) {
+    if (!empty($highlighted['title_hl'])) {
       $fields['title'] = [
-        '#markup' => $highlighted['title_en'][0],
+        '#markup' => $highlighted['title_hl'][0],
       ];
     }
     // Handle abstract/description. Use highlighted field if available.
@@ -109,8 +109,8 @@ final class ResultRowRenderer {
     $fields['abstract'] = [
       '#markup' => check_markup($solr_doc['abstract'], 'metsis_html') ?? '',
     ];
-    if (!empty($highlighted['abstract_en'])) {
-      $abstract = $highlighted['abstract_en'][0];
+    if (!empty($highlighted['abstract_hl'])) {
+      $abstract = $highlighted['abstract_hl'][0];
       $abstract_html = check_markup($abstract, 'metsis_html');
       $fields['abstract'] = $abstract_html;
     }

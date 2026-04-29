@@ -127,7 +127,6 @@ display:
               related_dataset:
                 plugin_id: default
                 advanced:
-                  placeholder_text: ''
                   rewrite:
                     filter_rewrite_values: ''
                     filter_rewrite_values_key: false
@@ -176,7 +175,7 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
-                soft_limit: 0
+                soft_limit: 5
                 soft_limit_label_less: 'Show less'
                 soft_limit_label_more: 'Show more'
               facets_keywords_gcmd:
@@ -697,9 +696,11 @@ display:
           hierarchy: false
           label_display: visible
           facet:
-            query_operator: and
+            query_operator: or
             hard_limit: 0
             min_count: 1
+            missing: false
+            missing_label: others
             show_numbers: true
             processor_configs:
               raw_value_widget_order:
@@ -984,9 +985,11 @@ display:
           hierarchy: false
           label_display: visible
           facet:
-            query_operator: and
+            query_operator: or
             hard_limit: 0
             min_count: 1
+            missing: false
+            missing_label: others
             show_numbers: true
             processor_configs: {  }
         facets_data_center_name:

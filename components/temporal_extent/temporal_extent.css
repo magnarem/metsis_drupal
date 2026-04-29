@@ -45,7 +45,8 @@
 }
 
 /* Stacked label+value row (compact_labels = false) */
-[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-row--stacked {
+[data-component-id="metsis_drupal:temporal_extent"]
+  .temporal-extent-row--stacked {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.1rem;

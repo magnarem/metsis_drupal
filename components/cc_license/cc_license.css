@@ -1,9 +1,17 @@
 /* Style for the outer component wrapper */
 [data-component-id="metsis_drupal:cc_license"] {
   --cc-icon-width: 120;
-  --cc-hover-lift: clamp(0.5px, calc(var(--cc-icon-width) * 0.012 * 1px), 1.5px);
+  --cc-hover-lift: clamp(
+    0.5px,
+    calc(var(--cc-icon-width) * 0.012 * 1px),
+    1.5px
+  );
   --cc-svg-shadow-y: clamp(0.5px, calc(var(--cc-icon-width) * 0.01 * 1px), 2px);
-  --cc-svg-shadow-blur: clamp(3px, calc(var(--cc-icon-width) * 0.06 * 1px), 12px);
+  --cc-svg-shadow-blur: clamp(
+    3px,
+    calc(var(--cc-icon-width) * 0.06 * 1px),
+    12px
+  );
   display: inline-flex;
   /* Ensure the div wraps tightly around its contents */
   align-items: center;
@@ -52,8 +60,9 @@
 
 [data-component-id="metsis_drupal:cc_license"] a:hover svg,
 [data-component-id="metsis_drupal:cc_license"] a:focus-visible svg {
-  filter: drop-shadow(0 var(--cc-svg-shadow-y) var(--cc-svg-shadow-blur)
-    rgba(0, 0, 0, 0.24));
+  filter: drop-shadow(
+    0 var(--cc-svg-shadow-y) var(--cc-svg-shadow-blur) rgba(0, 0, 0, 0.24)
+  );
 }
 
 [data-component-id="metsis_drupal:cc_license"] .visually-hidden {
@@ -65,14 +74,17 @@
   white-space: nowrap;
 }
 
-.metsis-icon-wrapper--align-left > [data-component-id="metsis_drupal:cc_license"] {
+.metsis-icon-wrapper--align-left
+  > [data-component-id="metsis_drupal:cc_license"] {
   align-self: flex-start;
 }
 
-.metsis-icon-wrapper--align-center > [data-component-id="metsis_drupal:cc_license"] {
+.metsis-icon-wrapper--align-center
+  > [data-component-id="metsis_drupal:cc_license"] {
   align-self: center;
 }
 
-.metsis-icon-wrapper--align-right > [data-component-id="metsis_drupal:cc_license"] {
+.metsis-icon-wrapper--align-right
+  > [data-component-id="metsis_drupal:cc_license"] {
   align-self: flex-end;
 }

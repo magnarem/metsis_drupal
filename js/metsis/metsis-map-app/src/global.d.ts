@@ -1,4 +1,5 @@
 /* Declare Globals */
+/* global DrupalSettings, jQueryStatic, TransliterateType, Once */
 declare global {
   interface Window {
     jQuery: jQueryStatic;

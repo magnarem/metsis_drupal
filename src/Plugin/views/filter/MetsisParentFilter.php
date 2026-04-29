@@ -167,9 +167,9 @@ class MetsisParentFilter extends Equality {
     parent::buildExposedForm($form, $form_state);
 
     // Set the form element as hidden.
-    // if (isset($form[$this->options['expose']['identifier']])) {
-    // $form[$this->options['expose']['identifier']]['#type'] = 'hidden';
-    // }.
+    if (isset($form[$this->options['expose']['identifier']])) {
+      $form[$this->options['expose']['identifier']]['#type'] = 'hidden';
+    }
   }
 
   /**

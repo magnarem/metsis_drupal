@@ -17,6 +17,7 @@ use Drupal\metsis_drupal\Service\MetVocabService;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\search_api_solr\SearchApiSolrException;
+use Solarium\QueryType\Select\Result\Result;
 
 /**
  * Small service helper for Metsis search related utilities.
@@ -177,6 +178,24 @@ class MetsisHelper {
   }
 
   /**
+   * Extract first document from a Solarium result using raw response data.
+   *
+   * @param \Solarium\QueryType\Select\Result\Result $result
+   *   Solarium select result.
+   *
+   * @return array<string, mixed>|null
+   *   Document or null.
+   */
+  public function extractFirstDocument(Result $result): ?array {
+    $data = $result->getData();
+    $docs = $data['response']['docs'] ?? [];
+    if (!is_array($docs) || $docs === [] || !is_array($docs[0] ?? NULL)) {
+      return NULL;
+    }
+    return $docs[0];
+  }
+
+  /**
    * Convert a Solr ENVELOPE WKT to a POLYGON WKT.
    *
    * Delegates to WktHelper::envelopeWktToPolygonWkt for now.
@@ -213,6 +232,7 @@ class MetsisHelper {
     }
 
     // Fall back to Solr query.
+    $this->getLogger()->notice('No collection concepts found in vocabulary cache, falling back to Solr query for collections.');
     $solarium_query = $this->createSelectQuery();
 
     /** @var \Solarium\Component\FacetSet $facetSet */
@@ -407,34 +427,6 @@ class MetsisHelper {
   }
 
   /**
-   * Generate a string for MMD fields that have both long and short names.
-   *
-   * If both Long name (short name) string is created.
-   * Else the one that have value.
-   *
-   * @param string|null $short
-   *   The short name for this field.
-   * @param string|null $long
-   *   The long name for this field.
-   *
-   * @return string
-   *   The generated string given input
-   */
-  private function handleShortLong(?string $short = NULL, ?string $long = NULL): string {
-    $generated_string = '';
-    if (!empty($short) && !empty($long)) {
-      $generated_string = $long . '(' . $short . ')';
-    }
-    elseif (!empty($long) && empty($short)) {
-      $generated_string = $long;
-    }
-    elseif (empty($long) && !empty($short)) {
-      $generated_string = $short;
-    }
-    return $generated_string;
-  }
-
-  /**
    * Convert plain text URLs to anchor tags.
    *
    * @param string $text
@@ -443,7 +435,7 @@ class MetsisHelper {
    * @return string
    *   The text with URLs converted to links.
    */
-  private function linkify(string $text): string {
+  public function linkify(string $text): string {
     return preg_replace_callback(
       '/(?<!href=")(https?:\/\/|www\.)[^\s<]+/i',
       function ($m) {

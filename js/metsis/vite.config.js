@@ -24,7 +24,7 @@ export default defineConfig({
         olCss: path.resolve(__dirname, "node_modules/ol/ol.css"),
       },
       output: {
-/*        manualChunks(id) {
+        /*        manualChunks(id) {
           if (id.includes("node_modules/ol")) {
             return "ol"; // Place OpenLayers (ol) in its own chunk
           }

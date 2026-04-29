@@ -72,6 +72,11 @@ field_settings:
     property_path: abstract_en
     type: text
     boost: 1.2
+  abstract_hl:
+    label: 'Abstract hl'
+    datasource_id: solr_document
+    property_path: abstract_hl
+    type: text
   access_constraint:
     label: 'Access constraint'
     datasource_id: solr_document
@@ -553,6 +558,11 @@ field_settings:
     property_path: title_en
     type: text
     boost: 1.5
+  title_hl:
+    label: 'Title hl'
+    datasource_id: solr_document
+    property_path: title_hl
+    type: text
   use_constraint_identifier:
     label: 'Use constraint_identifier'
     datasource_id: solr_document

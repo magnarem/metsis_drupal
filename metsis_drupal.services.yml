@@ -65,7 +65,12 @@ services:
   metsis_drupal.result_row_renderer:
     class: Drupal\metsis_drupal\Service\ResultRowRenderer
     arguments:
-      ["@metsis_drupal.metsis_helper", "@module_handler", "@config.factory", "@metsis_drupal.met_vocab_service"]
+      [
+        "@metsis_drupal.metsis_helper",
+        "@module_handler",
+        "@config.factory",
+        "@metsis_drupal.met_vocab_service",
+      ]
 
   metsis_drupal.metadata_export_service:
     class: Drupal\metsis_drupal\Service\MetadataExportService
@@ -81,11 +86,11 @@ services:
   # Dedicated cache bin for the parsed MMD vocabulary index (24 h TTL).
   cache.metsis_vocab:
     class: Drupal\Core\Cache\CacheBackendInterface
-    factory: ['@cache_factory', 'get']
+    factory: ["@cache_factory", "get"]
     tags:
       - { name: cache.bin }
 
-    arguments: ['metsis_vocab']
+    arguments: ["metsis_vocab"]
 
   metsis_drupal.met_vocab_service:
     class: Drupal\metsis_drupal\Service\MetVocabService

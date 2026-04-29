@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\metsis_drupal\MetsisConstants;
+use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
-use Solarium\QueryType\Select\Result\Result;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,17 +17,17 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class MetadataDocumentController extends ControllerBase {
 
   /**
-   * Entity type manager.
+   * MetsisHelper service.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\metsis_drupal\Utility\MetsisHelper
    */
-  protected EntityTypeManagerInterface $metsisEntityTypeManager;
+  protected MetsisHelper $metsisHelper;
 
   /**
    * Constructs the controller.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->metsisEntityTypeManager = $entity_type_manager;
+  public function __construct(MetsisHelper $metsisHelper) {
+    $this->metsisHelper = $metsisHelper;
   }
 
   /**
@@ -37,7 +35,7 @@ final class MetadataDocumentController extends ControllerBase {
    */
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('metsis_drupal.metsis_helper')
     );
   }
 
@@ -96,78 +94,29 @@ final class MetadataDocumentController extends ControllerBase {
    *   Solr document or null if no match.
    */
   private function loadDocument(string $id): ?array {
-    $index_storage = $this->metsisEntityTypeManager->getStorage('search_api_index');
-    /** @var \Drupal\search_api\IndexInterface|null $index */
-    $index = $index_storage->load(MetsisConstants::METSIS_SOLR_INDEX_ID);
-    if (!$index) {
-      return NULL;
-    }
-
-    /** @var \Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend $backend */
-    $backend = $index->getServerInstance()->getBackend();
-    $connector = $backend->getSolrConnector();
-
-    $probe_query = $connector->getSelectQuery();
-    $probe_query->setQuery('id:"' . $id . '"');
-    $probe_query->setRows(1);
-    $probe_query->setFields(['*']);
-
-    /** @var \Solarium\QueryType\Select\Result\Result $probe_result */
-    $probe_result = $connector->execute($probe_query);
-    $probe_doc = $this->extractFirstDocument($probe_result);
-    if ($probe_doc === NULL) {
-      return NULL;
-    }
-
-    $transform_fields = $this->buildTransformerFields(array_keys($probe_doc));
+    $connector = $this->metsisHelper->getConnector();
 
     $query = $connector->getSelectQuery();
     $query->setQuery('id:"' . $id . '"');
     $query->setRows(1);
-    $query->setFields(array_merge(['*'], $transform_fields));
+    $query->setFields(['*', 'personnel_json:[json]',
+      'data_access_json:[json]',
+      'platform_json:[json]',
+      'related_information_json:[json]',
+      'last_metadata_update_json:[json]',
+      'dataset_citation_json:[json]',
+    ]);
 
     /** @var \Solarium\QueryType\Select\Result\Result $result */
     $result = $connector->execute($query);
-    $document = $this->extractFirstDocument($result);
-    unset($document['storage_information_file_location']);
-    return $document;
-  }
-
-  /**
-   * Build Solr field transformers for JSON and GeoJSON fields.
-   *
-   * @param string[] $field_names
-   *   Field names in the target document.
-   *
-   * @return string[]
-   *   Solr fl parameter entries.
-   */
-  private function buildTransformerFields(array $field_names): array {
-    $fields = [];
-    foreach ($field_names as $field_name) {
-      if (str_ends_with($field_name, '_json')) {
-        $fields[] = $field_name . ':[json]';
-      }
-    }
-    return $fields;
-  }
-
-  /**
-   * Extract first document from a Solarium result using raw response data.
-   *
-   * @param \Solarium\QueryType\Select\Result\Result $result
-   *   Solarium select result.
-   *
-   * @return array<string, mixed>|null
-   *   Document or null.
-   */
-  private function extractFirstDocument(Result $result): ?array {
-    $data = $result->getData();
-    $docs = $data['response']['docs'] ?? [];
-    if (!is_array($docs) || $docs === [] || !is_array($docs[0] ?? NULL)) {
+    $document = $this->metsisHelper->extractFirstDocument($result);
+    if ($document === NULL) {
       return NULL;
     }
-    return $docs[0];
+
+    $document = $this->metsisHelper->extractFirstDocument($result);
+    unset($document['storage_information_file_location']);
+    return $document;
   }
 
   /**
@@ -349,61 +298,6 @@ final class MetadataDocumentController extends ControllerBase {
     }
 
     return $updates;
-  }
-
-  /**
-   * Build fallback raw fields table, preferring concise JSON-backed output.
-   *
-   * @param array<string, mixed> $document
-   *   Solr document.
-   *
-   * @return array<string, string>
-   *   Label/value map.
-   */
-  private function buildRaw(array $document): array {
-    $hidden_fields = [
-      'personnel_name',
-      'personnel_role',
-      'personnel_organisation',
-      'data_access_url_opendap',
-      'data_access_url_http',
-      'data_access_url_ftp',
-      'data_access_url_ogc_wms',
-      'data_access_wms_layers',
-      'related_information_type',
-      'related_information_resource',
-      'related_information_description',
-      'platform_name',
-      'platform_short_name',
-      'platform_long_name',
-      'platform_resource',
-      'platform_instrument_name',
-      'platform_instrument_short_name',
-      'platform_instrument_long_name',
-      'platform_instrument_resource',
-      'last_metadata_update_datetime',
-    ];
-
-    $raw = [];
-    ksort($document);
-    foreach ($document as $field => $value) {
-      if (in_array($field, $hidden_fields, TRUE)) {
-        continue;
-      }
-
-      if (str_ends_with((string) $field, '_json') || str_ends_with((string) $field, '_geojson')) {
-        continue;
-      }
-
-      $text = $this->toInlineText($value);
-      if ($text === '') {
-        continue;
-      }
-
-      $raw[(string) $field] = $text;
-    }
-
-    return $raw;
   }
 
   /**

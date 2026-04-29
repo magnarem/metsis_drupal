@@ -5,7 +5,7 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
 
     "jsx": "react-jsx",
     "jsxImportSource": "preact",

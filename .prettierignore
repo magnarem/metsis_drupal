@@ -2,7 +2,9 @@
 build
 coverage
 web
+bla
 vendor
+docs
 config/**
 .ddev
 .vscode
