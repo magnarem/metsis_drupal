@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\metsis_drupal\EventSubscriber;
 
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Solarium\QueryType\Select\Query\Query;
 use Solarium\Core\Query\Helper as SolariumHelper;
 use Solarium\Component\Facet\Field as SolariumFacetField;
@@ -14,16 +15,22 @@ use Drupal\search_api_solr\Event\PostConvertedQueryEvent;
 use Drupal\search_api_solr\Event\PostExtractResultsEvent;
 use Drupal\search_api_solr\Event\SearchApiSolrEvents;
 use Drupal\search_api_solr\Event\PostFieldMappingEvent;
-use Drupal\metsis_drupal\LoggerTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Psr\Log\LoggerInterface;
 
 /**
  * Search API Solr events subscriber.
  */
 class SearchApiSolrSubscriber implements EventSubscriberInterface {
-  use LoggerTrait;
+
+  /**
+   * Per-query wall-clock timers keyed by Search API query object hash.
+   *
+   * @var array<string, int>
+   */
+  protected array $queryTimers = [];
 
   /**
    * METSIS config (immutable).
@@ -38,6 +45,13 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    * @var \Drupal\metsis_drupal\Utility\MetsisHelper
    */
   protected $metsisHelper;
+
+  /**
+   * Profiler logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected LoggerInterface $profilerLogger;
 
   /**
    * Default solr search fields needed for metsis_search.
@@ -82,7 +96,6 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'data_access_wms_layers',
     'total_children:[subquery]',
     'found_children:[subquery]',
-    'parent:[subquery]',
     'thumbnail_url',
     'personnel_json:[json]',
     'data_access_json:[json]',
@@ -109,9 +122,14 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
   /**
    * Constructor.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MetsisHelper $metsis_helper) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    MetsisHelper $metsis_helper,
+    LoggerChannelFactoryInterface $logger_factory,
+  ) {
     $this->metsisConfig = $config_factory->get('metsis_drupal.settings');
     $this->metsisHelper = $metsis_helper;
+    $this->profilerLogger = $logger_factory->get('metsis_row_profiler');
   }
 
   /**
@@ -135,6 +153,9 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
   public function preQuery(PreQueryEvent $event) {
     // Actions that should be taken on select queries.
     if ($event->getSolariumQuery() instanceof Query) {
+
+      $query_hash = spl_object_hash($event->getSearchApiQuery());
+      $this->queryTimers[$query_hash] = hrtime(TRUE);
 
       /** @var \Solarium\QueryType\Select\Query\Query $solarium_query */
       $solarium_query = $event->getSolariumQuery();
@@ -243,6 +264,9 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
       /* Search within children if we have a metsis search */
       if ($query->hasTag('metsis')) {
+        // Join tuning defaults for production: skip score aggregation and use
+        // the join implementation that performed best in profiling.
+        $join_localparams = ' method=dvWithScore score=none';
 
         $main_query = $solarium_query->getQuery();
         if ($parse_mode_id === 'edismax') {
@@ -327,7 +351,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           // Parents that have at least one matching child.
           $solarium_query->addParam(
           $child_join_param,
-          '{!join from=related_dataset_id to=id defType=lucene v=$' . $child_query_param . '}'
+          '{!join from=related_dataset_id to=id defType=lucene' .
+          $join_localparams . ' v=$' . $child_query_param . '}'
           );
 
           if ($query->getOption('metsis_parent_filter')) {
@@ -391,7 +416,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         );
         $solarium_query->addParam(
           'found_children.parent_match_q',
-          '{!join from=id to=related_dataset_id defType=lucene v=$parent_source_q}'
+          '{!join from=id to=related_dataset_id defType=lucene' .
+          $join_localparams . ' v=$parent_source_q}'
         );
         $solarium_query->addParam(
           'found_children.q',
@@ -414,15 +440,6 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           '{!term f=related_dataset_id v=$row.id}',
         ]);
         $solarium_query->addParam('total_children.rows', '0');
-        /*
-         * Add parent subquery to get information about parent
-         * if dataset is a child.
-         */
-        $solarium_query->addParam('parent.q', '{!term f=id v=$row.related_dataset_id}');
-        $solarium_query->addParam('parent.fq', 'isParent:"true"');
-        $solarium_query->addParam('parent.rows', '1');
-        $solarium_query->addParam('parent.fl', 'id,metadata_identifier,title, abstract, related_url_landing*,temporal*date*');
-
         /*
          * Add some extra edismax query parameters.
          */
@@ -456,6 +473,60 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    * Handle the post extract results Event.
    */
   public function postExtractResults(PostExtractResultsEvent $event) {
+    $query_hash = spl_object_hash($event->getSearchApiQuery());
+    $pipeline_ms = 0.0;
+    if (isset($this->queryTimers[$query_hash])) {
+      $pipeline_ms = (hrtime(TRUE) - $this->queryTimers[$query_hash]) / 1e6;
+      unset($this->queryTimers[$query_hash]);
+    }
+
+    $solarium_result = $event->getSolariumResult();
+    $solr_qtime = method_exists($solarium_result, 'getQueryTime')
+      ? (float) $solarium_result->getQueryTime()
+      : 0.0;
+    $num_found = method_exists($solarium_result, 'getNumFound')
+      ? (int) $solarium_result->getNumFound()
+      : 0;
+
+    $response_bytes = 0;
+    $debug_query = 'n/a';
+    $debug_explain = 'n/a';
+
+    if (method_exists($solarium_result, 'getResponse')) {
+      $response = $solarium_result->getResponse();
+      if ($response) {
+        $body = (string) $response->getBody();
+        $response_bytes = strlen($body);
+        $decoded = json_decode($body, TRUE);
+        if (is_array($decoded)) {
+          $params = $decoded['responseHeader']['params'] ?? [];
+          if (is_array($params)) {
+            if (array_key_exists('debugQuery', $params)) {
+              $debug_query = is_array($params['debugQuery'])
+                ? implode(',', $params['debugQuery'])
+                : (string) $params['debugQuery'];
+            }
+            if (array_key_exists('debug.explain.structured', $params)) {
+              $debug_explain = (string) $params['debug.explain.structured'];
+            }
+          }
+        }
+      }
+    }
+
+    $this->profilerLogger->debug(
+      'Solr execute detail: preQuery_to_extract=@pipeline ms | solr_qtime=@qtime ms | numFound=@num | response_bytes=@bytes | debugQuery=@dq | debug.explain.structured=@de | join_method=@jm | join_score=@js',
+      [
+        '@pipeline' => round($pipeline_ms, 1),
+        '@qtime'    => round($solr_qtime, 1),
+        '@num'      => $num_found,
+        '@bytes'    => $response_bytes,
+        '@dq'       => $debug_query,
+        '@de'       => $debug_explain,
+        '@jm'       => 'dvWithScore',
+        '@js'       => 'none',
+      ]
+    );
   }
 
   /**
@@ -557,6 +628,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    *   The Solarium select query.
    */
   protected function expandFacetFiltersToChildren(Query $solarium_query): void {
+    $join_localparams = ' method=dvWithScore score=none';
+
     // Collect facet filters to rewrite. Solarium stores the {!tag=facet:...}
     // local param separately from the query body, so we detect via getTags().
     $rewrites = [];
@@ -585,7 +658,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
       $solarium_query->addParam($body_param, $parts['query_body']);
       $solarium_query->addParam(
       $join_param,
-      '{!join from=related_dataset_id to=id v=$' . $body_param . '}'
+      '{!join from=related_dataset_id to=id' . $join_localparams .
+      ' v=$' . $body_param . '}'
       );
 
       $rewritten_body = '{!bool should=$' . $body_param . ' should=$' . $join_param . '}';

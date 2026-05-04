@@ -43,20 +43,74 @@ function metsis_drupal_help($route_name, RouteMatchInterface $route_match): stri
  * Implements hook_views_pre_build().
  */
 function metsis_drupal_views_pre_build(ViewExecutable $view) {
-  $id = $view->id();
+  if ($view->id() !== 'metsis_search') {
+    return;
+  }
+  // -- PROFILING: record wall-clock start for the full Views lifecycle.
+  $GLOBALS['_metsis_views_t_pre_build'] = hrtime(TRUE);
+}
+
+/**
+ * Implements hook_views_pre_execute().
+ */
+function metsis_drupal_views_pre_execute(ViewExecutable $view): void {
+  if ($view->id() !== 'metsis_search') {
+    return;
+  }
+  $GLOBALS['_metsis_views_t_pre_execute'] = hrtime(TRUE);
+}
+
+/**
+ * Implements hook_views_post_execute().
+ */
+function metsis_drupal_views_post_execute(ViewExecutable $view): void {
+  if ($view->id() !== 'metsis_search') {
+    return;
+  }
+  $t_pre_build   = $GLOBALS['_metsis_views_t_pre_build']   ?? hrtime(TRUE);
+  $t_pre_execute = $GLOBALS['_metsis_views_t_pre_execute'] ?? hrtime(TRUE);
+  $now = hrtime(TRUE);
+  $GLOBALS['_metsis_views_t_post_execute'] = $now;
+  \Drupal::logger('metsis_row_profiler')->debug(
+    'Views execute: build=@build ms | execute=@execute ms | rows=@rows',
+    [
+      '@build'   => round(($t_pre_execute - $t_pre_build) / 1e6, 1),
+      '@execute' => round(($now - $t_pre_execute) / 1e6, 1),
+      '@rows'    => count($view->result),
+    ]
+  );
 }
 
 /**
  * Implements hook_views_pre_render().
  */
-function metsis_drupal_views_pre_render(ViewExecutable $view) {
-  $id = $view->id();
+function metsis_drupal_views_pre_render(ViewExecutable $view): void {
+  if ($view->id() !== 'metsis_search') {
+    return;
+  }
+  $GLOBALS['_metsis_views_t_pre_render'] = hrtime(TRUE);
+  $t_post_execute = $GLOBALS['_metsis_views_t_post_execute'] ?? hrtime(TRUE);
+  \Drupal::logger('metsis_row_profiler')->debug(
+    'Views pre_render: gap since post_execute=@gap ms',
+    ['@gap' => round((hrtime(TRUE) - $t_post_execute) / 1e6, 1)]
+  );
 }
 
 /**
  * Implements hook_views_post_render().
  */
 function metsis_drupal_views_post_render(ViewExecutable $view, array &$output, CachePluginBase $cache): void {
+  if ($view->id() === 'metsis_search') {
+    $t_pre_render  = $GLOBALS['_metsis_views_t_pre_render']  ?? hrtime(TRUE);
+    $t_pre_build   = $GLOBALS['_metsis_views_t_pre_build']   ?? hrtime(TRUE);
+    \Drupal::logger('metsis_row_profiler')->debug(
+      'Views post_render: render=@render ms | total_views=@total ms',
+      [
+        '@render' => round((hrtime(TRUE) - $t_pre_render) / 1e6, 1),
+        '@total'  => round((hrtime(TRUE) - $t_pre_build) / 1e6, 1),
+      ]
+    );
+  }
   // When using full pager, disable any time-based caching if there are fewer
   // than 10 results.
   $foo = $output;

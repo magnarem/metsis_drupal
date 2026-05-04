@@ -267,6 +267,9 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $style = $this->options['style'] ?? 'default';
     $theme_hook = 'metsis_search_row_' . $style;
 
+    // -- PROFILING: comment out when done diagnosing slow response times.
+    $t_render_start = hrtime(TRUE);
+
     // Get the raw solr document results.
     $solr_doc = $row->_item->getExtraData('search_api_solr_document')->getFields();
 
@@ -274,13 +277,33 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $highlighted_fields = $row->_item->getExtraData('highlighted_fields') ?? [];
 
     // Build the generated excerpt as a safe render array if available.
+    $t_excerpt_start = hrtime(TRUE);
     $excerpt = $this->buildExcerpt($row);
+    $t_excerpt_ms = (hrtime(TRUE) - $t_excerpt_start) / 1e6;
 
     // Generate the rendered fields array.
+    $t_fields_start = hrtime(TRUE);
     $fields = $this->rowRenderer->renderRow($solr_doc, $this->options, $highlighted_fields);
+    $t_fields_ms = (hrtime(TRUE) - $t_fields_start) / 1e6;
 
     // Build operations block.
+    $t_ops_start = hrtime(TRUE);
     $operations = $this->buildOperations($solr_doc, $fields, $row);
+    $t_ops_ms = (hrtime(TRUE) - $t_ops_start) / 1e6;
+
+    $t_total_ms = (hrtime(TRUE) - $t_render_start) / 1e6;
+    $id = $solr_doc['metadata_identifier'] ?? 'unknown';
+    \Drupal::logger('metsis_row_profiler')->debug(
+      'Row @id: total=@total ms | excerpt=@excerpt ms | fields=@fields ms | ops=@ops ms',
+      [
+        '@id'      => $id,
+        '@total'   => round($t_total_ms, 2),
+        '@excerpt' => round($t_excerpt_ms, 2),
+        '@fields'  => round($t_fields_ms, 2),
+        '@ops'     => round($t_ops_ms, 2),
+      ]
+    );
+    // -- END PROFILING
 
     // Build render array for row style.
     return [

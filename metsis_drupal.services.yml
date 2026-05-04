@@ -18,6 +18,14 @@ services:
     arguments:
       - "@config.factory"
       - "@metsis_drupal.metsis_helper"
+      - "@logger.factory"
+    tags:
+      - { name: event_subscriber }
+
+  metsis_drupal.solarium_request_timing_subscriber:
+    class: Drupal\metsis_drupal\EventSubscriber\SolariumRequestTimingSubscriber
+    arguments:
+      - "@logger.factory"
     tags:
       - { name: event_subscriber }
 
