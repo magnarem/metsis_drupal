@@ -277,10 +277,7 @@ class MetsisHelper {
    * and bubbleable metadata correctly.
    */
   public function buildLeafletMap(string $geometry, string $height): array {
-    $maps = $this->leaflet->leafletMapGetInfo();
-
-    // Work on the map you want to use.
-    $map = $maps['OSM Mapnik'];
+    $map = $this->leaflet->leafletMapGetInfo('openstreetmap');
     $map['settings']['leaflet_markercluster'] = ['control' => FALSE];
     $map['settings']['zoomControl'] = FALSE;
     $map['settings']['zoom'] = 10;

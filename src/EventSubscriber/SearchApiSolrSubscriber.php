@@ -7,12 +7,13 @@ namespace Drupal\metsis_drupal\EventSubscriber;
 use Solarium\QueryType\Select\Query\Query;
 use Solarium\Core\Query\Helper as SolariumHelper;
 use Solarium\Component\Facet\Field as SolariumFacetField;
+use Solarium\Component\Facet\FieldValueParametersInterface;
+
 use Drupal\search_api_solr\Event\PreQueryEvent;
 use Drupal\search_api_solr\Event\PostConvertedQueryEvent;
 use Drupal\search_api_solr\Event\PostExtractResultsEvent;
 use Drupal\search_api_solr\Event\SearchApiSolrEvents;
 use Drupal\search_api_solr\Event\PostFieldMappingEvent;
-use Drupal\search_api_solr\Utility\Utility;
 use Drupal\metsis_drupal\LoggerTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -61,10 +62,6 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'feature_type',
     'data_access_url_http',
     'score',
-    'geographic_extent_rectangle_south',
-    'geographic_extent_rectangle_north',
-    'geographic_extent_rectangle_west',
-    'geographic_extent_rectangle_east',
     'use_constraint_identifier',
     'use_constraint_license_text',
     'iso_topic_category',
@@ -93,6 +90,20 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'related_information_json:[json]',
     'last_metadata_update_json:[json]',
     'dataset_citation_json:[json]',
+  ];
+
+  /**
+   * Low-cardinality facet fields that are good candidates for enum method.
+   *
+   * @var string[]
+   */
+  protected array $enumFacetFields = [
+    'activity_type',
+    'collection',
+    'keywords_gcmdloc',
+    'keywords_gcmdprov',
+    'keywords_gemet',
+    'keywords_northemes',
   ];
 
   /**
@@ -136,8 +147,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
         // Retrieve geojson and wkt fields from solr.
         $solarium_query->addField('geometry_geojson');
-        $solarium_query->addField('geometry_wkt');
-
+        // $solarium_query->addField('geometry_wkt');
         /*
          * Add fields not defined in search view but needed for
          * other metsis search backends. I.E MapSearch
@@ -244,16 +254,14 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // Get the main query filters to pass to the child subquery.
         $main_query_filters = $solarium_query->getFilterQueries();
 
-        // Highlighting fails with join query, so we use main query in hl.q.
-        $hl = $solarium_query->getHighlighting();
-
-        // Build hl.q from individual search keys to avoid join query
-        // interfering with snippet generation. Each term is prefixed with
-        // the full-text field so Solr matches highlighting correctly.
         $search_keys = $query->getKeys();
+        $has_search_terms = !empty($search_keys);
 
-        $hl_query = $main_query;
-        if (!empty($search_keys)) {
+        if ($has_search_terms) {
+          $hl = $solarium_query->getHighlighting();
+
+          // Build hl.q from individual search keys to avoid join query
+          // interfering with snippet generation.
           $terms = $this->extractSearchTerms($search_keys);
           if (!empty($terms)) {
             $hl_query = implode(' ', array_map(
@@ -261,49 +269,50 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
               $terms
             ));
           }
+          else {
+            $hl_query = $main_query;
+          }
+          $hl->setQuery($hl_query);
+          $hl->setMethod('unified');
+          $hl->setFields([
+            'metadata_identifier',
+            'related_dataset',
+            'activity_type',
+            'title_hl',
+            'abstract_hl',
+            'personnel_name',
+            'personnel_organisation',
+            'data_center_long_name',
+            'data_center_short_name',
+            'keywords_keyword',
+            'project_name',
+            'platform_name',
+            'platform_instrument_name',
+            'dataset_citation_title',
+            'dataset_citation_doi',
+            'use_constraint_license_text',
+            'related_information_description',
+            'descriptions',
+          ]);
+          $hl->setRequireFieldMatch(TRUE);
+          $hl->setSnippets(2);
+          $hl->setFragSize(150);
+          $hl->setHighlightMultiTerm(TRUE);
+          $hl->setDefaultSummary(FALSE);
+          $hl->setUsePhraseHighlighter(TRUE);
+          $hl->setMergeContiguous(TRUE);
         }
-        $hl->setQuery($hl_query);
-        $hl->setMethod('unified');
-        // $hl->setFields([
-        //   'metadata_identifier',
-        //   'related_dataset',
-        //   'activity_type',
-        //   'title_hl',
-        //   'abstract_hl',
-        //   'personnel_name',
-        //   'personnel_organisation',
-        //   'data_center_long_name',
-        //   'data_center_short_name',
-        //   'keywords_keyword',
-        //   'project_name',
-        //   'project_long_name',
-        //   'project_short_name',
-        //   'platform_name',
-        //   'platform_long_name',
-        //   'platform_short_name',
-        //   'platform_instrument_name',
-        //   'platform_instrument_long_name',
-        //   'platform_instrument_short_name',
-        //   'dataset_citation_title',
-        //   'dataset_citation_doi',
-        //   'use_constraint_license_text',
-        //   'related_information_description',
-        //   'descriptions',
-        // ]);
-        // $hl->setRequireFieldMatch(TRUE);
-        // $hl->setSnippets(2);
-        // $hl->setFragSize(50);
-        $hl->setHighlightMultiTerm(TRUE);
-        $hl->setDefaultSummary(FALSE);
-        $hl->setUsePhraseHighlighter(TRUE);
-        $hl->setMergeContiguous(TRUE);
+        else {
+          // No search terms: disable highlighting entirely to save Solr work.
+          $solarium_query->removeComponent('highlighting');
+          // $solarium_query->addParam('hl', 'false');
+        }
         // $hl->setBoundaryScanner('simple');
         // hl.bs.chars has no dedicated Solarium API method; set it directly.
         // $solarium_query->addParam('hl.bs.chars', ">.,!? \t\n\r");
         // Per-field overrides: shorter snippets for keyword values.
         // $hl->getField('keywords_keyword')->setSnippets(3);
         // $hl->getField('keywords_keyword')->setFragSize(2000);
-
         // Use lucene query parser. To make use of join and subquerires.
         // Parent/Child matching. Only needed when we have query terms.
         $solarium_query->addParam('defType', 'lucene');
@@ -322,25 +331,14 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           );
 
           if ($query->getOption('metsis_parent_filter')) {
-            $parent_fallback_source = 'metsis_parent_fallback_source_q';
-            $parent_to_child_fallback = 'metsis_parent_to_child_fallback_q';
-
-            // Parent must match text, but only when it has NO matching child.
-            $solarium_query->addParam(
-              $parent_fallback_source,
-              '{!bool must=$' . $parent_query_param . ' must_not=$' . $child_join_param . '}'
-            );
-
-            // Convert those parent matches to their children.
-            $solarium_query->addParam(
-              $parent_to_child_fallback,
-              '{!join from=id to=related_dataset_id defType=lucene v=$' . $parent_fallback_source . '}'
-            );
-
-            // Child mode: matching children,
-            // or fallback-all-children when no chi ld matched.
+            // Child-browse mode: fq already restricts results to children of
+            // the selected parent via a related_dataset filter. The double-join
+            // fallback (scan all parents for text match → join to children)
+            // scans the entire id field across all documents, which is
+            // expensive and adds nothing — the scope is already pinned.
+            // Simply match children that contain the search terms directly.
             $solarium_query->setQuery(
-              '{!bool should=$' . $child_query_param . ' should=$' . $parent_to_child_fallback . '}'
+              '{!bool should=$' . $child_query_param . '}'
             );
           }
           else {
@@ -352,7 +350,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         }
         // Rewrite facet-generated filter queries so parents are kept when a
         // matching child carries the selected facet value.
-        $this->expandFacetFiltersToChildren($solarium_query, $helper);
+        $this->expandFacetFiltersToChildren($solarium_query);
 
         // Exclude the parent_child_filter from all facet field domains so that
         // children matching the query also contribute to facet counts. Without
@@ -362,9 +360,18 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         foreach ($facet_set->getFacets() as $facet) {
           if ($facet instanceof SolariumFacetField) {
             $field = $facet->getField();
-            // Only add the exclusion once; avoid double-wrapping on cache hits.
-            if (!str_starts_with($field, '{!')) {
-              $facet->setField('{!ex=parent_child_filter}' . $field);
+            $facet_field_name = $this->extractFacetFieldName((string) $field);
+
+            if (in_array($facet_field_name, $this->enumFacetFields, TRUE)) {
+              // Prefer enum for low-cardinality vocabulary-like facets.
+              // Request builder generates raw-field params from facet object.
+              $facet->setMethod(FieldValueParametersInterface::METHOD_ENUM);
+              $facet->setEnumCacheMinimumDocumentFrequency(1);
+            }
+            // Keep facet domain broad enough for child-doc values by excluding
+            // parent_child_filter from the facet domain.
+            if (!in_array('parent_child_filter', $facet->getExcludes(), TRUE)) {
+              $facet->addExclude('parent_child_filter');
             }
           }
         }
@@ -398,7 +405,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
          * Create subquery for getting the total number of children for each
          * parent document in the main query result set.
          */
-        $solarium_query->addParam('total_children.q', '*:*');
+        $solarium_query->addParam('total_children.q', 'id:*');
+        $solarium_query->addParam('total_children.fl', ['id']);
         $solarium_query->addParam('total_children.fq', [
           '+metadata_status:"Active"',
           'collection:(' . implode(' ', array_keys((array) $this->metsisConfig->get('selected_collections'))) . ')',
@@ -423,6 +431,14 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $solarium_query->addParam('qs', 2);
         $solarium_query->addParam('mm', '3<90%');
 
+        /* Use parallel threads for facet processing.*/
+        $solarium_query->addParam('facet.threads', 12);
+
+        // Strip all debug params so they cannot be doubled by upstream
+        // config. debug.explain.structured forces per-row explain scoring
+        // which is as expensive as debugQuery itself.
+        $solarium_query->removeParam('debugQuery');
+        $solarium_query->removeParam('debug.explain.structured');
         $solarium_query->addParam('debugQuery', 'false');
       }
 
@@ -539,10 +555,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    *
    * @param \Solarium\QueryType\Select\Query\Query $solarium_query
    *   The Solarium select query.
-   * @param \Solarium\Core\Query\Helper $helper
-   *   Solarium query helper used to escape local param values.
    */
-  protected function expandFacetFiltersToChildren(Query $solarium_query, SolariumHelper $helper): void {
+  protected function expandFacetFiltersToChildren(Query $solarium_query): void {
     // Collect facet filters to rewrite. Solarium stores the {!tag=facet:...}
     // local param separately from the query body, so we detect via getTags().
     $rewrites = [];
@@ -600,6 +614,20 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     }
 
     return ['', $query];
+  }
+
+  /**
+   * Extracts raw facet field name from an optional local-params expression.
+   *
+   * @param string $facet_field
+   *   Facet field, optionally prefixed with local params.
+   *
+   * @return string
+   *   Raw field name.
+   */
+  protected function extractFacetFieldName(string $facet_field): string {
+    [, $field] = $this->splitLocalParams(trim($facet_field));
+    return trim($field);
   }
 
   /**
@@ -667,7 +695,9 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Normalizes a nested text query by removing outer parentheses and local params.
+   * Normalizes nested text query string.
+   *
+   * Removes outer parentheses and local params when present.
    *
    * @param string $query
    *   The query string to normalize.

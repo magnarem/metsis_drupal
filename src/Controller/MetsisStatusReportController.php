@@ -112,6 +112,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
     /** @var \Drupal\search_api_solr\SolrConnectorInterface */
     $connector = $backend->getSolrConnector();
     $cloud = $connector instanceof SolrCloudConnectorInterface;
+    $availability_exception_message = NULL;
 
     // Is available check.
     try {
@@ -120,6 +121,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
     catch (SearchApiSolrException $e) {
       // If an exception is thrown, we consider the backend unavailable.
       $info["server"]["status"] = FALSE;
+      $availability_exception_message = $e->getMessage();
     }
     if ($info["server"]["status"] === TRUE) {
       // The configured MMD collections for this site.
@@ -170,24 +172,6 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
         '@pending' => $pending_msg,
         '@index_msg' => $index_msg,
       ]);
-
-      // If solr server is not available we return an error.
-      if ($info["server"]["status"] === FALSE) {
-        $url = Url::fromRoute('entity.search_api_server.edit_form')
-          ->setRouteParameters(['search_api_server' => MetsisConstants::METSIS_SOLR_SERVER_ID]);
-        $link = Link::fromTextAndUrl($this->t('Solr server settings'), $url)->toString();
-
-        $build['report']['#requirements']['server'] = [
-          'title' => 'Solr',
-          'value' => $this->t('Not available.'),
-          'severity' => RequirementSeverity::Error,
-          'description' => $this->t('The solr server is not available. Verify connection settings. @url', [
-            '@url' => $link,
-          ]),
-        ];
-
-        return $build;
-      }
 
       // Build the requirements for the status report.
       $requirements = [
@@ -303,11 +287,25 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
       ];
     }
     else {
+      $url = Url::fromRoute('entity.search_api_server.edit_form')
+        ->setRouteParameters(['search_api_server' => MetsisConstants::METSIS_SOLR_SERVER_ID]);
+      $link = Link::fromTextAndUrl($this->t('Solr server settings'), $url)->toString();
+      $description = $this->t('The Solr server or core/collection is not available. Verify connection settings. @url', [
+        '@url' => $link,
+      ]);
+      if ($availability_exception_message !== NULL) {
+        $description = $this->t('The Solr server or core/collection is not available. Last error: @error. @url', [
+          '@error' => $availability_exception_message,
+          '@url' => $link,
+        ]);
+      }
+
       $requirements = [
         'status' => [
           'title' => $this->t('Status'),
           'value' => $this->t("Solr server or core/collection not available. Check the Solr server and search api settings."),
           'severity' => RequirementSeverity::Error,
+          'description' => $description,
         ],
       ];
     }

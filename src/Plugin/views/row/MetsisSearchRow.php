@@ -403,7 +403,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         'data-dialog-type' => 'modal',
         'data-dialog-options' => Json::encode([
           'width' => 960,
-          'title' => (string) $this->t('Metadata document'),
+          'title' => (string) $this->t('Metadata record'),
         ]),
       ],
     ];
