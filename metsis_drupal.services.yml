@@ -16,7 +16,7 @@ services:
   metsis_drupal.search_api_solr_subscriber:
     class: Drupal\metsis_drupal\EventSubscriber\SearchApiSolrSubscriber
     arguments:
-      - "@config.factory"
+      - "@metsis_drupal.config_provider"
       - "@metsis_drupal.metsis_helper"
       - "@logger.factory"
     tags:
@@ -47,16 +47,65 @@ services:
       - "@http_client"
       - "@config.factory"
 
+  # --- Tier 1: Infrastructure Services (minimal deps, no UI deps) -----------
+
+  metsis_drupal.solr_connector_provider:
+    class: Drupal\metsis_drupal\Service\SolrConnectorProvider
+    arguments:
+      - "@entity_type.manager"
+
+  metsis_drupal.solr_query_factory:
+    class: Drupal\metsis_drupal\Service\SolrQueryFactory
+    arguments:
+      - "@metsis_drupal.solr_connector_provider"
+
+  metsis_drupal.solr_document_loader:
+    class: Drupal\metsis_drupal\Service\SolrDocumentLoader
+    arguments:
+      - "@metsis_drupal.solr_query_factory"
+      - "@metsis_drupal.solr_connector_provider"
+
+  # Alias for autowiring.
+  Drupal\metsis_drupal\Service\SolrConnectorProvider:
+    alias: "metsis_drupal.solr_connector_provider"
+
+  Drupal\metsis_drupal\Service\SolrQueryFactory:
+    alias: "metsis_drupal.solr_query_factory"
+
+  Drupal\metsis_drupal\Service\SolrDocumentLoader:
+    alias: "metsis_drupal.solr_document_loader"
+
+  # --- Tier 2: Configuration & Domain Services -------------------------------
+
+  metsis_drupal.config_provider:
+    class: Drupal\metsis_drupal\Service\ConfigProvider
+    arguments:
+      - "@config.factory"
+
+  Drupal\metsis_drupal\Service\ConfigProvider:
+    alias: "metsis_drupal.config_provider"
+
+  # --- Tier 3: UI/Rendering Services ----------------------------------------
+
+  metsis_drupal.leaflet_map_renderer:
+    class: Drupal\metsis_drupal\Service\LeafletMapRenderer
+    arguments:
+      - "@leaflet.service"
+      - "@renderer"
+
+  Drupal\metsis_drupal\Service\LeafletMapRenderer:
+    alias: "metsis_drupal.leaflet_map_renderer"
+
+  # --- Tier 4: High-level Search Helpers ------------------------------------
+
   metsis_drupal.metsis_helper:
     class: Drupal\metsis_drupal\Utility\MetsisHelper
     arguments:
-      - "@entity_type.manager"
-      - "@leaflet.service"
-      - "@renderer"
       - "@module_handler"
-      - "@config.factory"
+      - "@metsis_drupal.config_provider"
       - "@metsis_drupal.feature_type_lookup_service"
       - "@metsis_drupal.met_vocab_service"
+      - "@metsis_drupal.solr_connector_provider"
 
   metsis_drupal.status_report_service:
     class: Drupal\metsis_drupal\Service\StatusReportService
@@ -76,7 +125,8 @@ services:
       [
         "@metsis_drupal.metsis_helper",
         "@module_handler",
-        "@config.factory",
+        "@metsis_drupal.config_provider",
+        "@metsis_drupal.leaflet_map_renderer",
         "@metsis_drupal.met_vocab_service",
       ]
 

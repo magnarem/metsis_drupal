@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Drupal\metsis_drupal\Service\SolrDocumentLoader;
 use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -28,7 +28,7 @@ final class WmsController extends ControllerBase {
    * The controller constructor.
    */
   public function __construct(
-    private readonly MetsisHelper $metsisHelper,
+    private readonly SolrDocumentLoader $documentLoader,
   ) {}
 
   /**
@@ -36,7 +36,7 @@ final class WmsController extends ControllerBase {
    */
   public static function create(ContainerInterface $container): self {
     return new self(
-      $container->get('metsis_drupal.metsis_helper'),
+      $container->get('metsis_drupal.solr_document_loader'),
     );
   }
 
@@ -78,24 +78,12 @@ final class WmsController extends ControllerBase {
    *   Solr document or null if no match.
    */
   private function loadDocument(string $id): ?array {
-    $connector = $this->metsisHelper->getConnector();
-
-    $query = $connector->getSelectQuery();
-    $query = $this->metsisHelper->createSelectQuery();
-    $query->setQuery('id:"' . $id . '"');
-    $query->setRows(1);
-    $query->setFields(['id', 'metadata_identifier', 'title', 'data_access_json:[json]']);
-
-    /** @var \Solarium\QueryType\Select\Result\Result $result */
-    $result = $connector->execute($query);
-    $document = $this->metsisHelper->extractFirstDocument($result);
-    if ($document === NULL) {
-      return NULL;
-    }
-
-    $document = $this->metsisHelper->extractFirstDocument($result);
-    unset($document['storage_information_file_location']);
-    return $document;
+    return $this->documentLoader->loadDocumentById($id, [
+      'id',
+      'metadata_identifier',
+      'title',
+      'data_access_json:[json]',
+    ]);
   }
 
 }

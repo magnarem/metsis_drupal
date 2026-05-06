@@ -304,7 +304,6 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ]
     );
     // -- END PROFILING
-
     // Build render array for row style.
     return [
       '#theme' => $theme_hook,

@@ -4,195 +4,77 @@ declare(strict_types=1);
 
 namespace Drupal\metsis_drupal\Utility;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\leaflet\LeafletService;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
-use Solarium\QueryType\Select\Query\Query;
-use Drupal\metsis_drupal\MetsisConstants;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\metsis_drupal\LoggerTrait;
 use Drupal\metsis_drupal\Service\FeatureTypeLookupService;
 use Drupal\metsis_drupal\Service\MetVocabService;
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\metsis_drupal\Service\SolrConnectorProvider;
+use Drupal\metsis_drupal\Service\ConfigProvider;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\search_api_solr\SearchApiSolrException;
-use Solarium\QueryType\Select\Result\Result;
 
 /**
- * Small service helper for Metsis search related utilities.
+ * High-level search helper service for METSIS.
  *
- * This class is a thin wrapper for utility functions and provides a place to
- * add additional helper methods in the future. It may delegate to static
- * helpers such as WktHelper.
+ * Provides search-specific utilities like collections lookup, feature type
+ * detection, and text processing. Lower-level Solr operations (connector,
+ * query creation) are delegated to dedicated services.
  */
-class MetsisHelper {
+final class MetsisHelper {
 
   use LoggerTrait;
   use StringTranslationTrait;
-
-  /**
-   * The search_api_index entity instance.
-   *
-   * @var \Drupal\search_api\IndexInterface|null
-   */
-  protected $index;
-
-  /**
-   * The Solr connector instance.
-   *
-   * @var object|null
-   *  The Solr connector.
-   */
-  protected $connector;
-
-  /**
-   * The leaflet map service.
-   *
-   * @var \Drupal\leaflet\LeafletService
-   */
-  protected LeafletService $leaflet;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected RendererInterface $renderer;
-
-  /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
-   * The metsis_drupal.settings config object.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected ImmutableConfig $settingsConfig;
-
-  /**
-   * The metsis_drupal.metadata_export config object.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected ImmutableConfig $metadataExportConfig;
-
-  /**
-   * The metsis_drupal.license_icons config object.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected ImmutableConfig $licenseIconsConfig;
-
 
   /**
    * The metsis_drupal module extension.
    *
    * @var \Drupal\Core\Extension\Extension
    */
-
   protected $moduleExtension;
 
   /**
-   * The feature_type_lookup_service.
+   * The feature type lookup service.
    *
    * @var \Drupal\metsis_drupal\Service\FeatureTypeLookupService
    */
-  protected $featureTypeLookup;
+  protected FeatureTypeLookupService $featureTypeLookup;
 
   /**
-   * The MET MMD Vocabulary Service ().
+   * The MET vocabulary service.
    *
    * @var \Drupal\metsis_drupal\Service\MetVocabService
    */
   protected MetVocabService $metVocabService;
 
   /**
-   * Constructor.
+   * The Solr connector provider.
    *
-   * EntityTypeManager is injected so we can load the Search API index once
-   * and reuse the Solr connector / query factory across methods.
+   * @var \Drupal\metsis_drupal\Service\SolrConnectorProvider
+   */
+  protected SolrConnectorProvider $connectorProvider;
+
+  /**
+   * The config provider.
+   *
+   * @var \Drupal\metsis_drupal\Service\ConfigProvider
+   */
+  protected ConfigProvider $configProvider;
+
+  /**
+   * Constructor.
    */
   public function __construct(
-    EntityTypeManagerInterface $entity_type_manager,
-    LeafletService $leaflet,
-    RendererInterface $renderer,
     ModuleHandlerInterface $module_handler,
-    ConfigFactoryInterface $config_factory,
+    ConfigProvider $config_provider,
     FeatureTypeLookupService $feature_type_lookup_service,
     MetVocabService $met_vocab_service,
+    SolrConnectorProvider $connector_provider,
   ) {
-    $this->leaflet = $leaflet;
-    $this->renderer = $renderer;
     $this->moduleExtension = $module_handler->getModule('metsis_drupal');
-    $this->configFactory = $config_factory;
-    $this->settingsConfig = $config_factory->get('metsis_drupal.settings');
+    $this->configProvider = $config_provider;
     $this->featureTypeLookup = $feature_type_lookup_service;
-    $this->metadataExportConfig = $config_factory->get('metsis_drupal.metadata_export');
-    $this->licenseIconsConfig = $config_factory->get('metsis_drupal.license_icons');
     $this->metVocabService = $met_vocab_service;
-    $this->index = $entity_type_manager->getStorage('search_api_index')
-      ->load(MetsisConstants::METSIS_SOLR_INDEX_ID);
-    if ($this->index) {
-      /** @var \Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend $backend */
-      $backend = $this->index->getServerInstance()->getBackend();
-      $this->connector = $backend->getSolrConnector();
-    }
-  }
-
-  /**
-   * Create a new Solarium select query.
-   *
-   * Use this instead of repeating the Index/backend/connector boilerplate.
-   *
-   * @return \Solarium\QueryType\Select\Query\Query
-   *   The Solarium select query.
-   *
-   * @throws \RuntimeException
-   *   Thrown when the Solr connector could not be initialized.
-   */
-  public function createSelectQuery(): Query {
-    if (!$this->connector) {
-      throw new \RuntimeException('Solr connector not available. Is the search index configured?');
-    }
-    return $this->connector->getSelectQuery();
-  }
-
-  /**
-   * Get the connector (rarely needed publicly).
-   *
-   * @return object
-   *   The Solr connector.
-   *
-   * @throws \RuntimeException
-   */
-  public function getConnector() {
-    if (!$this->connector) {
-      throw new \RuntimeException('Solr connector not available.');
-    }
-    return $this->connector;
-  }
-
-  /**
-   * Extract first document from a Solarium result using raw response data.
-   *
-   * @param \Solarium\QueryType\Select\Result\Result $result
-   *   Solarium select result.
-   *
-   * @return array<string, mixed>|null
-   *   Document or null.
-   */
-  public function extractFirstDocument(Result $result): ?array {
-    $data = $result->getData();
-    $docs = $data['response']['docs'] ?? [];
-    if (!is_array($docs) || $docs === [] || !is_array($docs[0] ?? NULL)) {
-      return NULL;
-    }
-    return $docs[0];
+    $this->connectorProvider = $connector_provider;
   }
 
   /**
@@ -233,7 +115,8 @@ class MetsisHelper {
 
     // Fall back to Solr query.
     $this->getLogger()->notice('No collection concepts found in vocabulary cache, falling back to Solr query for collections.');
-    $solarium_query = $this->createSelectQuery();
+    $connector = $this->connectorProvider->getConnector();
+    $solarium_query = $connector->getSelectQuery();
 
     /** @var \Solarium\Component\FacetSet $facetSet */
     $facetSet = $solarium_query->getFacetSet();
@@ -243,7 +126,7 @@ class MetsisHelper {
     $facetField->setField('collection');
 
     /** @var \Solarium\QueryType\Select\Result\Result $result */
-    $result = $this->getConnector()->execute($solarium_query);
+    $result = $connector->execute($solarium_query);
 
     /** @var \Solarium\Component\Result\FacetSet $facetResSet */
     $facetResSet = $result->getFacetSet();
@@ -261,33 +144,6 @@ class MetsisHelper {
   }
 
   /**
-   * Retrieves the leaflet service.
-   *
-   * @return \Drupal\leaflet\LeafletService
-   *   The leaflet service.
-   */
-  public function getLeafletService() {
-    return $this->leaflet;
-  }
-
-  /**
-   * Build a render array for a Leaflet map from a geometry.
-   *
-   * Prefer returning a render array so controllers/blocks can handle rendering
-   * and bubbleable metadata correctly.
-   */
-  public function buildLeafletMap(string $geometry, string $height): array {
-    $map = $this->leaflet->leafletMapGetInfo('openstreetmap');
-    $map['settings']['leaflet_markercluster'] = ['control' => FALSE];
-    $map['settings']['zoomControl'] = FALSE;
-    $map['settings']['zoom'] = 10;
-    // $map['settings']['crs'] = "L.CRSEPSG4326";
-    $feature = $this->leaflet->leafletProcessGeofield($geometry);
-
-    return $this->leaflet->leafletRenderMap($map, $feature, $height);
-  }
-
-  /**
    * Get the module path.
    *
    * @return string
@@ -295,36 +151,6 @@ class MetsisHelper {
    */
   public function getModulePath(): string {
     return $this->moduleExtension->getPath();
-  }
-
-  /**
-   * Get the metsis_drupal.settings config object.
-   *
-   * @return \Drupal\Core\Config\ImmutableConfig
-   *   The config object.
-   */
-  public function getSettingsConfig(): ImmutableConfig {
-    return $this->settingsConfig;
-  }
-
-  /**
-   * Get the metsis_drupal.metadata_export config object.
-   *
-   * @return \Drupal\Core\Config\ImmutableConfig
-   *   The config object.
-   */
-  public function getMetadataExportConfig(): ImmutableConfig {
-    return $this->metadataExportConfig;
-  }
-
-  /**
-   * Get the metsis_drupal.license_icons config object.
-   *
-   * @return \Drupal\Core\Config\ImmutableConfig
-   *   The config object.
-   */
-  public function getLicenseIconsConfig(): ImmutableConfig {
-    return $this->licenseIconsConfig;
   }
 
   /**
@@ -377,15 +203,14 @@ class MetsisHelper {
    *
    * @return string|null|int
    *   The featureType fetched from solr.
-   *   Returns 404 if not found. NULL when other erros.
+   *   Returns 404 if not found. NULL when other errors.
    */
   public function lookupFeatureTypeSolr(?string $identifier = NULL, ?string $url = NULL): string|int|null {
-    // Create a select query.
-    $solr_query = $this->createSelectQuery();
+    $connector = $this->connectorProvider->getConnector();
+    $solr_query = $connector->getSelectQuery();
     if ($identifier !== NULL && $identifier !== '') {
       $solr_query->setQuery("metadata_identifier:\"{$identifier}\"");
     }
-
     elseif ($url !== NULL && $url !== '') {
       $solr_query->setQuery("data_access_url_opendap:\"{$url}\"");
     }
@@ -400,7 +225,7 @@ class MetsisHelper {
 
     try {
       /** @var \Solarium\QueryType\Select\Result\Result $result */
-      $result = $this->getConnector()->execute($solr_query);
+      $result = $connector->execute($solr_query);
       if ($result->getNumFound() > 0) {
         $featureType = $result->getDocuments()[0]->feature_type ?? NULL;
         return is_array($featureType) ? reset($featureType) : $featureType;
@@ -411,7 +236,6 @@ class MetsisHelper {
         return 404;
       }
       return NULL;
-
     }
     catch (SearchApiSolrException $e) {
       $this->getLogger()->error('lookupFeatureType: Solr exception: @message', [

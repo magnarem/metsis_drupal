@@ -210,6 +210,7 @@ class MetsisParentFilter extends Equality {
       $field = "$this->realField";
       $parent_query = "$field:\"{$val}\"";
       $this->getQuery()->setOption('metsis_parent_filter', $parent_query);
+      $this->getQuery()->setOption('metsis_parent_id', $val);
     }
   }
 

@@ -67,9 +67,9 @@ function metsis_drupal_views_post_execute(ViewExecutable $view): void {
   if ($view->id() !== 'metsis_search') {
     return;
   }
-  $t_pre_build   = $GLOBALS['_metsis_views_t_pre_build']   ?? hrtime(TRUE);
-  $t_pre_execute = $GLOBALS['_metsis_views_t_pre_execute'] ?? hrtime(TRUE);
-  $now = hrtime(TRUE);
+  $t_pre_build                             = $GLOBALS['_metsis_views_t_pre_build'] ?? hrtime(TRUE);
+  $t_pre_execute                           = $GLOBALS['_metsis_views_t_pre_execute'] ?? hrtime(TRUE);
+  $now                                     = hrtime(TRUE);
   $GLOBALS['_metsis_views_t_post_execute'] = $now;
   \Drupal::logger('metsis_row_profiler')->debug(
     'Views execute: build=@build ms | execute=@execute ms | rows=@rows',
@@ -101,8 +101,8 @@ function metsis_drupal_views_pre_render(ViewExecutable $view): void {
  */
 function metsis_drupal_views_post_render(ViewExecutable $view, array &$output, CachePluginBase $cache): void {
   if ($view->id() === 'metsis_search') {
-    $t_pre_render  = $GLOBALS['_metsis_views_t_pre_render']  ?? hrtime(TRUE);
-    $t_pre_build   = $GLOBALS['_metsis_views_t_pre_build']   ?? hrtime(TRUE);
+    $t_pre_render = $GLOBALS['_metsis_views_t_pre_render'] ?? hrtime(TRUE);
+    $t_pre_build  = $GLOBALS['_metsis_views_t_pre_build'] ?? hrtime(TRUE);
     \Drupal::logger('metsis_row_profiler')->debug(
       'Views post_render: render=@render ms | total_views=@total ms',
       [

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\metsis_drupal\Service;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Drupal\metsis_drupal\LoggerTrait;
@@ -18,7 +16,6 @@ use Drupal\metsis_drupal\LoggerTrait;
  */
 final class ResultRowRenderer {
 
-
   use LoggerTrait;
   use StringTranslationTrait;
 
@@ -29,30 +26,26 @@ final class ResultRowRenderer {
    */
   protected MetsisHelper $metsisHelper;
 
-
-  /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-
-  /**
-   * The metsis_drupal.license_icons config object.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected ImmutableConfig $licenseIconsConfig;
-
-
   /**
    * The metsis_drupal module extension.
    *
    * @var \Drupal\Core\Extension\Extension
    */
-
   protected $moduleExtension;
+
+  /**
+   * The config provider service.
+   *
+   * @var \Drupal\metsis_drupal\Service\ConfigProvider
+   */
+  protected ConfigProvider $configProvider;
+
+  /**
+   * The leaflet map renderer service.
+   *
+   * @var \Drupal\metsis_drupal\Service\LeafletMapRenderer
+   */
+  protected LeafletMapRenderer $leafletMapRenderer;
 
   /**
    * The Met vocabulary service.
@@ -67,15 +60,15 @@ final class ResultRowRenderer {
   public function __construct(
     MetsisHelper $metsis_helper,
     ModuleHandlerInterface $module_handler,
-    ConfigFactoryInterface $config_factory,
+    ConfigProvider $config_provider,
+    LeafletMapRenderer $leaflet_map_renderer,
     MetVocabServiceInterface $met_vocab_service,
   ) {
     $this->metsisHelper = $metsis_helper;
     $this->moduleExtension = $module_handler->getModule('metsis_drupal');
-    $this->configFactory = $config_factory;
-    $this->licenseIconsConfig = $config_factory->get('metsis_drupal.license_icons');
+    $this->configProvider = $config_provider;
+    $this->leafletMapRenderer = $leaflet_map_renderer;
     $this->metVocabService = $met_vocab_service;
-
   }
 
   /**
@@ -125,7 +118,7 @@ final class ResultRowRenderer {
     // Build leaflet map if geometry is available.
     $t_leaflet = hrtime(TRUE);
     if (!empty($solr_doc['geometry_geojson'])) {
-      $fields['leaflet_map'] = $this->metsisHelper->buildLeafletMap($solr_doc['geometry_geojson'], '250px');
+      $fields['leaflet_map'] = $this->leafletMapRenderer->buildLeafletMap($solr_doc['geometry_geojson'], '250px');
     }
     $t_leaflet_ms = (hrtime(TRUE) - $t_leaflet) / 1e6;
 
@@ -175,7 +168,6 @@ final class ResultRowRenderer {
       ]
     );
     // -- END PROFILING
-
     return $fields;
   }
 
@@ -345,7 +337,7 @@ final class ResultRowRenderer {
    */
   public function getLicenseIconMarkup(string $license_code): array {
     // Get the config for license icons mapping.
-    $license_icons_config = $this->metsisHelper->getLicenseIconsConfig();
+    $license_icons_config = $this->configProvider->getLicenseIconsConfig();
     $licenses = $license_icons_config->get('license_icons');
 
     if ($license_code === 'Not provided') {

@@ -899,6 +899,14 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-04 | PERF: Set Solr join local params to method=dvWithScore and score=none for METSIS parent/child joins
+          | FILES: src/EventSubscriber/SearchApiSolrSubscriber.php, metsis_drupal.services.yml
+          | NOTE: Removed temporary A/B toggles for join method/score and kept profiler output with fixed join settings
+
+2026-05-04 | PERF: Disabled search_api_solr_devel to stop forced Solr debug params and expensive request/response Kint dumps
+          | MODULE: search_api_solr_devel
+          | COMMANDS: drush pm:uninstall search_api_solr_devel -y, drush cr
+
 2026-03-27 | TASK: Made search page meta description configurable via settings form and hook
           | FILES: src/Form/MetsisSettingsForm.php, src/Hook/SearchPageMetaTagHook.php
           | CONFIG: Added metsis_drupal.settings.search_meta_description in config/install/metsis_drupal.settings.yml and config/schema/metsis_drupal.schema.yml

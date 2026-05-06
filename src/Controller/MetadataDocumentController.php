@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Drupal\metsis_drupal\Service\SolrDocumentLoader;
 use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -17,17 +17,17 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class MetadataDocumentController extends ControllerBase {
 
   /**
-   * MetsisHelper service.
+   * Document loader service.
    *
-   * @var \Drupal\metsis_drupal\Utility\MetsisHelper
+   * @var \Drupal\metsis_drupal\Service\SolrDocumentLoader
    */
-  protected MetsisHelper $metsisHelper;
+  protected SolrDocumentLoader $documentLoader;
 
   /**
    * Constructs the controller.
    */
-  public function __construct(MetsisHelper $metsisHelper) {
-    $this->metsisHelper = $metsisHelper;
+  public function __construct(SolrDocumentLoader $documentLoader) {
+    $this->documentLoader = $documentLoader;
   }
 
   /**
@@ -35,7 +35,7 @@ final class MetadataDocumentController extends ControllerBase {
    */
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('metsis_drupal.metsis_helper')
+      $container->get('metsis_drupal.solr_document_loader')
     );
   }
 
@@ -94,29 +94,15 @@ final class MetadataDocumentController extends ControllerBase {
    *   Solr document or null if no match.
    */
   private function loadDocument(string $id): ?array {
-    $connector = $this->metsisHelper->getConnector();
-
-    $query = $connector->getSelectQuery();
-    $query->setQuery('id:"' . $id . '"');
-    $query->setRows(1);
-    $query->setFields(['*', 'personnel_json:[json]',
+    return $this->documentLoader->loadDocumentById($id, [
+      '*',
+      'personnel_json:[json]',
       'data_access_json:[json]',
       'platform_json:[json]',
       'related_information_json:[json]',
       'last_metadata_update_json:[json]',
       'dataset_citation_json:[json]',
     ]);
-
-    /** @var \Solarium\QueryType\Select\Result\Result $result */
-    $result = $connector->execute($query);
-    $document = $this->metsisHelper->extractFirstDocument($result);
-    if ($document === NULL) {
-      return NULL;
-    }
-
-    $document = $this->metsisHelper->extractFirstDocument($result);
-    unset($document['storage_information_file_location']);
-    return $document;
   }
 
   /**

@@ -16,7 +16,7 @@ use Drupal\search_api_solr\Event\PostExtractResultsEvent;
 use Drupal\search_api_solr\Event\SearchApiSolrEvents;
 use Drupal\search_api_solr\Event\PostFieldMappingEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\metsis_drupal\Service\ConfigProvider;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
 use Psr\Log\LoggerInterface;
 
@@ -33,18 +33,18 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
   protected array $queryTimers = [];
 
   /**
-   * METSIS config (immutable).
+   * METSIS config provider (immutable).
    *
-   * @var \Drupal\Core\Config\ImmutableConfig
+   * @var \Drupal\metsis_drupal\Service\ConfigProvider
    */
-  protected $metsisConfig;
+  protected ConfigProvider $configProvider;
 
   /**
    * Metsis search helper service.
    *
    * @var \Drupal\metsis_drupal\Utility\MetsisHelper
    */
-  protected $metsisHelper;
+  protected MetsisHelper $metsisHelper;
 
   /**
    * Profiler logger channel.
@@ -60,6 +60,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    */
   protected $defaultFields = [
     'id',
+    'related_dataset_id',
     'personnel_organisation',
     'project_long_name',
     'project_short_name',
@@ -96,6 +97,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'data_access_wms_layers',
     'total_children:[subquery]',
     'found_children:[subquery]',
+    'parent:[subquery]',
     'thumbnail_url',
     'personnel_json:[json]',
     'data_access_json:[json]',
@@ -123,11 +125,11 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    * Constructor.
    */
   public function __construct(
-    ConfigFactoryInterface $config_factory,
+    ConfigProvider $config_provider,
     MetsisHelper $metsis_helper,
     LoggerChannelFactoryInterface $logger_factory,
   ) {
-    $this->metsisConfig = $config_factory->get('metsis_drupal.settings');
+    $this->configProvider = $config_provider;
     $this->metsisHelper = $metsis_helper;
     $this->profilerLogger = $logger_factory->get('metsis_row_profiler');
   }
@@ -185,7 +187,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           'query' => 'metadata_status:Active',
         ]);
         // Add collection filter if collections are selected.
-        if ($selected_collections = $this->metsisConfig->get('selected_collections')) {
+        if ($selected_collections = $this->configProvider->getSettingsConfig()->get('selected_collections')) {
           $solarium_query->createFilterQuery('collection')
             ->setQuery('collection:(' . implode(" ", array_keys($selected_collections)) . ')');
         }
@@ -245,7 +247,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    * @param \Drupal\search_api_solr\Event\PostConvertedQueryEvent $event
    *   The post converted query event.
    */
-  public function postConvertedQuery(PostConvertedQueryEvent $event) {
+  public function postConvertedQuery(PostConvertedQueryEvent $event): void {
     // Actions that should be taken on select queries.
     if ($event->getSolariumQuery() instanceof Query) {
 
@@ -331,12 +333,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           $solarium_query->removeComponent('highlighting');
           // $solarium_query->addParam('hl', 'false');
         }
-        // $hl->setBoundaryScanner('simple');
-        // hl.bs.chars has no dedicated Solarium API method; set it directly.
-        // $solarium_query->addParam('hl.bs.chars', ">.,!? \t\n\r");
-        // Per-field overrides: shorter snippets for keyword values.
-        // $hl->getField('keywords_keyword')->setSnippets(3);
-        // $hl->getField('keywords_keyword')->setFragSize(2000);
+
         // Use lucene query parser. To make use of join and subquerires.
         // Parent/Child matching. Only needed when we have query terms.
         $solarium_query->addParam('defType', 'lucene');
@@ -373,6 +370,17 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
             );
           }
         }
+
+        // In child-browse mode we extract info about the parent of the child.
+        $parent_id = $query->getOption('metsis_parent_id');
+        if ($parent_id !== NULL && $parent_id !== '') {
+          $solarium_query->addParam('parent.defType', 'lucene');
+          $solarium_query->addParam('parent.q', '{!term f=id v=$row.related_dataset_id}');
+          $solarium_query->addParam('parent.fq', 'isParent:"true"');
+          $solarium_query->addParam('parent.rows', '1');
+          $solarium_query->addParam('parent.fl', 'id,metadata_identifier,title,abstract,related_url_landing*,temporal*date*');
+        }
+
         // Rewrite facet-generated filter queries so parents are kept when a
         // matching child carries the selected facet value.
         $this->expandFacetFiltersToChildren($solarium_query);
@@ -435,7 +443,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $solarium_query->addParam('total_children.fl', ['id']);
         $solarium_query->addParam('total_children.fq', [
           '+metadata_status:"Active"',
-          'collection:(' . implode(' ', array_keys((array) $this->metsisConfig->get('selected_collections'))) . ')',
+          'collection:(' . implode(' ', array_keys((array) $this->configProvider->getSettingsConfig()->get('selected_collections'))) . ')',
           'isChild:true',
           '{!term f=related_dataset_id v=$row.id}',
         ]);
@@ -457,6 +465,9 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         $solarium_query->removeParam('debugQuery');
         $solarium_query->removeParam('debug.explain.structured');
         $solarium_query->addParam('debugQuery', 'false');
+
+        // Tell solr to use multiThreaded query.
+        $solarium_query->addParam('multiThreaded', 'true');
       }
 
     }
