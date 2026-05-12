@@ -20,3 +20,4 @@ recipes/
 .ddev/.*
 core.*
 config-sync
+*.map
