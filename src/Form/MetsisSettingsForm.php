@@ -283,6 +283,22 @@ class MetsisSettingsForm extends ConfigFormBase {
       '#step' => 'any',
     ];
 
+    $form['map_app']['preferred_wms_layers'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Preferred WMS layers'),
+      '#description' => $this->t('Enter one layer name per line. The first matching configured layer is selected automatically when available.'),
+      '#default_value' => implode("\n", $this->normalizeLayerList($config->get('preferred_wms_layers'))),
+      '#rows' => 5,
+    ];
+
+    $form['map_app']['blacklisted_wms_layers'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Blacklisted WMS layers'),
+      '#description' => $this->t('Enter one layer name per line. Matching is case-insensitive exact-name match in the map app.'),
+      '#default_value' => implode("\n", $this->normalizeLayerList($config->get('blacklisted_wms_layers'))),
+      '#rows' => 5,
+    ];
+
     // METSIS Services configuration.
     $form['metsis_services'] = [
       '#type' => 'details',
@@ -363,6 +379,14 @@ class MetsisSettingsForm extends ConfigFormBase {
       ->set('map_default_zoom', $form_state->getValue(['map_app', 'map_default_zoom']))
       ->set('map_default_center_lat', $form_state->getValue(['map_app', 'map_default_center_lat']))
       ->set('map_default_center_lon', $form_state->getValue(['map_app', 'map_default_center_lon']))
+      ->set(
+        'preferred_wms_layers',
+        $this->normalizeLayerList($form_state->getValue(['map_app', 'preferred_wms_layers']))
+      )
+      ->set(
+        'blacklisted_wms_layers',
+        $this->normalizeLayerList($form_state->getValue(['map_app', 'blacklisted_wms_layers']))
+      )
       ->set('selected_collections', $form_state->getValue(['solr_index', 'collections']))
       ->set(
         'enabled_export_types',
@@ -379,8 +403,38 @@ class MetsisSettingsForm extends ConfigFormBase {
         $form_state->getValue(['metsis_services', 'feature_type_lookup_service']));
     }
 
-    $this->config('metsis_drupal.settings')->save();
+    $config->save();
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Normalize line-based layer configuration values.
+   *
+   * @param mixed $value
+   *   A textarea string or an array of values.
+   *
+   * @return array<int, string>
+   *   Unique layer names while preserving order.
+   */
+  private function normalizeLayerList(mixed $value): array {
+    $items = [];
+    if (is_string($value)) {
+      $items = preg_split('/\r\n|\r|\n/', $value) ?: [];
+    }
+    elseif (is_array($value)) {
+      $items = $value;
+    }
+
+    $normalized = [];
+    foreach ($items as $item) {
+      $layer_name = trim((string) $item);
+      if ($layer_name === '' || isset($normalized[$layer_name])) {
+        continue;
+      }
+      $normalized[$layer_name] = $layer_name;
+    }
+
+    return array_values($normalized);
   }
 
 }

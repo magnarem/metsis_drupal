@@ -5,3 +5,28 @@
   /*min-height: 648px;*/
   margin-bottom: 1em;
 }
+
+.metsis-wms-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 0.75rem;
+}
+
+.metsis-wms-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  min-width: 220px;
+}
+
+.metsis-wms-controls select {
+  padding: 0.3rem 0.4rem;
+}
+
+.metsis-wms-controls p {
+  margin: 0;
+  font-size: 0.9rem;
+}

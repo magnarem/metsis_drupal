@@ -1,329 +1,333 @@
 {
-  "_Attribution-CC4Vlwrl.js": {
-    "file": "assets/Attribution-CC4Vlwrl.js",
+  "_Attribution-PqFE4HVW.js": {
+    "file": "assets/Attribution-PqFE4HVW.js",
     "name": "Attribution",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Object-BQIWe8mS.js",
-      "_css-B-Qxx0d0.js",
-      "_dom-C4YPylG-.js"
+      "_Object--zbhnm5l.js",
+      "_css-B_ylE_2M.js",
+      "_dom-QbqO1nwP.js"
     ]
   },
-  "_BaseTile-DWk3o6mu.js": {
-    "file": "assets/BaseTile-DWk3o6mu.js",
+  "_BaseTile-BNhXPVzk.js": {
+    "file": "assets/BaseTile-BNhXPVzk.js",
     "name": "BaseTile",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_tilecoord-DFBuMa3g.js",
-      "_TileState-CHYwHAcW.js",
-      "_asserts-CZrcm5jZ.js",
-      "_Event-DPuB7u8K.js",
-      "_dom-C4YPylG-.js"
+      "_Object--zbhnm5l.js",
+      "_tilecoord-CvTbEUQ4.js",
+      "_TileState-Cjzn_r4J.js",
+      "_asserts-oNytP6qO.js",
+      "_Event-DkKWphpU.js",
+      "_dom-QbqO1nwP.js"
     ]
   },
-  "_BaseVector-BWnzukfz.js": {
-    "file": "assets/BaseVector-BWnzukfz.js",
+  "_BaseVector-BDqWkyeA.js": {
+    "file": "assets/BaseVector-BDqWkyeA.js",
     "name": "BaseVector",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_asserts-CZrcm5jZ.js",
-      "_Event-DPuB7u8K.js",
-      "_css-B-Qxx0d0.js",
-      "_dom-C4YPylG-.js",
-      "_obj-sWkj-8aZ.js",
-      "_rbush-DWsIkAhi.js"
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_asserts-oNytP6qO.js",
+      "_Event-DkKWphpU.js",
+      "_css-B_ylE_2M.js",
+      "_dom-QbqO1nwP.js",
+      "_obj-DGXk4b8A.js",
+      "_rbush-CZwOpSA6.js"
     ]
   },
-  "_Collection-DRBoamH-.js": {
-    "file": "assets/Collection-DRBoamH-.js",
+  "_Collection-Bn0XZ7-E.js": {
+    "file": "assets/Collection-Bn0XZ7-E.js",
     "name": "Collection",
     "imports": [
-      "_Object-BQIWe8mS.js"
+      "_Object--zbhnm5l.js"
     ]
   },
-  "_Event-DPuB7u8K.js": {
-    "file": "assets/Event-DPuB7u8K.js",
+  "_Event-DkKWphpU.js": {
+    "file": "assets/Event-DkKWphpU.js",
     "name": "Event",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_View-B1NnLUJa.js",
-      "_asserts-CZrcm5jZ.js",
-      "_proj-DJ4wZlDl.js",
-      "_dom-C4YPylG-.js"
+      "_Object--zbhnm5l.js",
+      "_View-Dw02TTZa.js",
+      "_asserts-oNytP6qO.js",
+      "_proj-BT1m6sKa.js",
+      "_dom-QbqO1nwP.js"
     ]
   },
-  "_Feature-CB1PQ95Z.js": {
-    "file": "assets/Feature-CB1PQ95Z.js",
+  "_Feature-B3L8f0dg.js": {
+    "file": "assets/Feature-B3L8f0dg.js",
     "name": "Feature",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Object-BQIWe8mS.js",
-      "_asserts-CZrcm5jZ.js"
+      "_Object--zbhnm5l.js",
+      "_asserts-oNytP6qO.js"
     ]
   },
-  "_GeometryCollection-BUwJOoXG.js": {
-    "file": "assets/GeometryCollection-BUwJOoXG.js",
+  "_GeometryCollection-78KNwByR.js": {
+    "file": "assets/GeometryCollection-78KNwByR.js",
     "name": "GeometryCollection",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_proj-DJ4wZlDl.js",
-      "_Polygon-CLMmhHFm.js"
+      "_Object--zbhnm5l.js",
+      "_proj-BT1m6sKa.js",
+      "_Polygon-Dj-oby8y.js"
     ]
   },
-  "_Image-DCqJRdXU.js": {
-    "file": "assets/Image-DCqJRdXU.js",
+  "_Image-CH2ubNIl.js": {
+    "file": "assets/Image-CH2ubNIl.js",
     "name": "Image",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_dom-C4YPylG-.js"
+      "_Object--zbhnm5l.js",
+      "_dom-QbqO1nwP.js"
     ]
   },
-  "_Layer-RoB3y3IG.js": {
-    "file": "assets/Layer-RoB3y3IG.js",
+  "_Layer-jobZiZ1A.js": {
+    "file": "assets/Layer-jobZiZ1A.js",
     "name": "Layer",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_Event-DPuB7u8K.js",
-      "_proj-DJ4wZlDl.js",
-      "_dom-C4YPylG-.js",
-      "_intersectsextent-QtewPd4f.js"
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_Event-DkKWphpU.js",
+      "_proj-BT1m6sKa.js",
+      "_dom-QbqO1nwP.js",
+      "_intersectsextent-CLmjgFRt.js"
     ]
   },
-  "_Map-BR4snn4_.js": {
-    "file": "assets/Map-BR4snn4_.js",
+  "_Map-BXIvyrvO.js": {
+    "file": "assets/Map-BXIvyrvO.js",
     "name": "Map",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Collection-DRBoamH-.js",
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_Pointer-CTxYG_VD.js",
-      "_Attribution-CC4Vlwrl.js",
-      "_TileState-CHYwHAcW.js",
-      "_View-B1NnLUJa.js",
-      "_asserts-CZrcm5jZ.js",
-      "_Event-DPuB7u8K.js",
-      "_BaseVector-BWnzukfz.js",
-      "_proj-DJ4wZlDl.js",
-      "_defaults-C8bLHTL-.js",
-      "_css-B-Qxx0d0.js",
-      "_dom-C4YPylG-.js",
-      "_easing-OBTPsAjN.js",
-      "_Polygon-CLMmhHFm.js",
-      "_intersectsextent-QtewPd4f.js",
-      "_obj-sWkj-8aZ.js"
+      "_Collection-Bn0XZ7-E.js",
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_Pointer-CeadXGAu.js",
+      "_Attribution-PqFE4HVW.js",
+      "_TileState-Cjzn_r4J.js",
+      "_View-Dw02TTZa.js",
+      "_asserts-oNytP6qO.js",
+      "_Event-DkKWphpU.js",
+      "_BaseVector-BDqWkyeA.js",
+      "_proj-BT1m6sKa.js",
+      "_defaults-BiHOGGrq.js",
+      "_css-B_ylE_2M.js",
+      "_dom-QbqO1nwP.js",
+      "_easing-DwZnfpAT.js",
+      "_Polygon-Dj-oby8y.js",
+      "_intersectsextent-CLmjgFRt.js",
+      "_obj-DGXk4b8A.js"
     ]
   },
-  "_Object-BQIWe8mS.js": {
-    "file": "assets/Object-BQIWe8mS.js",
+  "_Object--zbhnm5l.js": {
+    "file": "assets/Object--zbhnm5l.js",
     "name": "Object",
     "imports": [
-      "_obj-sWkj-8aZ.js"
+      "_obj-DGXk4b8A.js"
     ]
   },
-  "_Pointer-CTxYG_VD.js": {
-    "file": "assets/Pointer-CTxYG_VD.js",
+  "_Pointer-CeadXGAu.js": {
+    "file": "assets/Pointer-CeadXGAu.js",
     "name": "Pointer",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_dom-C4YPylG-.js",
-      "_easing-OBTPsAjN.js"
+      "_Object--zbhnm5l.js",
+      "_dom-QbqO1nwP.js",
+      "_easing-DwZnfpAT.js"
     ]
   },
-  "_Polygon-CLMmhHFm.js": {
-    "file": "assets/Polygon-CLMmhHFm.js",
+  "_Polygon-Dj-oby8y.js": {
+    "file": "assets/Polygon-Dj-oby8y.js",
     "name": "Polygon",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Object-BQIWe8mS.js",
-      "_proj-DJ4wZlDl.js",
-      "_intersectsextent-QtewPd4f.js"
+      "_Object--zbhnm5l.js",
+      "_proj-BT1m6sKa.js",
+      "_intersectsextent-CLmjgFRt.js"
     ]
   },
-  "_Source-CeaotoJC.js": {
-    "file": "assets/Source-CeaotoJC.js",
+  "_Source-CpJquMcG.js": {
+    "file": "assets/Source-CpJquMcG.js",
     "name": "Source",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_proj-DJ4wZlDl.js"
+      "_Object--zbhnm5l.js",
+      "_proj-BT1m6sKa.js"
     ]
   },
-  "_TileEventType-QzwEGEkV.js": {
-    "file": "assets/TileEventType-QzwEGEkV.js",
+  "_TileEventType-BWRkbRqm.js": {
+    "file": "assets/TileEventType-BWRkbRqm.js",
     "name": "TileEventType",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_tilecoord-DFBuMa3g.js",
-      "_asserts-CZrcm5jZ.js",
-      "_proj-DJ4wZlDl.js",
-      "_intersectsextent-QtewPd4f.js",
-      "_Source-CeaotoJC.js"
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_tilecoord-CvTbEUQ4.js",
+      "_asserts-oNytP6qO.js",
+      "_proj-BT1m6sKa.js",
+      "_intersectsextent-CLmjgFRt.js",
+      "_Source-CpJquMcG.js"
     ]
   },
-  "_TileImage-CZRtR3ug.js": {
-    "file": "assets/TileImage-CZRtR3ug.js",
+  "_TileImage-Bqg8xCgs.js": {
+    "file": "assets/TileImage-Bqg8xCgs.js",
     "name": "TileImage",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_tilecoord-DFBuMa3g.js",
-      "_TileState-CHYwHAcW.js",
-      "_proj-DJ4wZlDl.js",
-      "_dom-C4YPylG-.js",
-      "_TileEventType-QzwEGEkV.js"
+      "_Object--zbhnm5l.js",
+      "_tilecoord-CvTbEUQ4.js",
+      "_TileState-Cjzn_r4J.js",
+      "_proj-BT1m6sKa.js",
+      "_dom-QbqO1nwP.js",
+      "_TileEventType-BWRkbRqm.js"
     ]
   },
-  "_TileState-CHYwHAcW.js": {
-    "file": "assets/TileState-CHYwHAcW.js",
+  "_TileState-Cjzn_r4J.js": {
+    "file": "assets/TileState-Cjzn_r4J.js",
     "name": "TileState"
   },
-  "_Vector-BnhfhVm9.js": {
-    "file": "assets/Vector-BnhfhVm9.js",
+  "_Vector-B_Grpawt.js": {
+    "file": "assets/Vector-B_Grpawt.js",
     "name": "Vector",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Collection-DRBoamH-.js",
-      "_Object-BQIWe8mS.js",
-      "_asserts-CZrcm5jZ.js",
-      "_proj-DJ4wZlDl.js",
-      "_Polygon-CLMmhHFm.js",
-      "_intersectsextent-QtewPd4f.js",
-      "_length-D4zJ46sA.js",
-      "_obj-sWkj-8aZ.js",
-      "_Source-CeaotoJC.js",
-      "_rbush-DWsIkAhi.js"
+      "_Collection-Bn0XZ7-E.js",
+      "_Object--zbhnm5l.js",
+      "_asserts-oNytP6qO.js",
+      "_proj-BT1m6sKa.js",
+      "_Polygon-Dj-oby8y.js",
+      "_intersectsextent-CLmjgFRt.js",
+      "_length-C_JURvg9.js",
+      "_obj-DGXk4b8A.js",
+      "_Source-CpJquMcG.js",
+      "_rbush-CZwOpSA6.js"
     ]
   },
-  "_Vector-CNx1CBfv.js": {
-    "file": "assets/Vector-CNx1CBfv.js",
+  "_Vector-BqS3kwef.js": {
+    "file": "assets/Vector-BqS3kwef.js",
     "name": "Vector",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_View-B1NnLUJa.js",
-      "_Event-DPuB7u8K.js",
-      "_BaseVector-BWnzukfz.js",
-      "_proj-DJ4wZlDl.js",
-      "_dom-C4YPylG-.js",
-      "_Polygon-CLMmhHFm.js",
-      "_intersectsextent-QtewPd4f.js",
-      "_length-D4zJ46sA.js",
-      "_obj-sWkj-8aZ.js",
-      "_Layer-RoB3y3IG.js"
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_View-Dw02TTZa.js",
+      "_Event-DkKWphpU.js",
+      "_BaseVector-BDqWkyeA.js",
+      "_proj-BT1m6sKa.js",
+      "_dom-QbqO1nwP.js",
+      "_Polygon-Dj-oby8y.js",
+      "_intersectsextent-CLmjgFRt.js",
+      "_length-C_JURvg9.js",
+      "_obj-DGXk4b8A.js",
+      "_Layer-jobZiZ1A.js"
     ]
   },
-  "_View-B1NnLUJa.js": {
-    "file": "assets/View-B1NnLUJa.js",
+  "_View-Dw02TTZa.js": {
+    "file": "assets/View-Dw02TTZa.js",
     "name": "View",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Object-BQIWe8mS.js",
-      "_asserts-CZrcm5jZ.js",
-      "_proj-DJ4wZlDl.js",
-      "_easing-OBTPsAjN.js",
-      "_Polygon-CLMmhHFm.js"
+      "_Object--zbhnm5l.js",
+      "_asserts-oNytP6qO.js",
+      "_proj-BT1m6sKa.js",
+      "_easing-DwZnfpAT.js",
+      "_Polygon-Dj-oby8y.js"
     ]
   },
-  "_asserts-CZrcm5jZ.js": {
-    "file": "assets/asserts-CZrcm5jZ.js",
+  "_asserts-oNytP6qO.js": {
+    "file": "assets/asserts-oNytP6qO.js",
     "name": "asserts"
   },
-  "_css-B-Qxx0d0.js": {
-    "file": "assets/css-B-Qxx0d0.js",
+  "_css-B_ylE_2M.js": {
+    "file": "assets/css-B_ylE_2M.js",
     "name": "css"
   },
-  "_defaults-C8bLHTL-.js": {
-    "file": "assets/defaults-C8bLHTL-.js",
+  "_defaults-BiHOGGrq.js": {
+    "file": "assets/defaults-BiHOGGrq.js",
     "name": "defaults",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js",
-      "_Collection-DRBoamH-.js",
-      "_Object-BQIWe8mS.js",
-      "_Attribution-CC4Vlwrl.js",
-      "_css-B-Qxx0d0.js",
-      "_easing-OBTPsAjN.js"
+      "_Collection-Bn0XZ7-E.js",
+      "_Object--zbhnm5l.js",
+      "_Attribution-PqFE4HVW.js",
+      "_css-B_ylE_2M.js",
+      "_easing-DwZnfpAT.js"
     ]
   },
-  "_dom-C4YPylG-.js": {
-    "file": "assets/dom-C4YPylG-.js",
+  "_dom-QbqO1nwP.js": {
+    "file": "assets/dom-QbqO1nwP.js",
     "name": "dom"
   },
-  "_easing-OBTPsAjN.js": {
-    "file": "assets/easing-OBTPsAjN.js",
+  "_easing-DwZnfpAT.js": {
+    "file": "assets/easing-DwZnfpAT.js",
     "name": "easing"
   },
-  "_intersectsextent-QtewPd4f.js": {
-    "file": "assets/intersectsextent-QtewPd4f.js",
+  "_hooks.module-pCXZuSOJ.js": {
+    "file": "assets/hooks.module-pCXZuSOJ.js",
+    "name": "hooks.module"
+  },
+  "_intersectsextent-CLmjgFRt.js": {
+    "file": "assets/intersectsextent-CLmjgFRt.js",
     "name": "intersectsextent",
     "imports": [
-      "_asserts-CZrcm5jZ.js",
-      "_proj-DJ4wZlDl.js"
+      "_asserts-oNytP6qO.js",
+      "_proj-BT1m6sKa.js"
     ]
   },
-  "_length-D4zJ46sA.js": {
-    "file": "assets/length-D4zJ46sA.js",
+  "_length-C_JURvg9.js": {
+    "file": "assets/length-C_JURvg9.js",
     "name": "length"
   },
-  "_obj-sWkj-8aZ.js": {
-    "file": "assets/obj-sWkj-8aZ.js",
+  "_obj-DGXk4b8A.js": {
+    "file": "assets/obj-DGXk4b8A.js",
     "name": "obj"
   },
-  "_preload-helper-DZ71yRjg.js": {
-    "file": "assets/preload-helper-DZ71yRjg.js",
+  "_preload-helper-Dt2YcbGJ.js": {
+    "file": "assets/preload-helper-Dt2YcbGJ.js",
     "name": "preload-helper"
   },
-  "_proj-DJ4wZlDl.js": {
-    "file": "assets/proj-DJ4wZlDl.js",
+  "_proj-BT1m6sKa.js": {
+    "file": "assets/proj-BT1m6sKa.js",
     "name": "proj",
     "imports": [
       "_rolldown-runtime-CmsrGqdA.js"
     ]
   },
-  "_rbush-DWsIkAhi.js": {
-    "file": "assets/rbush-DWsIkAhi.js",
+  "_rbush-CZwOpSA6.js": {
+    "file": "assets/rbush-CZwOpSA6.js",
     "name": "rbush"
   },
   "_rolldown-runtime-CmsrGqdA.js": {
     "file": "assets/rolldown-runtime-CmsrGqdA.js",
     "name": "rolldown-runtime"
   },
-  "_tilecoord-DFBuMa3g.js": {
-    "file": "assets/tilecoord-DFBuMa3g.js",
+  "_tilecoord-CvTbEUQ4.js": {
+    "file": "assets/tilecoord-CvTbEUQ4.js",
     "name": "tilecoord",
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_TileState-CHYwHAcW.js",
-      "_proj-DJ4wZlDl.js",
-      "_dom-C4YPylG-.js",
-      "_easing-OBTPsAjN.js",
-      "_intersectsextent-QtewPd4f.js"
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_TileState-Cjzn_r4J.js",
+      "_proj-BT1m6sKa.js",
+      "_dom-QbqO1nwP.js",
+      "_easing-DwZnfpAT.js",
+      "_intersectsextent-CLmjgFRt.js"
     ]
   },
   "bbox-map-filter/src/main.js": {
-    "file": "assets/bboxMapFilter-BzpaHdQD.js",
+    "file": "assets/bboxMapFilter-DdzGIenM.js",
     "name": "bboxMapFilter",
     "src": "bbox-map-filter/src/main.js",
     "isEntry": true,
     "imports": [
-      "_preload-helper-DZ71yRjg.js"
+      "_preload-helper-Dt2YcbGJ.js"
     ],
     "dynamicImports": [
-      "_Map-BR4snn4_.js",
-      "_View-B1NnLUJa.js",
-      "_Feature-CB1PQ95Z.js",
-      "_Polygon-CLMmhHFm.js",
+      "_Map-BXIvyrvO.js",
+      "_View-Dw02TTZa.js",
+      "_Feature-B3L8f0dg.js",
+      "_Polygon-Dj-oby8y.js",
       "node_modules/ol/interaction/Draw.js",
-      "_defaults-C8bLHTL-.js",
+      "_defaults-BiHOGGrq.js",
       "node_modules/ol/layer/Tile.js",
       "node_modules/ol/source/OSM.js",
-      "_Vector-CNx1CBfv.js",
-      "_Vector-BnhfhVm9.js",
-      "_proj-DJ4wZlDl.js",
-      "_Attribution-CC4Vlwrl.js"
+      "_Vector-BqS3kwef.js",
+      "_Vector-B_Grpawt.js",
+      "_proj-BT1m6sKa.js",
+      "_Attribution-PqFE4HVW.js"
     ],
     "css": [
       "assets/bboxMapFilter-LOH7IlDV.css",
@@ -331,103 +335,106 @@
     ]
   },
   "metsis-map-app/src/components/BoundingBoxDrawer.jsx": {
-    "file": "assets/BoundingBoxDrawer-A0ris7VE.js",
+    "file": "assets/BoundingBoxDrawer-CioK0eWp.js",
     "name": "BoundingBoxDrawer",
     "src": "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
     "isDynamicEntry": true,
     "imports": [
-      "metsis-map-app/src/index.jsx",
-      "_Vector-BnhfhVm9.js",
+      "_Vector-B_Grpawt.js",
       "node_modules/ol/interaction/Draw.js",
-      "_Vector-CNx1CBfv.js"
+      "_Vector-BqS3kwef.js",
+      "_hooks.module-pCXZuSOJ.js"
     ]
   },
   "metsis-map-app/src/components/WMSLayerManager.jsx": {
-    "file": "assets/WMSLayerManager-AhW-8VFI.js",
+    "file": "assets/WMSLayerManager-CI0sk9iJ.js",
     "name": "WMSLayerManager",
     "src": "metsis-map-app/src/components/WMSLayerManager.jsx",
     "isDynamicEntry": true,
     "imports": [
       "metsis-map-app/src/index.jsx",
-      "_tilecoord-DFBuMa3g.js",
-      "_proj-DJ4wZlDl.js",
+      "_Object--zbhnm5l.js",
+      "_tilecoord-CvTbEUQ4.js",
+      "_proj-BT1m6sKa.js",
       "node_modules/ol/layer/Tile.js",
-      "_TileEventType-QzwEGEkV.js",
-      "_TileImage-CZRtR3ug.js"
+      "_TileEventType-BWRkbRqm.js",
+      "_TileImage-Bqg8xCgs.js",
+      "_hooks.module-pCXZuSOJ.js"
     ]
   },
   "metsis-map-app/src/index.jsx": {
-    "file": "assets/metsisMapApp-Clz_zRdN.js",
+    "file": "assets/metsisMapApp-B1yx1j1J.js",
     "name": "metsisMapApp",
     "src": "metsis-map-app/src/index.jsx",
     "isEntry": true,
     "imports": [
-      "_preload-helper-DZ71yRjg.js",
-      "_BaseTile-DWk3o6mu.js",
-      "_Object-BQIWe8mS.js",
-      "_Feature-CB1PQ95Z.js",
-      "_Image-DCqJRdXU.js",
-      "_tilecoord-DFBuMa3g.js",
-      "_Map-BR4snn4_.js",
-      "_Attribution-CC4Vlwrl.js",
-      "_TileState-CHYwHAcW.js",
-      "_View-B1NnLUJa.js",
-      "_asserts-CZrcm5jZ.js",
-      "_Event-DPuB7u8K.js",
-      "_BaseVector-BWnzukfz.js",
-      "_proj-DJ4wZlDl.js",
-      "_defaults-C8bLHTL-.js",
-      "_css-B-Qxx0d0.js",
-      "_dom-C4YPylG-.js",
-      "_Vector-BnhfhVm9.js",
-      "_Polygon-CLMmhHFm.js",
-      "_GeometryCollection-BUwJOoXG.js",
-      "_intersectsextent-QtewPd4f.js",
-      "_Vector-CNx1CBfv.js",
-      "_obj-sWkj-8aZ.js",
-      "_Layer-RoB3y3IG.js",
-      "_TileEventType-QzwEGEkV.js"
+      "_preload-helper-Dt2YcbGJ.js",
+      "_BaseTile-BNhXPVzk.js",
+      "_Object--zbhnm5l.js",
+      "_Feature-B3L8f0dg.js",
+      "_Image-CH2ubNIl.js",
+      "_tilecoord-CvTbEUQ4.js",
+      "_Map-BXIvyrvO.js",
+      "_Attribution-PqFE4HVW.js",
+      "_TileState-Cjzn_r4J.js",
+      "_View-Dw02TTZa.js",
+      "_asserts-oNytP6qO.js",
+      "_Event-DkKWphpU.js",
+      "_BaseVector-BDqWkyeA.js",
+      "_proj-BT1m6sKa.js",
+      "_defaults-BiHOGGrq.js",
+      "_css-B_ylE_2M.js",
+      "_dom-QbqO1nwP.js",
+      "_Vector-B_Grpawt.js",
+      "_Polygon-Dj-oby8y.js",
+      "_GeometryCollection-78KNwByR.js",
+      "_intersectsextent-CLmjgFRt.js",
+      "_Vector-BqS3kwef.js",
+      "_obj-DGXk4b8A.js",
+      "_Layer-jobZiZ1A.js",
+      "_TileEventType-BWRkbRqm.js",
+      "_hooks.module-pCXZuSOJ.js"
     ],
     "dynamicImports": [
       "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
       "metsis-map-app/src/components/WMSLayerManager.jsx"
     ],
     "css": [
-      "assets/metsisMapApp-BiAdEdFv.css",
+      "assets/metsisMapApp-DSP1RIXI.css",
       "assets/olCss-c_1sG1-7.css"
     ]
   },
   "node_modules/ol/interaction/Draw.js": {
-    "file": "assets/Draw-YYzsX8Od.js",
+    "file": "assets/Draw-mLk3PN6-.js",
     "name": "Draw",
     "src": "node_modules/ol/interaction/Draw.js",
     "isDynamicEntry": true,
     "imports": [
-      "_Object-BQIWe8mS.js",
-      "_Feature-CB1PQ95Z.js",
-      "_Pointer-CTxYG_VD.js",
-      "_BaseVector-BWnzukfz.js",
-      "_proj-DJ4wZlDl.js",
-      "_Vector-BnhfhVm9.js",
-      "_Polygon-CLMmhHFm.js",
-      "_GeometryCollection-BUwJOoXG.js",
-      "_Vector-CNx1CBfv.js"
+      "_Object--zbhnm5l.js",
+      "_Feature-B3L8f0dg.js",
+      "_Pointer-CeadXGAu.js",
+      "_BaseVector-BDqWkyeA.js",
+      "_proj-BT1m6sKa.js",
+      "_Vector-B_Grpawt.js",
+      "_Polygon-Dj-oby8y.js",
+      "_GeometryCollection-78KNwByR.js",
+      "_Vector-BqS3kwef.js"
     ]
   },
   "node_modules/ol/layer/Tile.js": {
-    "file": "assets/Tile-BGv-vgDX.js",
+    "file": "assets/Tile-C0oHFAZ6.js",
     "name": "Tile",
     "src": "node_modules/ol/layer/Tile.js",
     "isDynamicEntry": true,
     "imports": [
-      "_BaseTile-DWk3o6mu.js",
-      "_Object-BQIWe8mS.js",
-      "_Image-DCqJRdXU.js",
-      "_tilecoord-DFBuMa3g.js",
-      "_TileState-CHYwHAcW.js",
-      "_proj-DJ4wZlDl.js",
-      "_intersectsextent-QtewPd4f.js",
-      "_Layer-RoB3y3IG.js"
+      "_BaseTile-BNhXPVzk.js",
+      "_Object--zbhnm5l.js",
+      "_Image-CH2ubNIl.js",
+      "_tilecoord-CvTbEUQ4.js",
+      "_TileState-Cjzn_r4J.js",
+      "_proj-BT1m6sKa.js",
+      "_intersectsextent-CLmjgFRt.js",
+      "_Layer-jobZiZ1A.js"
     ]
   },
   "node_modules/ol/ol.css": {
@@ -440,13 +447,13 @@
     "isEntry": true
   },
   "node_modules/ol/source/OSM.js": {
-    "file": "assets/OSM-CW2KSO8y.js",
+    "file": "assets/OSM-DyrXTiMH.js",
     "name": "OSM",
     "src": "node_modules/ol/source/OSM.js",
     "isDynamicEntry": true,
     "imports": [
-      "_TileEventType-QzwEGEkV.js",
-      "_TileImage-CZRtR3ug.js"
+      "_TileEventType-BWRkbRqm.js",
+      "_TileImage-Bqg8xCgs.js"
     ]
   }
 }

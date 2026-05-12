@@ -30,6 +30,15 @@ class MetsisThemeHooks {
         ],
         'template' => 'metsis-metadata-document',
       ],
+      'metsis_wms_document' => [
+        'variables' => [
+          'id' => NULL,
+          'title' => '',
+          'metadata_identifier' => '',
+          'wms_endpoints' => [],
+        ],
+        'template' => 'metsis-wms-document',
+      ],
       'metsis_search_row_compact' => [
         'variables' => [
           'row' => NULL,

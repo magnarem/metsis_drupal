@@ -36,7 +36,7 @@
 			{
 				'label': 'Last metadata update',
 				'singular_label': null,
-        		'field': 'last_metadata_updated_date',
+				'field': 'last_metadata_updated_date',
 				'render_field': 'last_metadata_update'
 			},
       {
@@ -103,7 +103,7 @@
 				{% if highlighted.abstract_hl is defined and highlighted.abstract_hl is not empty %}
 					{{ highlighted.abstract_hl[0]|raw }}
 				{% else %}
-				{{ fields.abstract }}
+					{{ fields.abstract }}
 				{% endif %}
 			</div>
 		</div>

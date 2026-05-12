@@ -3,38 +3,27 @@ selected_collections:
   ACCESS: ACCESS
   ADC: ADC
   APPL: APPL
-  AeN: AeN
-  CC: CC
-  CVL: CVL
   DAM: DAM
-  DOKI: DOKI
   GCW: GCW
-  GEONOR: GEONOR
-  KSS: KSS
   METNCS: METNCS
   NBS: NBS
-  NMAP: NMAP
-  NMDC: NMDC
   NSDN: NSDN
-  NySMAC: NySMAC
-  POLARIN: POLARIN
-  SESS2018: SESS2018
   SESS2019: SESS2019
-  SESS2020: SESS2020
-  SESS2022: SESS2022
-  SESS2023: SESS2023
-  SESS2024: SESS2024
   SESS2025: SESS2025
   SIOS: SIOS
-  SIOSAP: SIOSAP
-  SIOSCD: SIOSCD
   SIOSIN: SIOSIN
-  TONE: TONE
   YOPP: YOPP
 map_default_projection: 'EPSG:3857'
 map_default_zoom: 7
 map_default_center_lat: 59.2
 map_default_center_lon: 13.4
+preferred_wms_layers: {  }
+blacklisted_wms_layers:
+  - MS
+  - lat
+  - lon
+  - latitude
+  - longitude
 bokeh_plot_service_url: 'https://example-api.com/plot'
 feature_type_lookup_service: 'https://example.api.com/featureType'
 enabled_export_types:

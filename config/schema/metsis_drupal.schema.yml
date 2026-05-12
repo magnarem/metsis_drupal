@@ -46,6 +46,20 @@ metsis_drupal.settings:
         Range:
           min: -180.0
           max: 180.0
+    preferred_wms_layers:
+      type: sequence
+      label: 'Preferred WMS layers'
+      description: 'Ordered list of preferred WMS layer names used for automatic initial rendering.'
+      sequence:
+        type: string
+        label: 'WMS layer name'
+    blacklisted_wms_layers:
+      type: sequence
+      label: 'Blacklisted WMS layers'
+      description: 'WMS layer names that must be excluded from rendering.'
+      sequence:
+        type: string
+        label: 'WMS layer name'
     bokeh_plot_service_url:
       type: uri
       label: 'Plot service url endpoint'

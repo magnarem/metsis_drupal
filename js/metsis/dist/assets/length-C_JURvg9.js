@@ -1,0 +1,2 @@
+function e(e,t,n,r){let i=e[t],a=e[t+1],o=0;for(let s=t+r;s<n;s+=r){let t=e[s],n=e[s+1];o+=Math.sqrt((t-i)*(t-i)+(n-a)*(n-a)),i=t,a=n}return o}export{e as t};
+//# sourceMappingURL=length-C_JURvg9.js.map

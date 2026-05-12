@@ -75,7 +75,7 @@
         "drupal/config_inspector": "^2.1",
         "drupal/markdown": "^3.1",
         "league/commonmark": "^2.8",
-        "drupal/editoria11y": "^2.2",
+        "drupal/editoria11y": "^3",
         "rector/rector": "^2",
         "phpdocumentor/shim": "^3"
     },

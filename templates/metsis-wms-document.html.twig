@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Theme for rendering WMS capability endpoints and the map app mount point.
+ */
+#}
+<article class="metsis-metadata" aria-labelledby="metsis-wms-title">
+  <header class="metsis-metadata__header">
+    <p class="metsis-metadata__eyebrow">WMS visualization</p>
+    <h1 id="metsis-wms-title" class="metsis-metadata__title">{{ title }}</h1>
+    <p class="metsis-metadata__abstract"><em>{{ metadata_identifier }}</em></p>
+  </header>
+
+  <section class="metsis-metadata__section" aria-labelledby="metsis-wms-map-heading">
+    <h2 id="metsis-wms-map-heading">Map</h2>
+    <div id="metsis-map-app"></div>
+  </section>
+
+  <section class="metsis-metadata__section" aria-labelledby="metsis-wms-endpoints-heading">
+    <h2 id="metsis-wms-endpoints-heading">Available WMS endpoints</h2>
+    {% if wms_endpoints %}
+      <ul>
+        {% for endpoint in wms_endpoints %}
+          <li>
+            <strong>{{ endpoint.label }}</strong><br>
+            <a href="{{ endpoint.capabilitiesUrl }}" target="_blank" rel="noopener noreferrer">Capabilities document</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No OGC WMS endpoints were found for this metadata document.</p>
+    {% endif %}
+  </section>
+</article>

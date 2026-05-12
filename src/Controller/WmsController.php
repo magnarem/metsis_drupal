@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\metsis_drupal\Controller;
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\metsis_drupal\Service\SolrDocumentLoader;
 use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
@@ -53,19 +54,49 @@ final class WmsController extends ControllerBase {
       throw new NotFoundHttpException('Metadata document not found.');
     }
 
-    unset($document['storage_information_file_location']);
+    $config = $this->config('metsis_drupal.settings');
+    $preferred_layers = $this->normalizeLayerList($config->get('preferred_wms_layers'));
+    $blacklisted_layers = $this->normalizeLayerList($config->get('blacklisted_wms_layers'));
 
-    // Filter the data_access_json for items of type "OGC WMS".
-    $filtered = array_filter($document['data_access_json'], function ($item) {
-      return isset($item['type']) && strtoupper($item['type']) === 'OGC WMS';
-    });
+    $wms_endpoints = $this->buildWmsEndpoints($document['data_access_json'] ?? []);
+    $title = (string) ($document['title'] ?? $document['metadata_identifier'] ?? $id);
 
-    $build['content'] = [
-      '#type' => 'item',
-      '#markup' => $this->t('It works!'),
+    return [
+      '#theme' => 'metsis_wms_document',
+      '#id' => $id,
+      '#title' => $title,
+      '#metadata_identifier' => (string) ($document['metadata_identifier'] ?? $id),
+      '#wms_endpoints' => $wms_endpoints,
+      '#attached' => [
+        'library' => [
+          'metsis_drupal/metsis_metadata_document',
+          'metsis_drupal/metsis_map',
+        ],
+        'drupalSettings' => [
+          'mapApp' => [
+            'features' => [
+              'wms' => !empty($wms_endpoints),
+              'wmsEndpoints' => $wms_endpoints,
+              'wmsPreferredLayers' => $preferred_layers,
+              'wmsBlacklistedLayers' => $blacklisted_layers,
+              'wmsUrl' => $wms_endpoints[0]['serviceUrl'] ?? NULL,
+              'defaultWmsLayers' => [],
+              'layerSwitcher' => TRUE,
+            ],
+          ],
+          'metsis_drupal' => [
+            'map_app' => [
+              'mount_selectors' => ['#metsis-map-app'],
+              'default_projection' => $config->get('map_default_projection') ?? 'EPSG:3857',
+            ],
+          ],
+        ],
+      ],
+      '#cache' => [
+        'contexts' => ['url.path'],
+        'max-age' => 300,
+      ],
     ];
-
-    return $build;
   }
 
   /**
@@ -84,6 +115,137 @@ final class WmsController extends ControllerBase {
       'title',
       'data_access_json:[json]',
     ]);
+  }
+
+  /**
+   * Build a normalized list of WMS endpoints from data_access_json.
+   *
+   * @param mixed $data_access
+   *   Solr document data_access_json field value.
+   *
+   * @return array<int, array<string, string>>
+   *   Endpoint list with id, label, serviceUrl and capabilitiesUrl.
+   */
+  private function buildWmsEndpoints(mixed $data_access): array {
+    if (!is_array($data_access)) {
+      return [];
+    }
+
+    $endpoints = [];
+    foreach ($data_access as $index => $item) {
+      if (!is_array($item)) {
+        continue;
+      }
+
+      $type = strtoupper((string) ($item['type'] ?? ''));
+      if ($type !== 'OGC WMS') {
+        continue;
+      }
+
+      $resource = trim((string) ($item['resource'] ?? ''));
+      if ($resource === '' || !UrlHelper::isValid($resource, TRUE)) {
+        continue;
+      }
+
+      $service_url = $this->stripCapabilitiesParams($resource);
+      $endpoint_id = 'wms_' . $index;
+      $endpoints[$service_url] = [
+        'id' => $endpoint_id,
+        'label' => (string) ($item['description'] ?? $item['name'] ?? $service_url),
+        'serviceUrl' => $service_url,
+        'capabilitiesUrl' => $this->appendCapabilitiesParams($service_url),
+      ];
+    }
+
+    return array_values($endpoints);
+  }
+
+  /**
+   * Normalize configured layer names to a clean unique list.
+   *
+   * @param mixed $layers
+   *   Layer list from configuration.
+   *
+   * @return array<int, string>
+   *   Normalized layers.
+   */
+  private function normalizeLayerList(mixed $layers): array {
+    if (!is_array($layers)) {
+      return [];
+    }
+
+    $normalized = [];
+    foreach ($layers as $layer) {
+      $layer_name = trim((string) $layer);
+      if ($layer_name === '') {
+        continue;
+      }
+      $normalized[$layer_name] = $layer_name;
+    }
+
+    return array_values($normalized);
+  }
+
+  /**
+   * Append GetCapabilities parameters to a WMS base URL.
+   */
+  private function appendCapabilitiesParams(string $wms_url): string {
+    if (preg_match('/request\s*=\s*getcapabilities/i', $wms_url) === 1) {
+      return $wms_url;
+    }
+
+    $separator = str_contains($wms_url, '?') ? '&' : '?';
+    return $wms_url . $separator . ltrim(self::CAPABILITY_REQUEST_PARAMETERS, '?');
+  }
+
+  /**
+   * Remove GetCapabilities related query parameters from a URL.
+   */
+  private function stripCapabilitiesParams(string $wms_url): string {
+    $parts = parse_url($wms_url);
+    if ($parts === FALSE) {
+      return $wms_url;
+    }
+
+    $query = [];
+    if (!empty($parts['query'])) {
+      parse_str($parts['query'], $query);
+      unset(
+        $query['SERVICE'],
+        $query['service'],
+        $query['REQUEST'],
+        $query['request'],
+        $query['VERSION'],
+        $query['version']
+      );
+    }
+
+    $rebuilt = '';
+    if (!empty($parts['scheme'])) {
+      $rebuilt .= $parts['scheme'] . '://';
+    }
+    if (!empty($parts['user'])) {
+      $rebuilt .= $parts['user'];
+      if (!empty($parts['pass'])) {
+        $rebuilt .= ':' . $parts['pass'];
+      }
+      $rebuilt .= '@';
+    }
+    if (!empty($parts['host'])) {
+      $rebuilt .= $parts['host'];
+    }
+    if (!empty($parts['port'])) {
+      $rebuilt .= ':' . $parts['port'];
+    }
+    $rebuilt .= $parts['path'] ?? '';
+    if (!empty($query)) {
+      $rebuilt .= '?' . http_build_query($query);
+    }
+    if (!empty($parts['fragment'])) {
+      $rebuilt .= '#' . $parts['fragment'];
+    }
+
+    return $rebuilt !== '' ? $rebuilt : $wms_url;
   }
 
 }

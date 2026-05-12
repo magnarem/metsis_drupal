@@ -82,8 +82,13 @@ const MapApp = ({ config }) => {
       {config.features.wms && WMSLayerManager && (
         <WMSLayerManager
           mapInstance={olMap}
-          wmsUrls={config.features.wmsUrl}
-          defaultLayers={config.features.defaultWmsLayers}
+          wmsConfig={{
+            endpoints: config.features.wmsEndpoints,
+            wmsUrls: config.features.wmsUrl,
+            defaultLayers: config.features.defaultWmsLayers,
+            preferredLayers: config.features.wmsPreferredLayers,
+            blacklistedLayers: config.features.wmsBlacklistedLayers,
+          }}
         />
       )}
 
