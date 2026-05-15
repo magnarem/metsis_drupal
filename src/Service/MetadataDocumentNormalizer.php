@@ -133,9 +133,16 @@ final class MetadataDocumentNormalizer {
     $geometry = $this->extractGeometry($document);
     $geometry_render_array = NULL;
 
+    if ($geometry !== NULL) {
+      $geometry_type = $this->extractGeometryTypeLabel($geometry, $document);
+      if ($geometry_type !== '') {
+        $time_geography_data['Geometry type'] = $geometry_type;
+      }
+    }
+
     if ($geometry !== NULL && $leafletMapRenderer !== NULL) {
-      $geometry_json = \is_string($geometry) ? $geometry : json_encode($geometry);
-      $geometry_render_array = $leafletMapRenderer->buildLeafletMap($geometry_json, '400px');
+      $geometry_json = json_encode($geometry);
+      $geometry_render_array = $leafletMapRenderer->buildLeafletMap($geometry_json, '280px');
     }
 
     if (!empty($time_geography_data) || $geometry_render_array !== NULL) {
@@ -714,32 +721,6 @@ final class MetadataDocumentNormalizer {
   }
 
   /**
-   * Extract subset of simple fields with label mapping.
-   *
-   * @param array<string, mixed> $document
-   *   Solr document.
-   * @param string[] $fields
-   *   Field names.
-   *
-   * @return array<string, string>
-   *   Label/value map.
-   */
-  private function extractSimpleFields(array $document, array $fields): array {
-    $values = [];
-    foreach ($fields as $field) {
-      if (!array_key_exists($field, $document)) {
-        continue;
-      }
-      $text = $this->toInlineText($document[$field]);
-      if ($text === '') {
-        continue;
-      }
-      $values[$field] = $text;
-    }
-    return $values;
-  }
-
-  /**
    * Extract simple fields with explicit label mapping.
    *
    * @param array<string, mixed> $document
@@ -799,6 +780,70 @@ final class MetadataDocumentNormalizer {
     }
 
     return $geometry;
+  }
+
+  /**
+   * Extract a human-readable geometry type label from GeoJSON.
+   *
+   * @param array<string, mixed> $geometry
+   *   GeoJSON geometry array.
+   * @param array<string, mixed> $document
+   *   Solr document.
+   *
+   * @return string
+   *   Human-readable geometry type or empty string.
+   */
+  private function extractGeometryTypeLabel(array $geometry, array $document): string {
+    $type = $geometry['type'] ?? NULL;
+    if (!is_string($type)) {
+      return '';
+    }
+
+    $type = trim($type);
+    if ($type === '') {
+      return '';
+    }
+
+    if ($type === 'Polygon' && $this->isRectangularPolygon($document)) {
+      return 'Rectangular polygon';
+    }
+
+    $label = preg_replace('/(?<!^)([A-Z])/', ' $1', $type);
+    if (!is_string($label)) {
+      return $type;
+    }
+
+    return trim($label);
+  }
+
+  /**
+   * Determine whether bounds indicate a rectangular polygon.
+   *
+   * @param array<string, mixed> $document
+   *   Solr document.
+   *
+   * @return bool
+   *   TRUE when bounds are represented as a Solr ENVELOPE WKT.
+   */
+  private function isRectangularPolygon(array $document): bool {
+    $bounds = $document['geospatial_bounds3d'] ?? NULL;
+    if ($bounds === NULL) {
+      return FALSE;
+    }
+
+    if (is_array($bounds)) {
+      $bounds = (string) reset($bounds);
+    }
+    elseif (!is_scalar($bounds)) {
+      return FALSE;
+    }
+
+    $bounds_wkt = trim((string) $bounds);
+    if ($bounds_wkt === '') {
+      return FALSE;
+    }
+
+    return preg_match('/^ENVELOPE\s*\(/i', $bounds_wkt) === 1;
   }
 
   /**

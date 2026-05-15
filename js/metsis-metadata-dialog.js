@@ -7,8 +7,21 @@
   "use strict";
 
   const DIALOG_SELECTOR = "dialog[data-metsis-metadata-dialog]";
+  const DIALOG_BODY_SELECTOR = ".metsis-metadata-dialog__body";
   const CLOSE_MS = 180;
   let listenersBound = false;
+
+  const resetDialogScroll = (dialog) => {
+    if (!dialog) {
+      return;
+    }
+
+    dialog.scrollTop = 0;
+    const body = dialog.querySelector(DIALOG_BODY_SELECTOR);
+    if (body instanceof HTMLElement) {
+      body.scrollTop = 0;
+    }
+  };
 
   const closeDialogWithFade = (dialog) => {
     if (!dialog || dialog.classList.contains("is-closing")) {
@@ -44,9 +57,16 @@
           return;
         }
 
+        resetDialogScroll(dialog);
+
         if (typeof dialog.showModal === "function" && !dialog.open) {
           dialog.showModal();
         }
+
+        // Some browsers restore scroll after initial layout; enforce top again.
+        window.requestAnimationFrame(() => {
+          resetDialogScroll(dialog);
+        });
       });
 
       document.addEventListener("click", (event) => {

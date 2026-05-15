@@ -194,10 +194,39 @@
     font-weight: 700;
   }
 
+  .metsis-metadata__personnel-item-content {
+    display: block;
+  }
+
+  .metsis-metadata__personnel-item[data-has-address="true"] .metsis-metadata__personnel-item-content {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) minmax(250px, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .metsis-metadata__personnel-item[data-has-address="true"] .metsis-metadata__personnel-fields {
+    min-width: 0;
+  }
+
+  .metsis-metadata__personnel-item[data-has-address="true"] .metsis-metadata__personnel-address {
+    margin: 0;
+    min-width: 0;
+  }
+
 @media (max-width: 720px) {
   .metsis-metadata__dl-row {
     grid-template-columns: 1fr;
     gap: 0.25rem;
+  }
+
+  .metsis-metadata__personnel-item[data-has-address="true"] .metsis-metadata__personnel-item-content {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .metsis-metadata__personnel-item[data-has-address="true"] .metsis-metadata__personnel-address {
+    margin: 0.5rem 0 0;
   }
 
     .metsis-metadata__personnel-address-row {

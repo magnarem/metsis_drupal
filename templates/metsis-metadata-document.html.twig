@@ -60,10 +60,11 @@
 				<div class="metsis-metadata__personnel-groups">
 					{% for group in section.personnel_groups %}
 						<article class="metsis-metadata__personnel-role" aria-label="{{ group.role }}">
-							<h3 class="metsis-metadata__personnel-role-title">{{ group.role }}</h3>
-							<ul class="metsis-metadata__personnel-list">
-								{% for person in group.entries %}
-									<li class="metsis-metadata__personnel-item">
+						<h3 class="metsis-metadata__personnel-role-title">{{ group.role }}{% if group.entries|length > 1 %}s{% endif %}</h3>
+						<ul class="metsis-metadata__personnel-list">
+							{% for person in group.entries %}
+								<li class="metsis-metadata__personnel-item"{% if person.contact_address is not empty %} data-has-address="true"{% endif %}>
+									<div class="metsis-metadata__personnel-item-content">
 										<dl class="metsis-metadata__personnel-fields">
 											{% if person.type is not empty %}
 												<div class="metsis-metadata__personnel-field-row">
@@ -144,6 +145,7 @@
 												{% endfor %}
 											</dl>
 										{% endif %}
+									</div>
 									</li>
 								{% endfor %}
 							</ul>

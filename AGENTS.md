@@ -899,6 +899,30 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-15 | TASK: Reset metadata dialog scroll position to top on every HTMX open
+          | FILES: js/metsis-metadata-dialog.js
+          | NOTE: Dialog and body scrollTop are now reset before and after showModal() to avoid restored scroll position when reopening records
+
+2026-05-15 | TASK: Switched rectangular polygon classification to use geospatial_bounds3d ENVELOPE WKT
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: Geometry type label now treats Polygon as Rectangular polygon when Solr geospatial_bounds3d starts with ENVELOPE(
+
+2026-05-15 | TASK: Simplified rectangular polygon validation to one exterior ring with 5 points and 4 unique vertices
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: Rectangular polygon detection now uses project-specific rules (closed ring + axis-aligned edges) and removed extra x/y uniqueness constraints
+
+2026-05-15 | TASK: Simplified rectangular polygon detection for geometry type labels to use 4 vertices plus axis-aligned edges
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: Rectangular polygon detection now checks for a closed ring with four vertices and horizontal or vertical edges instead of matching every expected corner
+
+2026-05-15 | TASK: Refined geometry type labeling to classify axis-aligned polygon GeoJSON as Rectangular polygon
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: Time and geography now distinguishes generic Polygon from rectangular bounding-box style polygons
+
+2026-05-15 | TASK: Added derived geometry type label to the metadata document Time and geography section from geometry_geojson
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: Geometry type now renders as a human-readable value such as Point, Polygon, or Multi Polygon alongside the Leaflet map
+
 2026-05-15 | TASK: Replaced Drupal AJAX metadata modal trigger with HTMX + native HTML5 dialog workflow while keeping existing metadata page endpoint
           | FILES: src/Plugin/views/row/MetsisSearchRow.php, src/Controller/MetadataDocumentController.php, metsis_drupal.routing.yml, src/Hook/MetsisThemeHooks.php, templates/metsis-metadata-document-dialog.html.twig, metsis_drupal.libraries.yml, css/metsis_metadata_dialog.css, js/metsis-metadata-dialog.js
           | NOTE: Added new HTMX route /metsis/metadata/htmx/{id}, custom dialog wrapper with close button, animated backdrop, and 80% width modal presentation
