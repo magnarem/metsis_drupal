@@ -204,6 +204,141 @@ final class MetadataDocumentNormalizerTest extends TestCase {
   }
 
   /**
+   * Test that core metadata summary values include mapped vocabulary metadata.
+   */
+  #[Test]
+  public function buildSummaryAddsVocabularyMetadataForConfiguredFields(): void {
+    $concept_map = [
+      'Metadata_Status' => [
+        'Active' => $this->createConcept(
+          'https://vocab.met.no/mmd/Metadata_Status/Active',
+          'Active',
+          'Record is active',
+        ),
+      ],
+      'Metadata_Source' => [
+        'MMD' => $this->createConcept(
+          'https://vocab.met.no/mmd/Metadata_Source/MMD',
+          'MMD',
+          'Metadata source concept',
+        ),
+      ],
+      'Dataset_Production_Status' => [
+        'Complete' => $this->createConcept(
+          'https://vocab.met.no/mmd/Dataset_Production_Status/Complete',
+          'Complete',
+          'Dataset is complete',
+        ),
+      ],
+      'Operational_Status' => [
+        'Operational' => $this->createConcept(
+          'https://vocab.met.no/mmd/Operational_Status/Operational',
+          'Operational',
+          'Operational status concept',
+        ),
+      ],
+      'Activity_Type' => [
+        'Observation' => $this->createConcept(
+          'https://vocab.met.no/mmd/Activity_Type/Observation',
+          'Observation',
+          'Activity type concept',
+        ),
+      ],
+      'Quality_Control' => [
+        'QC0' => $this->createConcept(
+          'https://vocab.met.no/mmd/Quality_Control/QC0',
+          'QC0',
+          'Quality control concept',
+        ),
+      ],
+      'Access_Constraint' => [
+        'Open' => $this->createConcept(
+          'https://vocab.met.no/mmd/Access_Constraint/Open',
+          'Open',
+          'Access constraint concept',
+        ),
+      ],
+      'Use_Constraint' => [
+        'CC-BY-4.0' => $this->createConcept(
+          'https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0',
+          'CC-BY-4.0',
+          'Creative Commons attribution license',
+        ),
+      ],
+      'Collection_Keywords' => [
+        'NMAP' => $this->createConcept(
+          'https://vocab.met.no/mmd/Collection_Keywords/NMAP',
+          'NMAP',
+          'Norwegian mapping collection',
+          ['Norwegian Mapping Programme'],
+        ),
+        'YOPP' => $this->createConcept(
+          'https://vocab.met.no/mmd/Collection_Keywords/YOPP',
+          'YOPP',
+          'Year of Polar Prediction collection',
+          ['Polar Prediction'],
+        ),
+      ],
+      'ISO_Topic_Category' => [
+        'climatologyMeteorologyAtmosphere' => $this->createConcept(
+          'https://vocab.met.no/mmd/ISO_Topic_Category/climatologyMeteorologyAtmosphere',
+          'climatologyMeteorologyAtmosphere',
+          'Climate, meteorology and atmosphere topic',
+        ),
+        'oceans' => $this->createConcept(
+          'https://vocab.met.no/mmd/ISO_Topic_Category/oceans',
+          'oceans',
+          'Oceans topic category',
+        ),
+      ],
+    ];
+
+    $this->metVocabService->method('lookupByLabel')->willReturnCallback(
+      static function (string $collection_key, string $label) use ($concept_map): ?array {
+        return $concept_map[$collection_key][$label] ?? NULL;
+      }
+    );
+    $this->metVocabService->method('lookupByUri')->willReturn(NULL);
+
+    $summary = $this->normalizer->buildSummary([
+      'metadata_identifier' => 'no.met.dataset.1',
+      'metadata_status' => 'Active',
+      'metadata_source' => 'MMD',
+      'collection' => ['NMAP', 'YOPP'],
+      'dataset_production_status' => 'Complete',
+      'operational_status' => 'Operational',
+      'activity_type' => 'Observation',
+      'quality_control' => 'QC0',
+      'iso_topic_category' => ['climatologyMeteorologyAtmosphere', 'oceans'],
+      'feature_type' => 'Grid',
+      'access_constraint' => 'Open',
+      'use_constraint_identifier' => 'CC-BY-4.0',
+    ]);
+
+    $this->assertSame('no.met.dataset.1', $summary['Metadata identifier']['text']);
+    $this->assertNull($summary['Metadata identifier']['vocabulary']);
+
+    $this->assertSame('https://vocab.met.no/mmd/Metadata_Status/Active', $summary['Metadata status']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Metadata_Source/MMD', $summary['Metadata source']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Dataset_Production_Status/Complete', $summary['Production status']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Operational_Status/Operational', $summary['Operational status']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Activity_Type/Observation', $summary['Activity type']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Quality_Control/QC0', $summary['Quality control']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Access_Constraint/Open', $summary['Access constraint']['vocabulary']['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0', $summary['License']['vocabulary']['uri']);
+
+    $this->assertSame('NMAP, YOPP', $summary['Collection']['text']);
+    $this->assertCount(2, $summary['Collection']['vocabulary']['entries']);
+    $this->assertSame('https://vocab.met.no/mmd/Collection_Keywords/NMAP', $summary['Collection']['vocabulary']['entries'][0]['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/Collection_Keywords/YOPP', $summary['Collection']['vocabulary']['entries'][1]['uri']);
+
+    $this->assertSame('climatologyMeteorologyAtmosphere, oceans', $summary['Iso topic category']['text']);
+    $this->assertCount(2, $summary['Iso topic category']['vocabulary']['entries']);
+    $this->assertSame('https://vocab.met.no/mmd/ISO_Topic_Category/climatologyMeteorologyAtmosphere', $summary['Iso topic category']['vocabulary']['entries'][0]['uri']);
+    $this->assertSame('https://vocab.met.no/mmd/ISO_Topic_Category/oceans', $summary['Iso topic category']['vocabulary']['entries'][1]['uri']);
+  }
+
+  /**
    * Create a minimal concept info array for test assertions.
    *
    * @param string $uri

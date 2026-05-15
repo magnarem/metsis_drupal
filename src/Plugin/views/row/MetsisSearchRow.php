@@ -433,6 +433,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ->target('#' . $target_id)
       ->swap('innerHTML')
       ->indicator('#' . $spinner_id)
+      ->on('htmx:AfterSwap', 'Drupal.metsis.metadataDialog.afterSwap(this);')
+      ->on('htmx:AfterSettle', 'Drupal.metsis.vocabPopover.afterSwap(this);')
       ->applyTo($button);
 
     $operations['controls']['metadata_modal'] = [

@@ -899,6 +899,22 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-15 | TASK: Added HTMX AfterSwap vocab popover initializer with dynamic positioning attach for metadata dialog swaps
+          | FILES: src/Plugin/views/row/MetsisSearchRow.php, js/metsis-vocab-popover.js
+          | NOTE: Metadata trigger now invokes Drupal.metsis.vocabPopover.afterSwap(this); vocab popover script gained namespaced afterSwap resolver and reusable attach function to bind viewport-aware positioning for swapped dialog content
+
+2026-05-15 | TASK: Added HTMX AfterSwap export popover initializer with dynamic positioning for swapped dialog contexts
+          | FILES: src/Plugin/views/row/MetsisSearchRow.php, js/metsis-export-popover.js
+          | NOTE: Metadata trigger now invokes Drupal.metsis.exportPopover.afterSwap(this) after swap; export popover script gained namespaced afterSwap resolver and viewport-aware JS positioning for non-anchor and fallback modes
+
+2026-05-15 | TASK: Switched metadata dialog behavior initialization to explicit HTMX AfterSwap callback via Htmx class
+          | FILES: src/Plugin/views/row/MetsisSearchRow.php, js/metsis-metadata-dialog.js
+          | NOTE: Added Drupal.metsis.metadataDialog.afterSwap(this, event) hook to metadata trigger button and moved dialog open/attachBehaviors flow into a dedicated JS function for HTMX-swapped dialog content
+
+2026-05-15 | TASK: Added vocabulary popover support to Core metadata summary fields with aggregated multi-value concept rendering for Collection and ISO topic category
+          | FILES: src/Service/MetadataDocumentNormalizer.php, templates/metsis-metadata-document.html.twig, css/metsis_metadata_document.css, tests/src/Unit/MetadataDocumentNormalizerTest.php
+          | NOTE: Added configured Solr-to-vocabulary mappings for summary fields, introduced one-button multi-concept popovers for Collection_Keywords and ISO_Topic_Category, and switched popover alt-label wording to Entry terms
+
 2026-05-15 | TASK: Added null-cache fallback for MetVocabService dedicated cache lookups and split tests into kernel integration plus lightweight unit coverage
           | FILES: src/Service/MetVocabService.php, tests/src/Kernel/MetVocabServiceNullCacheKernelTest.php, tests/src/Unit/MetVocabServiceTest.php
           | NOTE: MetVocab lookups now resolve from in-memory index when cache.backend.null is active; kernel test verifies lookupByLabel/lookupByUri/getGroup with NullBackend and unit tests now target internal fallback/refresh logic only

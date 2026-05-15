@@ -3,7 +3,7 @@
  * Behaviors for the HTMX-driven metadata dialog.
  */
 
-(function (Drupal) {
+(function (Drupal, drupalSettings) {
   "use strict";
 
   const DIALOG_SELECTOR = "dialog[data-metsis-metadata-dialog]";
@@ -37,7 +37,59 @@
     }, CLOSE_MS);
   };
 
+  const resolveSwapTarget = (trigger, event) => {
+    const eventTarget = event?.detail?.target;
+    if (eventTarget instanceof HTMLElement) {
+      return eventTarget;
+    }
+
+    if (!(trigger instanceof HTMLElement)) {
+      return null;
+    }
+
+    const targetSelector = trigger.getAttribute("hx-target");
+    if (!targetSelector) {
+      return null;
+    }
+
+    return document.querySelector(targetSelector);
+  };
+
+  const openMetadataDialog = (target) => {
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    if (typeof Drupal.attachBehaviors === "function") {
+      Drupal.attachBehaviors(target, drupalSettings);
+    }
+
+    const dialog = target.matches(DIALOG_SELECTOR)
+      ? target
+      : target.querySelector(DIALOG_SELECTOR);
+
+    if (!dialog) {
+      return;
+    }
+
+    resetDialogScroll(dialog);
+
+    if (typeof dialog.showModal === "function" && !dialog.open) {
+      dialog.showModal();
+    }
+
+    // Some browsers restore scroll after initial layout; enforce top again.
+    window.requestAnimationFrame(() => {
+      resetDialogScroll(dialog);
+    });
+  };
+
   Drupal.metsis = Drupal.metsis || {};
+  Drupal.metsis.metadataDialog = Drupal.metsis.metadataDialog || {};
+  Drupal.metsis.metadataDialog.afterSwap = (trigger, event) => {
+    const target = resolveSwapTarget(trigger, event);
+    openMetadataDialog(target);
+  };
 
   Drupal.behaviors.metsisMetadataDialog = {
     attach() {
@@ -52,25 +104,17 @@
           return;
         }
 
-        const dialog = target.querySelector(DIALOG_SELECTOR);
-        if (!dialog) {
-          return;
+        if (
+          target.matches(DIALOG_SELECTOR) ||
+          target.querySelector(DIALOG_SELECTOR)
+        ) {
+          openMetadataDialog(target);
         }
-
-        resetDialogScroll(dialog);
-
-        if (typeof dialog.showModal === "function" && !dialog.open) {
-          dialog.showModal();
-        }
-
-        // Some browsers restore scroll after initial layout; enforce top again.
-        window.requestAnimationFrame(() => {
-          resetDialogScroll(dialog);
-        });
       });
 
       document.addEventListener("click", (event) => {
-        const targetElement = event.target instanceof Element ? event.target : null;
+        const targetElement =
+          event.target instanceof Element ? event.target : null;
         if (!targetElement) {
           return;
         }
@@ -109,4 +153,4 @@
       );
     },
   };
-})(Drupal);
+})(Drupal, drupalSettings);

@@ -111,7 +111,7 @@ final class ResultRowRenderer {
     // Convert plain URLs in abstract to <a href> links.
     // $fields['abstract'] = $this->linkify($fields['abstract']);
     // Labding page URL.
-    $fields['landing_page'] = $solr_doc['related_url_landing_page'][0] ?? '';
+    $fields['landing_page'] = $solr_doc['related_url_landing_page'] ?? '';
 
     // Build leaflet map if geometry is available.
     if (!empty($solr_doc['geometry_geojson'])) {

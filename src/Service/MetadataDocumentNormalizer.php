@@ -29,23 +29,77 @@ final class MetadataDocumentNormalizer {
    * @param array<string, mixed> $document
    *   Solr document.
    *
-   * @return array<string, string>
+   * @return array<string, mixed>
    *   Label/value map for summary.
    */
   public function buildSummary(array $document): array {
+    $license_identifier = $document['use_constraint_identifier'] ?? '';
+    $license_display = $license_identifier;
+    if ($this->toInlineText($license_display) === '') {
+      $license_display = $document['use_constraint_resource'] ?? $document['use_constraint_license_text'] ?? '';
+    }
+
     return [
-      'Metadata identifier' => $this->toInlineText($document['metadata_identifier'] ?? ''),
-      'Metadata status' => $this->toInlineText($document['metadata_status'] ?? ''),
-      'Metadata source' => $this->toInlineText($document['metadata_source'] ?? ''),
-      'Collection' => $this->toInlineText($document['collection'] ?? []),
-      'Production status' => $this->toInlineText($document['dataset_production_status'] ?? ''),
-      'Operational status' => $this->toInlineText($document['operational_status'] ?? ''),
-      'Activity type' => $this->toInlineText($document['activity_type'] ?? ''),
-      'Quality control' => $this->toInlineText($document['quality_control'] ?? ''),
-      'Iso topic category' => $this->toInlineText($document['iso_topic_category'] ?? ''),
-      'Feature type' => $this->toInlineText($document['feature_type'] ?? ''),
-      'Access constraint' => $this->toInlineText($document['access_constraint'] ?? ''),
-      'License' => $this->toInlineText($document['use_constraint_identifier'] ?? $document['use_constraint_resource'] ?? $document['use_constraint_license_text'] ?? ''),
+      'Metadata identifier' => $this->buildSummaryValueNode($document['metadata_identifier'] ?? ''),
+      'Metadata status' => $this->buildSummaryValueNode($document['metadata_status'] ?? '', ['Metadata_Status'], 'summary-metadata-status'),
+      'Metadata source' => $this->buildSummaryValueNode($document['metadata_source'] ?? '', ['Metadata_Source'], 'summary-metadata-source'),
+      'Collection' => $this->buildSummaryValueNode($document['collection'] ?? [], ['Collection_Keywords'], 'summary-collection', TRUE),
+      'Production status' => $this->buildSummaryValueNode($document['dataset_production_status'] ?? '', ['Dataset_Production_Status'], 'summary-dataset-production-status'),
+      'Operational status' => $this->buildSummaryValueNode($document['operational_status'] ?? '', ['Operational_Status'], 'summary-operational-status'),
+      'Activity type' => $this->buildSummaryValueNode($document['activity_type'] ?? '', ['Activity_Type'], 'summary-activity-type'),
+      'Quality control' => $this->buildSummaryValueNode($document['quality_control'] ?? '', ['Quality_Control'], 'summary-quality-control'),
+      'Iso topic category' => $this->buildSummaryValueNode($document['iso_topic_category'] ?? [], ['ISO_Topic_Category'], 'summary-iso-topic-category', TRUE),
+      'Feature type' => $this->buildSummaryValueNode($document['feature_type'] ?? ''),
+      'Access constraint' => $this->buildSummaryValueNode($document['access_constraint'] ?? '', ['Access_Constraint'], 'summary-access-constraint'),
+      'License' => $this->buildSummaryValueNode(
+        $license_display,
+        $this->toInlineText($license_identifier) !== '' ? ['Use_Constraint'] : [],
+        'summary-use-constraint',
+      ),
+    ];
+  }
+
+  /**
+   * Build a summary node with optional vocabulary lookup metadata.
+   *
+   * @param mixed $raw_value
+   *   Raw source value.
+   * @param string[] $collection_keys
+   *   Vocabulary collection keys to search.
+   * @param string $popover_id
+   *   Popover DOM id when vocabulary data is available.
+   * @param bool $aggregate_vocabulary
+   *   TRUE to aggregate all matched concepts into a single popover.
+   *
+   * @return array<string, mixed>|string
+   *   Renderable value node or empty string.
+   */
+  private function buildSummaryValueNode(mixed $raw_value, array $collection_keys = [], string $popover_id = '', bool $aggregate_vocabulary = FALSE): array|string {
+    $values = $this->extractInlineValues($raw_value);
+    if ($values === []) {
+      return '';
+    }
+
+    $text = implode(', ', $values);
+    $vocabulary = NULL;
+
+    if ($collection_keys !== []) {
+      if ($aggregate_vocabulary) {
+        $entries = $this->resolveVocabularyConcepts($collection_keys, $values);
+        if ($entries !== []) {
+          $vocabulary = ['entries' => $entries];
+        }
+      }
+      else {
+        $vocabulary = $this->resolveVocabularyConcept($collection_keys, $values);
+      }
+    }
+
+    return [
+      'text' => $text,
+      'resource_url' => '',
+      'popover_id' => $popover_id,
+      'vocabulary' => $vocabulary,
     ];
   }
 
@@ -165,6 +219,7 @@ final class MetadataDocumentNormalizer {
     $time_geography_data = $this->extractSimpleFieldsWithLabels($document, [
       'temporal_extent_start_date' => 'Start date',
       'temporal_extent_end_date' => 'End date',
+      'spatial_representation' => 'Spatial representation',
       'geographic_extent_rectangle_srsName' => 'Spatial reference system',
       'geographic_extent_rectangle_north' => 'North',
       'geographic_extent_rectangle_south' => 'South',
@@ -839,6 +894,99 @@ final class MetadataDocumentNormalizer {
     }
 
     return $this->metVocabService->lookupByUri($uri);
+  }
+
+  /**
+   * Resolve multiple vocabulary concepts from candidate labels.
+   *
+   * @param string[] $collection_keys
+   *   Vocabulary collection keys to search.
+   * @param string[] $candidate_values
+   *   Candidate labels.
+   *
+   * @return array<int, array<string, mixed>>
+   *   Matched concepts without duplicates.
+   */
+  private function resolveVocabularyConcepts(array $collection_keys, array $candidate_values): array {
+    $labels = [];
+    foreach ($candidate_values as $candidate_value) {
+      if (!is_scalar($candidate_value)) {
+        continue;
+      }
+
+      $label = trim((string) $candidate_value);
+      if ($label === '') {
+        continue;
+      }
+
+      $labels[] = $label;
+    }
+
+    $entries = [];
+    $seen_keys = [];
+
+    foreach ($collection_keys as $collection_key) {
+      if (!is_string($collection_key) || $collection_key === '') {
+        continue;
+      }
+
+      foreach ($labels as $label) {
+        $concept = $this->metVocabService->lookupByLabel($collection_key, $label);
+        if ($concept === NULL) {
+          continue;
+        }
+
+        $unique_key = trim((string) ($concept['uri'] ?? ''));
+        if ($unique_key === '') {
+          $unique_key = trim((string) ($concept['pref_label'] ?? $label));
+        }
+        if ($unique_key === '' || isset($seen_keys[$unique_key])) {
+          continue;
+        }
+
+        $seen_keys[$unique_key] = TRUE;
+        $entries[] = $concept;
+      }
+    }
+
+    return $entries;
+  }
+
+  /**
+   * Extract normalized display values from mixed Solr payloads.
+   *
+   * @param mixed $value
+   *   Source value.
+   *
+   * @return string[]
+   *   Ordered non-empty text values.
+   */
+  private function extractInlineValues(mixed $value): array {
+    if ($value === NULL) {
+      return [];
+    }
+
+    if (is_array($value)) {
+      $values = [];
+      foreach ($value as $item) {
+        $item_values = $this->extractInlineValues($item);
+        if ($item_values !== []) {
+          array_push($values, ...$item_values);
+        }
+      }
+      return $values;
+    }
+
+    if (!is_scalar($value)) {
+      return [];
+    }
+
+    $text = trim((string) $value);
+    if ($text === '') {
+      return [];
+    }
+
+    return [$text];
   }
 
   /**

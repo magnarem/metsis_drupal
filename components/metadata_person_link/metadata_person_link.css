@@ -11,17 +11,21 @@
   text-decoration: underline;
 }
 
-[data-component-id="metsis_drupal:metadata_person_link"] .metadata-person-link__icon {
+[data-component-id="metsis_drupal:metadata_person_link"]
+  .metadata-person-link__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 0;
 }
 
-[data-component-id="metsis_drupal:metadata_person_link"] .metadata-person-link__icon svg {
+[data-component-id="metsis_drupal:metadata_person_link"]
+  .metadata-person-link__icon
+  svg {
   display: block;
 }
 
-[data-component-id="metsis_drupal:metadata_person_link"] .metadata-person-link__text {
+[data-component-id="metsis_drupal:metadata_person_link"]
+  .metadata-person-link__text {
   line-height: 1.2;
 }

@@ -113,7 +113,7 @@ function metsis_drupal_views_post_render(ViewExecutable $view, array &$output, C
   }
   // When using full pager, disable any time-based caching if there are fewer
   // than 10 results.
-  $foo = $output;
+  // $foo = $output;
   // Add the GeoJSON to drupalSettings for the AJAX response.
   // If (\Drupal::request()->isXmlHttpRequest()) {
   // $response = new AjaxResponse();
@@ -125,7 +125,8 @@ function metsis_drupal_views_post_render(ViewExecutable $view, array &$output, C
   // $replacement_content
   // );
   // // Add the modified replacement content to the AJAX response.
-  // $response->addCommand(new ReplaceCommand('#view-container', $replacement_content));
+  // $response->addCommand(
+  // new ReplaceCommand('#view-container', $replacement_content));
   // $response->send();
   // exit;
   // }

@@ -80,17 +80,20 @@ class MetsisSettingsFormTest extends BrowserTestBase {
     $this->drupalGet('/admin/config/metno/metsis-drupal');
     $this->assertSession()->statusCodeEquals(200);
 
-    // Check that the bokeh_plot_service_url field is disabled and has the correct value.
+    // Check that the bokeh_plot_service_url
+    // s disabled and has the correct value.
     $field = $this->getSession()->getPage()->findField('Bokeh Plot Service URL');
     $this->assertNotNull($field, 'Bokeh Plot Service URL field exists.');
     $this->assertTrue($field->hasAttribute('disabled'), 'Field is disabled when overridden.');
     $this->assertEquals('https://overridden-url.com', $field->getValue(), 'Field shows the overridden value.');
 
-    // Try to submit the form with a different value (should not change active config).
+    // Try to submit the form with a different value
+    // (should not change active config).
     $form = $this->getSession()->getPage();
     $form->pressButton('Save configuration');
 
-    // Check that the active config value is still the original, not the override.
+    // Check that the active config value is still the original,
+    // not the override.
     $active_value = \Drupal::config('metsis_drupal.settings')->getRawData()['bokeh_plot_service_url'];
     $this->assertEquals('https://example.com/should-not-be-saved', $active_value, 'Active config value is not overwritten by the override.');
   }

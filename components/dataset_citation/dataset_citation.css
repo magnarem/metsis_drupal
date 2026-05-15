@@ -29,25 +29,29 @@
   font-weight: 700;
 }
 
-[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__resource-link-wrap {
+[data-component-id="metsis_drupal:dataset_citation"]
+  .dataset-citation__resource-link-wrap {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.45rem;
 }
 
-[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__citation-block {
+[data-component-id="metsis_drupal:dataset_citation"]
+  .dataset-citation__citation-block {
   margin-top: 0.7rem;
   padding-top: 0.55rem;
   border-top: 1px dashed;
 }
 
-[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__citation-title {
+[data-component-id="metsis_drupal:dataset_citation"]
+  .dataset-citation__citation-title {
   margin: 0 0 0.2rem;
   font-size: 0.95rem;
 }
 
-[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__citation-text {
+[data-component-id="metsis_drupal:dataset_citation"]
+  .dataset-citation__citation-text {
   margin: 0;
   font-style: italic;
 }

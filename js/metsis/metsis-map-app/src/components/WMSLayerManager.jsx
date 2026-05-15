@@ -111,7 +111,8 @@ const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
   }, [endpoints, activeEndpointId]);
 
   const activeEndpoint = useMemo(
-    () => endpoints.find((endpoint) => endpoint.id === activeEndpointId) || null,
+    () =>
+      endpoints.find((endpoint) => endpoint.id === activeEndpointId) || null,
     [endpoints, activeEndpointId],
   );
 
