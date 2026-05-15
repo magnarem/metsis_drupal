@@ -1,0 +1,27 @@
+{% set size = icon_size|default(16) %}
+{% set pack = icon_pack|default('metsis_drupal') %}
+{% set opens_new_tab = target_blank|default(true) %}
+{% set rel_value = rel|default('noopener noreferrer') %}
+{% set text = link_text|default('') %}
+{% set label = aria_label|default('Open link') %}
+
+{% set link_attributes = attributes.addClass('metadata-person-link').setAttribute('href', link_url).setAttribute('aria-label', label) %}
+
+{% if text is not empty %}
+  {% set link_attributes = link_attributes.addClass('metadata-person-link--with-text') %}
+{% else %}
+  {% set link_attributes = link_attributes.addClass('metadata-person-link--icon-only') %}
+{% endif %}
+
+{% if opens_new_tab %}
+  {% set link_attributes = link_attributes.setAttribute('target', '_blank').setAttribute('rel', rel_value) %}
+{% endif %}
+
+<a {{ link_attributes }}>
+  <span class="metadata-person-link__icon" aria-hidden="true">
+    {{ icon(pack, icon_id, {size: size}) }}
+  </span>
+  {% if text is not empty %}
+    <span class="metadata-person-link__text">{{ text }}</span>
+  {% endif %}
+</a>

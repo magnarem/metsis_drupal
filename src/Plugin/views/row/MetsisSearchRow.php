@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Plugin\views\row;
 
 use Drupal\Component\Render\PlainTextOutput;
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Htmx\Htmx;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
@@ -374,7 +373,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       '#type' => 'container',
       '#attributes' => ['class' => ['metsis-row-operations']],
       '#attached' => [
-        'library' => ['core/drupal.dialog.ajax'],
+        'library' => ['metsis_drupal/metsis_metadata_dialog'],
       ],
       'controls' => [
         '#type' => 'container',
@@ -387,7 +386,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $operations['controls']['collection_filter'] = $this->buildCollectionFilter($solr_doc, $dataset_identifier);
     }
 
-    // Add metadata preview link opened in a Drupal modal.
+    // Add metadata preview loaded via HTMX into a native dialog.
     if ($metadata_identifier !== '') {
       $this->buildMetadataModalTrigger($operations, $metadata_identifier);
     }
@@ -404,7 +403,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
   }
 
   /**
-   * Build metadata modal trigger link.
+   * Build metadata modal trigger button.
    *
    * @param array $operations
    *   The operations array to mutate.
@@ -412,21 +411,51 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    *   The Solr document id.
    */
   private function buildMetadataModalTrigger(array &$operations, string $metadata_identifier): void {
-    $metadata_url = Url::fromRoute('metsis_drupal.metadata_document', [
+    $target_id = 'metsis-metadata-modal-root';
+    $spinner_id = 'metsis-metadata-spinner-' . substr(md5($metadata_identifier), 0, 8);
+    $metadata_htmx_url = Url::fromRoute('metsis_drupal.metadata_document_htmx', [
       'id' => $metadata_identifier,
     ]);
 
-    $operations['controls']['metadata_modal'] = [
-      '#type' => 'link',
-      '#title' => $this->t('View metadata'),
-      '#url' => $metadata_url,
+    $button = [
+      '#type' => 'button',
+      '#value' => $this->t('View metadata'),
       '#attributes' => [
-        'class' => ['use-ajax', 'button', 'button--small', 'metsis-metadata-modal-trigger'],
-        'data-dialog-type' => 'modal',
-        'data-dialog-options' => Json::encode([
-          'width' => 960,
-          'title' => (string) $this->t('Metadata record'),
-        ]),
+        'type' => 'button',
+        'class' => ['button', 'button--small', 'metsis-metadata-modal-trigger'],
+        'hx-select' => 'dialog[data-metsis-metadata-dialog]',
+      ],
+    ];
+
+    (new Htmx())
+      ->get($metadata_htmx_url)
+      ->onlyMainContent()
+      ->target('#' . $target_id)
+      ->swap('innerHTML')
+      ->indicator('#' . $spinner_id)
+      ->applyTo($button);
+
+    $operations['controls']['metadata_modal'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['metsis-metadata-modal-trigger-wrap']],
+      'button' => $button,
+      'spinner' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'id' => $spinner_id,
+          'class' => ['htmx-indicator', 'metsis-metadata-button-spinner'],
+          'aria-hidden' => 'true',
+        ],
+        'icon' => [
+          '#type' => 'icon',
+          '#pack_id' => 'metsis_drupal_spinners',
+          '#icon_id' => 'oval',
+          '#settings' => [
+            'stroke' => 'currentColor',
+            'height' => '14',
+            'width' => '14',
+          ],
+        ],
       ],
     ];
   }

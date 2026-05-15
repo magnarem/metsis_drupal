@@ -80,6 +80,17 @@ metsis_drupal.metadata_document:
     _permission: "access content"
     id: "[A-Za-z0-9_.:-]+"
 
+metsis_drupal.metadata_document_htmx:
+  path: "/metsis/metadata/htmx/{id}"
+  defaults:
+    _controller: '\Drupal\metsis_drupal\Controller\MetadataDocumentController::viewHtmx'
+    _title: "Metadata document modal"
+  requirements:
+    _permission: "access content"
+    id: "[A-Za-z0-9_.:-]+"
+  options:
+    _htmx_route: true
+
 metsis_drupal.wms:
   path: "/metsis/wms/{id}"
   defaults:

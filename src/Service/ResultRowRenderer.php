@@ -100,8 +100,6 @@ final class ResultRowRenderer {
     // Handle abstract/description. Use highlighted field if available.
     $fields['metadata_identifier'] = $solr_doc['metadata_identifier'] ?? '';
     $fields['id'] = $this->metsisHelper->toSolrId($solr_doc['metadata_identifier']);
-    // -- PROFILING: check_markup is often a hidden bottleneck.
-    $t_cm1 = hrtime(TRUE);
     $fields['abstract'] = [
       '#markup' => check_markup($solr_doc['abstract'], 'metsis_html') ?? '',
     ];
@@ -110,19 +108,15 @@ final class ResultRowRenderer {
       $abstract_html = check_markup($abstract, 'metsis_html');
       $fields['abstract'] = $abstract_html;
     }
-    $t_cm1_ms = (hrtime(TRUE) - $t_cm1) / 1e6;
     // Convert plain URLs in abstract to <a href> links.
     // $fields['abstract'] = $this->linkify($fields['abstract']);
     // Labding page URL.
     $fields['landing_page'] = $solr_doc['related_url_landing_page'][0] ?? '';
 
     // Build leaflet map if geometry is available.
-    $t_leaflet = hrtime(TRUE);
     if (!empty($solr_doc['geometry_geojson'])) {
       $fields['leaflet_map'] = $this->leafletMapRenderer->buildLeafletMap($solr_doc['geometry_geojson'], '250px');
     }
-    $t_leaflet_ms = (hrtime(TRUE) - $t_leaflet) / 1e6;
-
     if (!empty($solr_doc['use_constraint_identifier'])) {
       $fields['license_icon'] = $this->getLicenseIconMarkup(
         $solr_doc['use_constraint_identifier']
@@ -165,17 +159,6 @@ final class ResultRowRenderer {
     $fields['last_metadata_update'] = $this->getLatestMetadataUpdate($solr_doc);
     $fields['temporal_extent'] = $this->getTemporalExtentMarkup($solr_doc);
 
-    // -- PROFILING LOG (remove when diagnosis is complete)
-    $id = $solr_doc['metadata_identifier'] ?? 'unknown';
-    \Drupal::logger('metsis_row_profiler')->debug(
-      'ResultRowRenderer @id: check_markup=@cm ms | leaflet=@leaflet ms',
-      [
-        '@id'      => $id,
-        '@cm'      => round($t_cm1_ms, 2),
-        '@leaflet' => round($t_leaflet_ms, 2),
-      ]
-    );
-    // -- END PROFILING
     return $fields;
   }
 

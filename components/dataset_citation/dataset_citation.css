@@ -1,0 +1,60 @@
+[data-component-id="metsis_drupal:dataset_citation"].dataset-citation {
+  display: grid;
+  gap: 0.9rem;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__entry {
+  border: 1px solid;
+  padding: 0.85rem;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__fields {
+  margin: 0;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__row {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__row dt,
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__row dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__row dt {
+  font-weight: 700;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__resource-link-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__citation-block {
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__citation-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+}
+
+[data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__citation-text {
+  margin: 0;
+  font-style: italic;
+}
+
+@media (max-width: 720px) {
+  [data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}

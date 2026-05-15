@@ -899,6 +899,14 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-15 | TASK: Replaced Drupal AJAX metadata modal trigger with HTMX + native HTML5 dialog workflow while keeping existing metadata page endpoint
+          | FILES: src/Plugin/views/row/MetsisSearchRow.php, src/Controller/MetadataDocumentController.php, metsis_drupal.routing.yml, src/Hook/MetsisThemeHooks.php, templates/metsis-metadata-document-dialog.html.twig, metsis_drupal.libraries.yml, css/metsis_metadata_dialog.css, js/metsis-metadata-dialog.js
+          | NOTE: Added new HTMX route /metsis/metadata/htmx/{id}, custom dialog wrapper with close button, animated backdrop, and 80% width modal presentation
+
+2026-05-14 | TASK: Added structured rendering for personnel and dataset citations on metadata document page using reusable SDC components
+          | FILES: src/Controller/MetadataDocumentController.php, templates/metsis-metadata-document.html.twig, css/metsis_metadata_document.css, components/metadata_person_link/*, components/dataset_citation/*
+          | NOTE: Dataset citation now renders label/value rows, DOI icon for doi.org resource links with full URL, and generated scientific citation strings
+
 2026-05-04 | PERF: Set Solr join local params to method=dvWithScore and score=none for METSIS parent/child joins
           | FILES: src/EventSubscriber/SearchApiSolrSubscriber.php, metsis_drupal.services.yml
           | NOTE: Removed temporary A/B toggles for join method/score and kept profiler output with fixed join settings

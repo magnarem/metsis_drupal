@@ -1,0 +1,71 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: metadata_person_link
+status: stable
+group: metsis
+description: Renders a compact icon link used in metadata personnel details.
+props:
+  type: object
+  required:
+    - link_url
+    - icon_id
+  properties:
+    link_url:
+      type: string
+      title: Link URL
+      description: Destination URL for the link.
+      examples:
+        - "https://orcid.org/0000-0001-5221-1377"
+        - "mailto:user@example.com"
+    icon_id:
+      type: string
+      title: Icon ID
+      description: Icon identifier from the selected icon pack.
+      examples:
+        - email
+        - orcid
+        - ror-rgb
+    icon_pack:
+      type: string
+      title: Icon pack ID
+      description: Icon pack to use.
+      default: metsis_drupal
+      examples:
+        - metsis_drupal
+    icon_size:
+      type: integer
+      title: Icon size
+      description: Icon size in pixels.
+      default: 16
+      examples:
+        - 14
+        - 16
+        - 20
+    link_text:
+      type: string
+      title: Link text
+      description: Optional visible text shown next to the icon.
+      default: ""
+      examples:
+        - "Open profile"
+    aria_label:
+      type: string
+      title: ARIA label
+      description: Accessible label for the link.
+      default: Open link
+      examples:
+        - Open ORCID profile in a new tab
+    target_blank:
+      type: boolean
+      title: Open in new tab
+      description: Whether to set target to _blank.
+      default: true
+      examples:
+        - true
+        - false
+    rel:
+      type: string
+      title: Link rel
+      description: Value for rel attribute when opening a new tab.
+      default: "noopener noreferrer"
+      examples:
+        - "noopener noreferrer"

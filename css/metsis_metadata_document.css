@@ -104,9 +104,160 @@
   font-size: 0.86rem;
 }
 
+  .metsis-metadata__personnel-groups {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .metsis-metadata__personnel-role {
+    border: 1px solid;
+    padding: 0.85rem;
+  }
+
+  .metsis-metadata__personnel-role-title {
+    margin: 0 0 0.65rem;
+    font-size: 1.05rem;
+  }
+
+  .metsis-metadata__personnel-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .metsis-metadata__personnel-item {
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed;
+  }
+
+  .metsis-metadata__personnel-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .metsis-metadata__personnel-fields {
+    margin: 0;
+  }
+
+  .metsis-metadata__personnel-field-row {
+    display: grid;
+    grid-template-columns: minmax(130px, 180px) minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+  }
+
+  .metsis-metadata__personnel-field-row dt,
+  .metsis-metadata__personnel-field-row dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .metsis-metadata__personnel-field-row dt {
+    font-weight: 700;
+  }
+
+  .metsis-metadata__personnel-inline-value {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .metsis-metadata__personnel-uri-link {
+    font-size: 0.9rem;
+  }
+
+  .metsis-metadata__personnel-type {
+    margin: 0.35rem 0 0;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  .metsis-metadata__personnel-address {
+    margin: 0.5rem 0 0;
+  }
+
+  .metsis-metadata__personnel-address-row {
+    display: grid;
+    grid-template-columns: minmax(130px, 180px) minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+  }
+
+  .metsis-metadata__personnel-address-row dt,
+  .metsis-metadata__personnel-address-row dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .metsis-metadata__personnel-address-row dt {
+    font-weight: 700;
+  }
+
 @media (max-width: 720px) {
   .metsis-metadata__dl-row {
     grid-template-columns: 1fr;
     gap: 0.25rem;
   }
+
+    .metsis-metadata__personnel-address-row {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+
+    .metsis-metadata__personnel-field-row {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+
+  .metsis-metadata__two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Two-column layout for Time and geography section */
+.metsis-metadata__two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.metsis-metadata__two-column__left {
+  min-width: 0;
+}
+
+.metsis-metadata__two-column__right {
+  min-width: 0;
+}
+
+.metsis-metadata__map {
+  width: 100%;
+  height: 400px;
+  border: 1px solid;
+  border-radius: 0.25rem;
+}
+
+/* Keywords and classification section */
+.metsis-metadata__keywords-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.metsis-metadata__keyword-group {
+  padding: 0.75rem;
+  border-left: 3px solid;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.metsis-metadata__keyword-group-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.metsis-metadata__keywords-list {
+  margin: 0;
+  line-height: 1.6;
+  word-break: break-word;
 }

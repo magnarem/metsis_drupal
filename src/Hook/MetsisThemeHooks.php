@@ -30,6 +30,12 @@ class MetsisThemeHooks {
         ],
         'template' => 'metsis-metadata-document',
       ],
+      'metsis_metadata_document_dialog' => [
+        'variables' => [
+          'content' => [],
+        ],
+        'template' => 'metsis-metadata-document-dialog',
+      ],
       'metsis_wms_document' => [
         'variables' => [
           'id' => NULL,

@@ -1,0 +1,44 @@
+{% if citations is not empty %}
+  <div {{ attributes.addClass('dataset-citation') }}>
+    {% for citation in citations %}
+      <article class="dataset-citation__entry">
+        <dl class="dataset-citation__fields">
+          {% for row in citation.fields %}
+            {% if row.value is not empty %}
+              <div class="dataset-citation__row">
+                <dt>{{ row.label }}</dt>
+                <dd>{{ row.value }}</dd>
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if citation.resource_url is not empty %}
+            <div class="dataset-citation__row">
+              <dt>{{ citation.resource_label|default('Resource') }}</dt>
+              <dd>
+                <span class="dataset-citation__resource-link-wrap">
+                  {% if citation.resource_is_doi %}
+                    {% include 'metsis_drupal:doi' with {
+                      doi_url: citation.resource_url,
+                      size: 16,
+                      color: true,
+                      show_doi_identifier: false,
+                    } only %}
+                  {% endif %}
+                  <a href="{{ citation.resource_url }}" target="_blank" rel="noopener noreferrer">{{ citation.resource_url }}</a>
+                </span>
+              </dd>
+            </div>
+          {% endif %}
+        </dl>
+
+        {% if citation.citation_text is not empty %}
+          <div class="dataset-citation__citation-block">
+            <h4 class="dataset-citation__citation-title">Suggested citation</h4>
+            <p class="dataset-citation__citation-text">{{ citation.citation_text }}</p>
+          </div>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}

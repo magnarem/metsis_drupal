@@ -1,0 +1,16 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: dataset_citation
+status: stable
+group: metsis
+description: Renders structured dataset citation details and a generated scientific citation string.
+props:
+  type: object
+  required:
+    - citations
+  properties:
+    citations:
+      type: array
+      title: Citations
+      description: List of normalized dataset citation entries.
+      items:
+        type: object
