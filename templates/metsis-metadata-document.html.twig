@@ -4,6 +4,51 @@
  * Theme for rendering one METSIS Solr metadata document.
  */
 #}
+{% import _self as metadata %}
+
+{% macro render_vocab_value(value) %}
+	{% set has_vocab = value.vocabulary is defined and value.vocabulary is not empty %}
+	<span class="metsis-metadata__vocab-value">
+		{% if value.resource_url is not empty %}
+			<a href="{{ value.resource_url }}" target="_blank" rel="noopener noreferrer">{{ value.text }}</a>
+		{% else %}
+			<span>{{ value.text }}</span>
+		{% endif %}
+		{% if has_vocab %}
+			<button
+				type="button"
+				class="metsis-vocab-popover-trigger"
+				aria-label="Show vocabulary information for {{ value.text }}"
+				aria-haspopup="dialog"
+				aria-expanded="false"
+				popovertarget="{{ value.popover_id }}"
+				popovertargetaction="toggle"
+			>
+				<span class="metsis-vocab-popover-trigger__icon" aria-hidden="true">{{ icon('metsis_drupal', 'info', {'size': 14}) }}</span>
+			</button>
+			<div id="{{ value.popover_id }}" class="metsis-vocab-popover" popover="auto">
+				<p class="metsis-vocab-popover__title">{{ value.text }}</p>
+				{% if value.vocabulary.definition is not empty %}
+					<p>{{ value.vocabulary.definition }}</p>
+				{% endif %}
+				{% if value.vocabulary.alt_labels is not empty %}
+					<p><strong>Alt labels:</strong> {{ value.vocabulary.alt_labels|join(', ') }}</p>
+				{% endif %}
+				{% if value.vocabulary.uri is not empty %}
+					<p><strong>URI:</strong> <a href="{{ value.vocabulary.uri }}" target="_blank" rel="noopener noreferrer">{{ value.vocabulary.uri }}</a></p>
+				{% endif %}
+			</div>
+		{% endif %}
+	</span>
+{% endmacro %}
+
+{% macro render_value_row(label, value) %}
+	<div class="metsis-metadata__dl-row">
+		<dt>{{ label }}</dt>
+		<dd>{{ metadata.render_vocab_value(value) }}</dd>
+	</div>
+{% endmacro %}
+
 <article class="metsis-metadata" aria-labelledby="metsis-metadata-title">
 	<header class="metsis-metadata__header">
 		<h1 id="metsis-metadata-title" class="metsis-metadata__title">{{ title }}</h1>
@@ -156,6 +201,77 @@
 				{% include 'metsis_drupal:dataset_citation' with {
 					citations: section.dataset_citation_entries,
 				} only %}
+			{% elseif (section.field == 'related_information_json' or section.field == 'data_access_json') and section.related_information_entries is defined and section.related_information_entries is not empty %}
+				<dl class="metsis-metadata__dl">
+					{% for entry in section.related_information_entries %}
+						<div class="metsis-metadata__dl-row">
+							<dt>{{ entry.type_label }}</dt>
+							<dd>
+								<span class="metsis-metadata__related-link-wrap">
+									{% if entry.is_doi %}
+										<span class="metsis-metadata__related-doi-icon" aria-hidden="true">{{ icon('metsis_drupal', 'doi-black', {'size': 14}) }}</span>
+									{% endif %}
+									<a href="{{ entry.resource_url }}" target="_blank" rel="noopener noreferrer nofollow">{{ entry.link_text }}</a>
+								</span>
+							</dd>
+						</div>
+					{% endfor %}
+				</dl>
+			{% elseif section.field == 'platform_json' and section.platform_entries is defined and section.platform_entries is not empty %}
+				<div class="metsis-metadata__platform-list">
+					{% for platform in section.platform_entries %}
+						<article class="metsis-metadata__platform-item">
+							<div class="metsis-metadata__platform-group">
+								<h4 class="metsis-metadata__platform-group-title">Platform</h4>
+								<dl class="metsis-metadata__dl metsis-metadata__platform-details">
+									{{ metadata.render_value_row('Name', platform.name) }}
+								</dl>
+							</div>
+
+							{% if platform.details is not empty %}
+								<dl class="metsis-metadata__dl metsis-metadata__platform-details">
+									{% for row in platform.details %}
+										{{ metadata.render_value_row(row.label, row.value) }}
+									{% endfor %}
+								</dl>
+							{% endif %}
+
+							{% if platform.instruments is not empty %}
+								<div class="metsis-metadata__platform-group">
+									<h4 class="metsis-metadata__platform-group-title">Instruments</h4>
+									<div class="metsis-metadata__platform-instruments">
+										{% for instrument in platform.instruments %}
+											<section class="metsis-metadata__platform-instrument">
+												<h5 class="metsis-metadata__platform-instrument-title">Instrument</h5>
+												<dl class="metsis-metadata__dl metsis-metadata__platform-instrument-details">
+													{{ metadata.render_value_row('Name', instrument.name) }}
+												</dl>
+												{% if instrument.details is not empty %}
+													<dl class="metsis-metadata__dl metsis-metadata__platform-instrument-details">
+														{% for row in instrument.details %}
+															{{ metadata.render_value_row(row.label, row.value) }}
+														{% endfor %}
+													</dl>
+												{% endif %}
+											</section>
+										{% endfor %}
+									</div>
+								</div>
+							{% endif %}
+
+							{% if platform.ancillary is not empty %}
+								<div class="metsis-metadata__platform-group">
+									<h4 class="metsis-metadata__platform-group-title">Ancillary data</h4>
+									<dl class="metsis-metadata__dl metsis-metadata__platform-ancillary">
+										{% for row in platform.ancillary %}
+											{{ metadata.render_value_row(row.label, row.value) }}
+										{% endfor %}
+									</dl>
+								</div>
+							{% endif %}
+						</article>
+					{% endfor %}
+				</div>
 			{% elseif section.field == 'time_geography' and section.is_two_column %}
 				<div class="metsis-metadata__two-column">
 					<div class="metsis-metadata__two-column__left">

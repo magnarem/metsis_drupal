@@ -664,7 +664,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         'aria-controls' => $plot_container_id,
         'aria-expanded' => 'false',
         'data-label-closed' => (string) $this->t('Plot'),
-        'data-label-open' => (string) $this->t('Close plot ×'),
+        'data-label-open' => (string) $this->t('Close plot &times;'),
         'data-plot-spinner' => $plot_spinner_id,
         'data-plot-target' => $plot_target_id,
       ],

@@ -899,6 +899,30 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-15 | TASK: Added null-cache fallback for MetVocabService dedicated cache lookups and split tests into kernel integration plus lightweight unit coverage
+          | FILES: src/Service/MetVocabService.php, tests/src/Kernel/MetVocabServiceNullCacheKernelTest.php, tests/src/Unit/MetVocabServiceTest.php
+          | NOTE: MetVocab lookups now resolve from in-memory index when cache.backend.null is active; kernel test verifies lookupByLabel/lookupByUri/getGroup with NullBackend and unit tests now target internal fallback/refresh logic only
+
+2026-05-15 | TASK: Replaced platform_json fallback dump with structured Platform/Instrument/Ancillary rendering and MetVocab popovers
+          | FILES: src/Service/MetadataDocumentNormalizer.php, templates/metsis-metadata-document.html.twig, css/metsis_metadata_document.css, js/metsis-vocab-popover.js, metsis_drupal.libraries.yml, tests/src/Unit/MetadataDocumentNormalizerTest.php
+          | NOTE: Removed duplicate platform_json section, added explicit Name labels, kept resource links, switched vocabulary collection lookups to underscore keys (Instrument_Modes, Polarisation_Modes, Product_Types), and enabled info-icon popovers backed by MetVocabService
+
+2026-05-15 | TASK: Kept OPeNDAP .html suffix only in data access link href while preserving original link text
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: For OPeNDAP entries, href now uses landing-page URL with .html, but fallback link text remains the original endpoint URL
+
+2026-05-15 | TASK: Added OPeNDAP resource URL normalization to THREDDS landing pages in data access rendering
+          | FILES: src/Service/MetadataDocumentNormalizer.php
+          | NOTE: data_access_json entries with type OPeNDAP now append .html to resource URLs (without duplicating suffix and preserving query/fragment)
+
+2026-05-15 | TASK: Reused structured link rendering for data_access_json in metadata document
+          | FILES: src/Service/MetadataDocumentNormalizer.php, templates/metsis-metadata-document.html.twig
+          | NOTE: Data access now uses the same type label, link text, rel, target, and DOI icon behavior as related information
+
+2026-05-15 | TASK: Added structured related information rendering with type labels, smart link text, and DOI icon support
+          | FILES: src/Service/MetadataDocumentNormalizer.php, templates/metsis-metadata-document.html.twig, css/metsis_metadata_document.css
+          | NOTE: related_information_json now renders each type as label, opens resources in new window with rel="noopener noreferrer nofollow", and prefers description as link text except when it matches type
+
 2026-05-15 | TASK: Reset metadata dialog scroll position to top on every HTMX open
           | FILES: js/metsis-metadata-dialog.js
           | NOTE: Dialog and body scrollTop are now reset before and after showModal() to avoid restored scroll position when reopening records

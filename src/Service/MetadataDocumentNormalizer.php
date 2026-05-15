@@ -10,6 +10,20 @@ namespace Drupal\metsis_drupal\Service;
 final class MetadataDocumentNormalizer {
 
   /**
+   * Met vocabulary lookup service.
+   *
+   * @var \Drupal\metsis_drupal\Service\MetVocabServiceInterface
+   */
+  private readonly MetVocabServiceInterface $metVocabService;
+
+  /**
+   * Constructs the normalizer.
+   */
+  public function __construct(MetVocabServiceInterface $metVocabService) {
+    $this->metVocabService = $metVocabService;
+  }
+
+  /**
    * Build compact summary card fields.
    *
    * @param array<string, mixed> $document
@@ -47,13 +61,7 @@ final class MetadataDocumentNormalizer {
    *   Structured section list.
    */
   public function buildSections(array $document, ?LeafletMapRenderer $leafletMapRenderer = NULL): array {
-    $json_fields = [
-      'personnel_json' => 'Personnel',
-      'dataset_citation_json' => 'Dataset citation',
-      'data_access_json' => 'Data access',
-      'related_information_json' => 'Related information',
-      'platform_json' => 'Platforms and instruments',
-    ];
+    $json_fields = $this->getStructuredJsonFields();
 
     $sections = [];
     foreach ($json_fields as $field_name => $label) {
@@ -110,6 +118,40 @@ final class MetadataDocumentNormalizer {
         continue;
       }
 
+      if (in_array($field_name, ['related_information_json', 'data_access_json'], TRUE)) {
+        $related_information_entries = $this->buildRelatedInformationEntries($normalized, $field_name);
+        if ($related_information_entries === []) {
+          continue;
+        }
+
+        $sections[] = [
+          'title' => $label,
+          'field' => $field_name,
+          'is_structured' => TRUE,
+          'value' => $normalized,
+          'value_pretty' => $this->formatStructuredValue($normalized),
+          'related_information_entries' => $related_information_entries,
+        ];
+        continue;
+      }
+
+      if ($field_name === 'platform_json') {
+        $platform_entries = $this->buildPlatformEntries($normalized);
+        if ($platform_entries === []) {
+          continue;
+        }
+
+        $sections[] = [
+          'title' => $label,
+          'field' => $field_name,
+          'is_structured' => TRUE,
+          'value' => $normalized,
+          'value_pretty' => $this->formatStructuredValue($normalized),
+          'platform_entries' => $platform_entries,
+        ];
+        continue;
+      }
+
       $sections[] = [
         'title' => $label,
         'field' => $field_name,
@@ -120,7 +162,7 @@ final class MetadataDocumentNormalizer {
     }
 
     // Time and geography section with geometry map.
-    $time_geography_fields = [
+    $time_geography_data = $this->extractSimpleFieldsWithLabels($document, [
       'temporal_extent_start_date' => 'Start date',
       'temporal_extent_end_date' => 'End date',
       'geographic_extent_rectangle_srsName' => 'Spatial reference system',
@@ -128,8 +170,7 @@ final class MetadataDocumentNormalizer {
       'geographic_extent_rectangle_south' => 'South',
       'geographic_extent_rectangle_east' => 'East',
       'geographic_extent_rectangle_west' => 'West',
-    ];
-    $time_geography_data = $this->extractSimpleFieldsWithLabels($document, $time_geography_fields);
+    ]);
     $geometry = $this->extractGeometry($document);
     $geometry_render_array = NULL;
 
@@ -191,7 +232,7 @@ final class MetadataDocumentNormalizer {
       'storage_information_file_checksum' => 'File checksum',
       'storage_information_file_checksum_type' => 'Checksum type',
       'storage_information_file_storage_expiry_date' => 'Storage expiry date',
-      'timestamp' => 'Last updated',
+      'timestamp' => 'Last indexed',
     ];
     $storage_data = $this->extractSimpleFieldsWithLabels($document, $storage_fields);
     if (!empty($storage_data)) {
@@ -324,6 +365,499 @@ final class MetadataDocumentNormalizer {
     }
 
     return $entries;
+  }
+
+  /**
+   * Build related information entries prepared for template rendering.
+   *
+   * @param mixed $value
+   *   Normalized related information value.
+   * @param string $source_field
+   *   Source Solr field name.
+   *
+   * @return array<int, array<string, mixed>>
+   *   Related information entries.
+   */
+  private function buildRelatedInformationEntries(mixed $value, string $source_field): array {
+    $rows = $this->extractStructuredRows($value, ['type', 'description', 'resource']);
+    if ($rows === []) {
+      return [];
+    }
+
+    $entries = [];
+    foreach ($rows as $row) {
+      if (!is_array($row)) {
+        continue;
+      }
+
+      $type = $this->toInlineText($row['type'] ?? '');
+      $description = $this->toInlineText($row['description'] ?? '');
+      $resource = $this->normalizeUri($row['resource'] ?? '');
+      if ($resource === '') {
+        continue;
+      }
+
+      $resource_link_text = $resource;
+
+      if ($source_field === 'data_access_json' && strcasecmp(trim($type), 'opendap') === 0) {
+        $resource = $this->normalizeOpendapLandingPageUrl($resource);
+      }
+
+      $link_text = $resource_link_text;
+      if ($description !== '') {
+        $link_text = $description;
+      }
+
+      if ($type !== '' && strcasecmp(trim($type), trim($description)) === 0) {
+        $link_text = $resource_link_text;
+      }
+
+      $entries[] = [
+        'type_label' => $type !== '' ? $type : 'Related information',
+        'resource_url' => $resource,
+        'link_text' => $link_text,
+        'is_doi' => $this->getUriDomain($resource) === 'doi',
+      ];
+    }
+
+    return $entries;
+  }
+
+  /**
+   * Convert OPeNDAP endpoint URL to THREDDS landing page URL.
+   *
+   * @param string $resource
+   *   Resource URL.
+   *
+   * @return string
+   *   Landing page URL with .html suffix.
+   */
+  private function normalizeOpendapLandingPageUrl(string $resource): string {
+    if (preg_match('/\.html?(?:[?#]|$)/i', $resource) === 1) {
+      return $resource;
+    }
+
+    if (preg_match('/^([^?#]+)([?#].*)?$/', $resource, $matches) !== 1) {
+      return $resource;
+    }
+
+    $base = $matches[1];
+    $suffix = $matches[2] ?? '';
+    return $base . '.html' . $suffix;
+  }
+
+  /**
+   * Return the structured JSON fields rendered in the metadata document.
+   *
+   * @return array<string, string>
+   *   Field name to section title map.
+   */
+  private function getStructuredJsonFields(): array {
+    return [
+      'personnel_json' => 'Personnel',
+      'dataset_citation_json' => 'Dataset citation',
+      'data_access_json' => 'Data access',
+      'related_information_json' => 'Related information',
+      'platform_json' => 'Platforms and instruments',
+    ];
+  }
+
+  /**
+   * Build platform entries prepared for template rendering.
+   *
+   * @param mixed $value
+   *   Normalized platform JSON value.
+   *
+   * @return array<int, array<string, mixed>>
+   *   Platform entries.
+   */
+  private function buildPlatformEntries(mixed $value): array {
+    $rows = $this->extractStructuredRows($value, ['short_name', 'long_name', 'resource']);
+    if ($rows === []) {
+      return [];
+    }
+
+    $entries = [];
+    foreach ($rows as $index => $row) {
+      if (!is_array($row)) {
+        continue;
+      }
+
+      $entry = $this->buildPlatformEntry($row, (int) $index);
+      if ($entry === NULL) {
+        continue;
+      }
+
+      $entries[] = $entry;
+    }
+
+    return $entries;
+  }
+
+  /**
+   * Build one platform entry prepared for template rendering.
+   *
+   * @param array<string, mixed> $row
+   *   Platform row from Solr.
+   * @param int $index
+   *   Zero-based row index.
+   *
+   * @return array<string, mixed>|null
+   *   Normalized platform entry or NULL when empty.
+   */
+  private function buildPlatformEntry(array $row, int $index): ?array {
+    $name_node = $this->buildVocabularyNode(
+      $row,
+      ['Platform'],
+      'platform-' . $index . '-name',
+    );
+    if ($name_node === NULL) {
+      return NULL;
+    }
+
+    $details = $this->buildKeyValueRows(
+      $row,
+      [
+        'orbit_direction' => 'Orbit direction',
+        'orbit_relative' => 'Orbit relative',
+        'orbit_absolute' => 'Orbit absolute',
+        'mode' => 'Mode',
+        'polarisation' => 'Polarisation',
+        'product_type' => 'Product type',
+      ],
+      [
+        'mode' => ['Instrument_Modes', 'Instrument Modes'],
+        'polarisation' => ['Polarisation_Modes', 'Polarisation Modes'],
+        'product_type' => ['Product_Types', 'Product Types'],
+      ],
+      [
+        'short_name',
+        'long_name',
+        'resource',
+        'instrument',
+        'ancillary',
+      ],
+      'platform-' . $index . '-detail',
+    );
+
+    $instruments = $this->buildPlatformInstrumentEntries($row['instrument'] ?? NULL, $index);
+    $ancillary = is_array($row['ancillary'] ?? NULL)
+      ? $this->buildKeyValueRows(
+          $row['ancillary'],
+          [],
+          [],
+          [],
+          'platform-' . $index . '-ancillary',
+        )
+      : [];
+
+    return [
+      'name' => $name_node,
+      'details' => $details,
+      'instruments' => $instruments,
+      'ancillary' => $ancillary,
+    ];
+  }
+
+  /**
+   * Build nested instrument entries prepared for template rendering.
+   *
+   * @param mixed $value
+   *   Instrument JSON value.
+   * @param int $platform_index
+   *   Zero-based parent platform index.
+   *
+   * @return array<int, array<string, mixed>>
+   *   Instrument entries.
+   */
+  private function buildPlatformInstrumentEntries(mixed $value, int $platform_index): array {
+    $rows = $this->extractStructuredRows($value, ['short_name', 'long_name', 'resource']);
+    if ($rows === []) {
+      return [];
+    }
+
+    $entries = [];
+    foreach ($rows as $index => $row) {
+      if (!is_array($row)) {
+        continue;
+      }
+
+      $entry = $this->buildPlatformInstrumentEntry($row, $platform_index, (int) $index);
+      if ($entry === NULL) {
+        continue;
+      }
+
+      $entries[] = $entry;
+    }
+
+    return $entries;
+  }
+
+  /**
+   * Build one nested instrument entry.
+   *
+   * @param array<string, mixed> $row
+   *   Instrument row from Solr.
+   * @param int $platform_index
+   *   Zero-based parent platform index.
+   * @param int $instrument_index
+   *   Zero-based instrument index.
+   *
+   * @return array<string, mixed>|null
+   *   Normalized instrument entry or NULL when empty.
+   */
+  private function buildPlatformInstrumentEntry(array $row, int $platform_index, int $instrument_index): ?array {
+    $name_node = $this->buildVocabularyNode(
+      $row,
+      ['Instrument'],
+      'platform-' . $platform_index . '-instrument-' . $instrument_index . '-name',
+    );
+    if ($name_node === NULL) {
+      return NULL;
+    }
+
+    $details = $this->buildKeyValueRows(
+      $row,
+      [
+        'mode' => 'Mode',
+        'polarisation' => 'Polarisation',
+        'product_type' => 'Product type',
+      ],
+      [
+        'mode' => ['Instrument_Modes', 'Instrument Modes'],
+        'polarisation' => ['Polarisation_Modes', 'Polarisation Modes'],
+        'product_type' => ['Product_Types', 'Product Types'],
+      ],
+      [
+        'short_name',
+        'long_name',
+        'resource',
+      ],
+      'platform-' . $platform_index . '-instrument-' . $instrument_index . '-detail',
+    );
+
+    return [
+      'name' => $name_node,
+      'details' => $details,
+    ];
+  }
+
+  /**
+   * Build a label/value node enriched with vocabulary metadata when found.
+   *
+   * @param array<string, mixed> $row
+   *   Source row.
+   * @param string[] $collection_keys
+   *   Vocabulary collection keys to search.
+   * @param string $popover_id
+   *   Popover DOM id to use when a vocabulary match exists.
+   * @param string[] $candidate_keys
+   *   Preferred source keys for the visible label.
+   *
+   * @return array<string, mixed>|null
+   *   Renderable node data or NULL when empty.
+   */
+  private function buildVocabularyNode(
+    array $row,
+    array $collection_keys,
+    string $popover_id,
+    array $candidate_keys = ['long_name', 'short_name'],
+  ): ?array {
+    $candidates = [];
+    foreach ($candidate_keys as $candidate_key) {
+      $candidate = $this->toInlineText($row[$candidate_key] ?? '');
+      if ($candidate === '') {
+        continue;
+      }
+      $candidates[] = $candidate;
+    }
+
+    $resource_url = $this->normalizeUri($row['resource'] ?? '');
+    $display_text = $candidates[0] ?? '';
+    if ($display_text === '' && $resource_url !== '') {
+      $display_text = $resource_url;
+    }
+
+    if ($display_text === '' && $resource_url === '') {
+      return NULL;
+    }
+
+    return [
+      'text' => $display_text,
+      'resource_url' => $resource_url,
+      'popover_id' => $popover_id,
+      'vocabulary' => $this->resolveVocabularyConcept($collection_keys, $candidates, $resource_url),
+    ];
+  }
+
+  /**
+   * Build a normalized list of label/value rows.
+   *
+   * @param array<string, mixed> $source
+   *   Source associative array.
+   * @param array<string, string> $field_labels
+   *   Field name to human-readable label mapping.
+   * @param array<string, string[]> $vocabulary_fields
+   *   Field name to vocabulary collection keys.
+   * @param string[] $excluded_keys
+   *   Fields that should never be rendered as generic rows.
+   * @param string $popover_prefix
+   *   Prefix used to generate predictable popover ids.
+   *
+   * @return array<int, array<string, mixed>>
+   *   Renderable label/value rows.
+   */
+  private function buildKeyValueRows(array $source, array $field_labels = [], array $vocabulary_fields = [], array $excluded_keys = [], string $popover_prefix = 'metadata-value'): array {
+    $rows = [];
+    $processed_keys = array_fill_keys($excluded_keys, TRUE);
+
+    foreach ($field_labels as $field => $label) {
+      if (isset($processed_keys[$field])) {
+        continue;
+      }
+      if (!array_key_exists($field, $source)) {
+        continue;
+      }
+
+      $text = $this->toInlineText($source[$field]);
+      if ($text === '') {
+        continue;
+      }
+
+      $rows[] = [
+        'label' => $label,
+        'value' => $this->buildValueNode(
+          $text,
+          $source[$field],
+          $vocabulary_fields[$field] ?? [],
+          $popover_prefix . '-' . $field,
+        ),
+      ];
+      $processed_keys[$field] = TRUE;
+    }
+
+    foreach ($source as $field => $raw_value) {
+      if (!is_string($field) || isset($processed_keys[$field])) {
+        continue;
+      }
+      if (is_array($raw_value)) {
+        continue;
+      }
+
+      $text = $this->toInlineText($raw_value);
+      if ($text === '') {
+        continue;
+      }
+
+      $rows[] = [
+        'label' => $this->humanizeFieldLabel($field),
+        'value' => $this->buildValueNode(
+          $text,
+          $raw_value,
+          $vocabulary_fields[$field] ?? [],
+          $popover_prefix . '-' . $field,
+        ),
+      ];
+      $processed_keys[$field] = TRUE;
+    }
+
+    return $rows;
+  }
+
+  /**
+   * Build a single display value node.
+   *
+   * @param string $text
+   *   Visible text.
+   * @param mixed $raw_value
+   *   Raw field value.
+   * @param string[] $collection_keys
+   *   Vocabulary collection keys to search.
+   * @param string $popover_id
+   *   Popover DOM id to use when a vocabulary match exists.
+   *
+   * @return array<string, mixed>
+   *   Renderable value node.
+   */
+  private function buildValueNode(string $text, mixed $raw_value, array $collection_keys = [], string $popover_id = ''): array {
+    $resource_url = $this->normalizeUri($raw_value);
+
+    return [
+      'text' => $text,
+      'resource_url' => $resource_url,
+      'popover_id' => $popover_id,
+      'vocabulary' => $collection_keys !== []
+        ? $this->resolveVocabularyConcept($collection_keys, [$text], $resource_url)
+        : NULL,
+    ];
+  }
+
+  /**
+   * Resolve a vocabulary concept from candidate labels and optional URI.
+   *
+   * @param string[] $collection_keys
+   *   Vocabulary collection keys to search in order.
+   * @param string[] $candidate_values
+   *   Candidate labels to search in order.
+   * @param string|null $resource_url
+   *   Optional resource URI.
+   *
+   * @return array<string, mixed>|null
+   *   Matched concept info or NULL when no concept is found.
+   */
+  private function resolveVocabularyConcept(array $collection_keys, array $candidate_values, ?string $resource_url = NULL): ?array {
+    $labels = [];
+    foreach ($candidate_values as $candidate_value) {
+      if (!is_scalar($candidate_value)) {
+        continue;
+      }
+
+      $label = trim((string) $candidate_value);
+      if ($label === '') {
+        continue;
+      }
+
+      $labels[] = $label;
+    }
+
+    foreach ($collection_keys as $collection_key) {
+      if (!is_string($collection_key) || $collection_key === '') {
+        continue;
+      }
+
+      foreach ($labels as $label) {
+        $concept = $this->metVocabService->lookupByLabel($collection_key, $label);
+        if ($concept !== NULL) {
+          return $concept;
+        }
+      }
+    }
+
+    $uri = $this->normalizeUri($resource_url ?? '');
+    if ($uri === '') {
+      return NULL;
+    }
+
+    return $this->metVocabService->lookupByUri($uri);
+  }
+
+  /**
+   * Convert a machine field name to a human-readable label.
+   *
+   * @param string $field
+   *   Field name.
+   *
+   * @return string
+   *   Human-readable label.
+   */
+  private function humanizeFieldLabel(string $field): string {
+    $label = str_replace('_', ' ', $field);
+    $label = trim($label);
+    if ($label === '') {
+      return $field;
+    }
+
+    return ucfirst($label);
   }
 
   /**
@@ -882,7 +1416,7 @@ final class MetadataDocumentNormalizer {
     }
 
     if (array_key_exists('keywords_gcmdprov', $document) && in_array('GCMDPROV', $vocab_list, TRUE)) {
-      $keywords_by_vocab['GCMDPROV Providers Keywords'] = $this->toInlineText($document['keywords_gcmdprov'] ?? []);
+      $keywords_by_vocab['GCMDPROV Provider Keywords'] = $this->toInlineText($document['keywords_gcmdprov'] ?? []);
     }
     if (array_key_exists('keywords_cfstdn', $document) && in_array('GCFSTDN', $vocab_list, TRUE)) {
       $keywords_by_vocab['GCFSTDN CF Standard Names'] = $this->toInlineText($document['keywords_cfstdn'] ?? []);

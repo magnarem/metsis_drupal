@@ -290,3 +290,147 @@
   line-height: 1.6;
   word-break: break-word;
 }
+
+.metsis-metadata__related-link-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.metsis-metadata__related-doi-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.metsis-metadata__vocab-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.metsis-vocab-popover-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.78;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.metsis-vocab-popover-trigger:hover,
+.metsis-vocab-popover-trigger:focus-visible {
+  opacity: 1;
+  outline-offset: 2px;
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.metsis-vocab-popover-trigger__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metsis-vocab-popover {
+  display: none;
+  max-width: min(30rem, 90vw);
+  padding: 0.75rem 0.9rem;
+  border: 1px solid;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: inherit;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.18);
+  z-index: 140;
+}
+
+.metsis-vocab-popover:popover-open {
+  display: block;
+  position: fixed;
+  margin: 0;
+}
+
+.metsis-vocab-popover[hidden] {
+  display: none;
+}
+
+.metsis-vocab-popover__title {
+  margin: 0 0 0.45rem;
+  font-weight: 700;
+}
+
+.metsis-vocab-popover p {
+  margin: 0;
+}
+
+.metsis-vocab-popover p + p {
+  margin-top: 0.45rem;
+}
+
+.metsis-vocab-popover a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.metsis-metadata__platform-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.metsis-metadata__platform-item {
+  padding: 0.9rem;
+  border: 1px solid;
+  border-radius: 0.35rem;
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.metsis-metadata__platform-instrument-title,
+.metsis-metadata__platform-group-title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.metsis-metadata__platform-details,
+.metsis-metadata__platform-instrument-details,
+.metsis-metadata__platform-ancillary {
+  margin-top: 0.35rem;
+}
+
+.metsis-metadata__platform-group {
+  margin-top: 0.9rem;
+}
+
+.metsis-metadata__platform-instruments {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.metsis-metadata__platform-instrument {
+  padding: 0.75rem;
+  border-left: 3px solid;
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.metsis-metadata__platform-instrument-title {
+  margin-bottom: 0.5rem;
+  font-size: 0.98rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metsis-metadata__platform-group-title {
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

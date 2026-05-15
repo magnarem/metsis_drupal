@@ -229,7 +229,8 @@ final class MetVocabService implements MetVocabServiceInterface {
       return $cached->data;
     }
 
-    $this->warmDedicatedCaches($this->getIndex());
+    $index = $this->getIndex();
+    $this->warmDedicatedCaches($index);
     $cached = $this->cache->get(self::INDEX_META_CID);
     if ($cached !== FALSE
         && is_array($cached->data)
@@ -237,7 +238,9 @@ final class MetVocabService implements MetVocabServiceInterface {
       return $cached->data;
     }
 
-    return NULL;
+    // Null cache backends never persist writes, so derive meta from in-memory
+    // index data when dedicated cache entries cannot be read back.
+    return $this->buildMetaFromIndex($index);
   }
 
   /**
@@ -278,9 +281,20 @@ final class MetVocabService implements MetVocabServiceInterface {
       return $cached->data;
     }
 
-    $this->warmDedicatedCaches($this->getIndex());
+    $index = $this->getIndex();
+    $this->warmDedicatedCaches($index);
     $cached = $this->cache->get(self::GROUP_CID_PREFIX . $group_key);
-    return ($cached !== FALSE && is_array($cached->data)) ? $cached->data : NULL;
+    if ($cached !== FALSE && is_array($cached->data)) {
+      return $cached->data;
+    }
+
+    if (!isset($index['groups'][$group_key]) || !is_array($index['groups'][$group_key])) {
+      return NULL;
+    }
+
+    $group = $index['groups'][$group_key];
+    $group['label_index'] = $index['label_index'][$group_key] ?? [];
+    return $group;
   }
 
   /**
@@ -298,9 +312,16 @@ final class MetVocabService implements MetVocabServiceInterface {
       return $cached->data;
     }
 
-    $this->warmDedicatedCaches($this->getIndex());
+    $index = $this->getIndex();
+    $this->warmDedicatedCaches($index);
     $cached = $this->cache->get(self::CONCEPT_CID_PREFIX . md5($uri));
-    return ($cached !== FALSE && is_array($cached->data)) ? $cached->data : NULL;
+    if ($cached !== FALSE && is_array($cached->data)) {
+      return $cached->data;
+    }
+
+    return isset($index['concepts'][$uri]) && is_array($index['concepts'][$uri])
+      ? $index['concepts'][$uri]
+      : NULL;
   }
 
   /**
@@ -606,6 +627,41 @@ final class MetVocabService implements MetVocabServiceInterface {
     }
 
     $this->cache->set(self::INDEX_META_CID, $meta, $expire, ['metsis_vocab']);
+  }
+
+  /**
+   * Build a lightweight meta index from an in-memory full index.
+   *
+   * @param array $index
+   *   The full vocabulary index.
+   *
+   * @return array
+   *   Meta index with version, groups and group URI mapping.
+   */
+  private function buildMetaFromIndex(array $index): array {
+    $meta = [
+      'version'       => self::INDEX_VERSION,
+      'groups'        => [],
+      'group_uri_map' => [],
+    ];
+
+    foreach ($index['groups'] ?? [] as $key => $group) {
+      if (!is_array($group)) {
+        continue;
+      }
+      $member_uris = $group['member_uris'] ?? [];
+      $group_uri = (string) ($group['uri'] ?? '');
+      $meta['groups'][$key] = [
+        'uri'          => $group_uri,
+        'label'        => $this->resolveLang((array) ($group['labels'] ?? []), 'en'),
+        'member_count' => is_array($member_uris) ? count($member_uris) : 0,
+      ];
+      if ($group_uri !== '') {
+        $meta['group_uri_map'][$group_uri] = $key;
+      }
+    }
+
+    return $meta;
   }
 
   /**

@@ -67,6 +67,11 @@ metsis_metadata_document:
   css:
     component:
       css/metsis_metadata_document.css: {}
+  js:
+    js/metsis-vocab-popover.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
 
 metsis_metadata_dialog:
   version: 1.x
