@@ -128,19 +128,29 @@
 button.metsis-search-box__button {
   border: none;
   cursor: pointer;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 0;
   margin: 0;
-  margin-top: 2.5em;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: stretch;
+}
+
+button.metsis-search-box__button svg {
+  height: 100%;
+  width: auto;
 }
 
 .metsis-search-box-container {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+/* Flatten intermediate wrappers so flex alignment reaches button and input */
+.metsis-search-box-container > .form-actions,
+.metsis-search-box-container > .form-item {
+  display: contents;
 }
 
 /*.metsis-search-text__input */

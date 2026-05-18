@@ -23,7 +23,9 @@ class MetsisSearchFormHooks {
    *
    * {@inheritdoc}
    */
-  #[Hook('form_views_exposed_form_metsis_search_results_alter')]
+
+
+  #[Hook('form_views_exposed_form_alter')]
   public function metsisExposedFormAlter(&$form, FormStateInterface $form_state, $form_id) {
     if ($form_id === 'views_exposed_form' && $form['#id'] === 'views-exposed-form-' . MetsisConstants::METSIS_SEARCH_VIEW_NAME . '-results') {
       // Convert the search input to a button.
@@ -59,7 +61,6 @@ class MetsisSearchFormHooks {
 
       unset($form['#disable_inline_form_errors']);
     }
-
   }
 
 }
