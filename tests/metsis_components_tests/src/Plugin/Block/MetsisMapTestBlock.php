@@ -18,7 +18,7 @@ use Drupal\Core\Block\BlockBase;
  * )
  * {@inheritdoc}
  */
-class MetsisComponentsTestsBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class MetsisMapTestBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}

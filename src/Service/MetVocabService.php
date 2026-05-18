@@ -218,14 +218,14 @@ final class MetVocabService implements MetVocabServiceInterface {
   /**
    * Return the lightweight cached meta index, warming it from the full index.
    *
-   * @return array|null
-   *   The cached meta index or NULL when it could not be resolved.
+   * @return array
+   *   The cached meta index.
    */
-  private function getMetaIndex(): ?array {
+  private function getMetaIndex(): array {
     $cached = $this->cache->get(self::INDEX_META_CID);
     if ($cached !== FALSE
-        && is_array($cached->data)
-        && ($cached->data['version'] ?? 0) === self::INDEX_VERSION) {
+      && is_array($cached->data)
+      && ($cached->data['version'] ?? 0) === self::INDEX_VERSION) {
       return $cached->data;
     }
 
@@ -233,8 +233,8 @@ final class MetVocabService implements MetVocabServiceInterface {
     $this->warmDedicatedCaches($index);
     $cached = $this->cache->get(self::INDEX_META_CID);
     if ($cached !== FALSE
-        && is_array($cached->data)
-        && ($cached->data['version'] ?? 0) === self::INDEX_VERSION) {
+      && is_array($cached->data)
+      && ($cached->data['version'] ?? 0) === self::INDEX_VERSION) {
       return $cached->data;
     }
 
@@ -254,9 +254,6 @@ final class MetVocabService implements MetVocabServiceInterface {
    */
   private function resolveCachedGroupKey(string $collection_key): ?string {
     $meta = $this->getMetaIndex();
-    if ($meta === NULL) {
-      return NULL;
-    }
     if (isset($meta['groups'][$collection_key])) {
       return $collection_key;
     }

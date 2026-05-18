@@ -1,0 +1,54 @@
+{#
+/**
+ * @file
+ * Theme template for facet vocabulary info popover button.
+ *
+ * Renders an info button that opens a Popover API dialog with vocabulary metadata.
+ *
+ * Available variables:
+ * - popover_id: Unique HTML id for the popover element.
+ * - label: Vocabulary group label.
+ * - definition: Vocabulary group definition.
+ * - uri: Link to vocabulary reference.
+ * - title: Human-readable facet title for aria-label.
+ */
+#}
+{% set trigger_label = 'Show vocabulary information for @label'|t({'@label': title}) %}
+<span class="metsis-facet-vocab-popover-container">
+  <button
+    type="button"
+    class="metsis-vocab-popover-trigger metsis-facet-vocab-popover-trigger"
+    popovertarget="{{ popover_id }}"
+    data-popover-target="{{ popover_id }}"
+    aria-expanded="false"
+    aria-controls="{{ popover_id }}"
+    aria-label="{{ trigger_label }}"
+  >
+    {{ icon('metsis_drupal', 'circle-info', {'size': 14}) }}
+  </button>
+  <div
+    id="{{ popover_id }}"
+    class="metsis-vocab-popover"
+    role="tooltip"
+    popover="auto"
+    hidden
+  >
+    {% if label is not empty %}
+      <p class="metsis-vocab-popover__title">{{ label }}</p>
+    {% endif %}
+    {% if definition is not empty %}
+      <p>{{ definition }}</p>
+    {% endif %}
+    {% if uri is not empty %}
+      <p>
+        <a
+          href="{{ uri }}"
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+        >
+          {{ 'Vocabulary reference'|t }}
+        </a>
+      </p>
+    {% endif %}
+  </div>
+</span>

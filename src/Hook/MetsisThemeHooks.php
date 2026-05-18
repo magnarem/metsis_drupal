@@ -5,11 +5,19 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 
 /**
  * Custom theme related hooks.
  */
 class MetsisThemeHooks {
+
+  /**
+   * Constructor.
+   */
+  public function __construct(
+    private readonly MetVocabServiceInterface $metVocabService,
+  ) {}
 
   /**
    * Implement hook_theme.
@@ -116,6 +124,16 @@ class MetsisThemeHooks {
         ],
         'template' => 'components/metsis-collection-icon-component',
       ],
+      'metsis_facet_vocab_popover_button' => [
+        'variables' => [
+          'popover_id' => '',
+          'label' => '',
+          'definition' => '',
+          'uri' => '',
+          'title' => '',
+        ],
+        'template' => 'metsis-facet-vocab-popover-button',
+      ],
 
       // Add more theme hooks here if needed.
     ];
@@ -146,6 +164,74 @@ class MetsisThemeHooks {
    */
   #[Hook('theme_suggestions_views_exposed_form_alter')]
   public function themeHookSuggestion(&$suggestions, array $variables) {
+  }
+
+  /**
+   * Add vocabulary popover metadata to mapped facet headers.
+   *
+   * Implements hook_preprocess_facets_item_list().
+   *
+   * @param array $variables
+   *   Template variables.
+   */
+  #[Hook('preprocess_facets_item_list')]
+  public function preprocessFacetsItemList(array &$variables): void {
+    $facet = $variables['facet'] ?? NULL;
+    if (!is_object($facet) || !method_exists($facet, 'id')) {
+      return;
+    }
+
+    $facet_id = (string) $facet->id();
+    $group_key = $this->mapFacetIdToVocabularyGroup($facet_id);
+    if ($group_key === NULL) {
+      return;
+    }
+
+    $group = $this->metVocabService->getGroup($group_key);
+    if (!is_array($group)) {
+      return;
+    }
+
+    $label = trim((string) ($group['label'] ?? ''));
+    $definition = trim((string) ($group['definition'] ?? ''));
+    $uri = trim((string) ($group['uri'] ?? ''));
+
+    if ($label === '' && $definition === '' && $uri === '') {
+      return;
+    }
+
+    $safe_facet_id = strtolower((string) preg_replace('/[^a-zA-Z0-9_-]+/', '-', $facet_id));
+    $safe_facet_id = trim($safe_facet_id, '-_');
+    if ($safe_facet_id === '') {
+      $safe_facet_id = 'facet';
+    }
+
+    $variables['facet_vocab_group'] = [
+      'label' => $label,
+      'definition' => $definition,
+      'uri' => $uri,
+      'popover_id' => 'facet-vocab-' . $safe_facet_id,
+    ];
+  }
+
+  /**
+   * Map known facet IDs to MMD vocabulary group keys.
+   *
+   * @param string $facet_id
+   *   Facet machine id.
+   *
+   * @return string|null
+   *   Vocabulary group key or NULL when unmapped.
+   */
+  private function mapFacetIdToVocabularyGroup(string $facet_id): ?string {
+    $mapping = [
+      'facets_activity_type' => 'Activity_Type',
+      'activity_type' => 'Activity_Type',
+      'facets_collection' => 'Collection_Keywords',
+      'collection' => 'Collection_Keywords',
+    ];
+
+    return $mapping[$facet_id] ?? NULL;
   }
 
 }

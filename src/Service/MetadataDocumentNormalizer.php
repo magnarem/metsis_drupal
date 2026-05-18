@@ -258,26 +258,6 @@ final class MetadataDocumentNormalizer {
       $sections[] = $keywords_section;
     }
 
-    // Relations and references section.
-    $relations_fields = [
-      'related_dataset' => 'Related dataset',
-      'related_dataset_id' => 'Related dataset ID',
-      'dataset_citation_doi' => 'Dataset citation DOI',
-      'descriptions' => 'Description',
-      'related_information_type' => 'Related information type',
-      'related_information_resource' => 'Related information resource',
-      'related_information_description' => 'Related information description',
-    ];
-    $relations_data = $this->extractSimpleFieldsWithLabels($document, $relations_fields);
-    if (!empty($relations_data)) {
-      $sections[] = [
-        'title' => 'Relations and references',
-        'field' => 'relations',
-        'is_structured' => FALSE,
-        'value' => $relations_data,
-      ];
-    }
-
     // Storage and provenance section.
     $storage_fields = [
       'storage_information_file_name' => 'File name',
@@ -457,6 +437,9 @@ final class MetadataDocumentNormalizer {
       if ($source_field === 'data_access_json' && strcasecmp(trim($type), 'opendap') === 0) {
         $resource = $this->normalizeOpendapLandingPageUrl($resource);
       }
+      if ($source_field === 'data_access_json' && strcasecmp(trim($type), 'ogc wms') === 0) {
+        $resource = $this->normalizeOgcWmsCapabilitiesUrl($resource);
+      }
 
       $link_text = $resource_link_text;
       if ($description !== '') {
@@ -499,6 +482,60 @@ final class MetadataDocumentNormalizer {
     $base = $matches[1];
     $suffix = $matches[2] ?? '';
     return $base . '.html' . $suffix;
+  }
+
+  /**
+   * Normalize OGC WMS endpoint URL to include GetCapabilities params.
+   *
+   * @param string $resource
+   *   Resource URL.
+   *
+   * @return string
+   *   WMS URL with service/request query params.
+   */
+  private function normalizeOgcWmsCapabilitiesUrl(string $resource): string {
+    $parts = parse_url($resource);
+    if (!is_array($parts)) {
+      return $resource;
+    }
+
+    $query = [];
+    if (!empty($parts['query']) && is_string($parts['query'])) {
+      parse_str($parts['query'], $query);
+    }
+
+    // Force capabilities request while preserving existing params.
+    $query['service'] = 'WMS';
+    $query['request'] = 'GetCapabilities';
+
+    $rebuilt = '';
+    if (!empty($parts['scheme'])) {
+      $rebuilt .= $parts['scheme'] . '://';
+    }
+    if (!empty($parts['user'])) {
+      $rebuilt .= $parts['user'];
+      if (!empty($parts['pass'])) {
+        $rebuilt .= ':' . $parts['pass'];
+      }
+      $rebuilt .= '@';
+    }
+    if (!empty($parts['host'])) {
+      $rebuilt .= $parts['host'];
+    }
+    if (!empty($parts['port'])) {
+      $rebuilt .= ':' . $parts['port'];
+    }
+    if (!empty($parts['path'])) {
+      $rebuilt .= $parts['path'];
+    }
+
+    $rebuilt .= '?' . http_build_query($query);
+
+    if (!empty($parts['fragment'])) {
+      $rebuilt .= '#' . $parts['fragment'];
+    }
+
+    return $rebuilt;
   }
 
   /**

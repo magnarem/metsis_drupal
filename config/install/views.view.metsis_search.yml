@@ -137,30 +137,6 @@ display:
                   hide_label: false
                   field_classes: ''
               facets_activity_type:
-                plugin_id: default
-                advanced:
-                  rewrite:
-                    filter_rewrite_values: ''
-                    filter_rewrite_values_key: false
-                  collapsible: false
-                  collapsible_disable_automatic_open: false
-                  open_by_default: false
-                  is_secondary: false
-                  hide_label: false
-                  field_classes: ''
-              facets_collection:
-                plugin_id: default
-                advanced:
-                  rewrite:
-                    filter_rewrite_values: ''
-                    filter_rewrite_values_key: false
-                  collapsible: false
-                  collapsible_disable_automatic_open: false
-                  open_by_default: false
-                  is_secondary: false
-                  hide_label: false
-                  field_classes: ''
-              facets_observation_facility:
                 plugin_id: bef
                 advanced:
                   rewrite:
@@ -175,9 +151,57 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
-                soft_limit: 20
+                soft_limit: 0
                 soft_limit_label_less: 'Show less'
                 soft_limit_label_more: 'Show more'
+              facets_collection:
+                plugin_id: bef
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: true
+                soft_limit: 5
+                soft_limit_label_less: 'Show less'
+                soft_limit_label_more: 'Show more'
+              facets_keywords_cfstdn:
+                plugin_id: bef_tagify_select
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  match_operator: CONTAINS
+                  max_items: '10'
+                  placeholder: ''
+              facets_observation_facility:
+                plugin_id: bef_tagify_select
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  open_by_default: false
+                  is_secondary: false
+                  hide_label: false
+                  field_classes: ''
+                  match_operator: CONTAINS
+                  max_items: '10'
+                  placeholder: 'Enter station name or wigos id'
       access:
         type: none
         options: {  }
@@ -424,7 +448,7 @@ display:
             identifier: activity_type
             required: false
             remember: false
-            multiple: false
+            multiple: true
             remember_roles:
               authenticated: authenticated
           is_grouped: false
@@ -447,7 +471,7 @@ display:
             min_count: 1
             missing: false
             missing_label: others
-            show_numbers: false
+            show_numbers: true
             processor_configs: {  }
         facets_collection:
           id: facets_collection
@@ -497,6 +521,67 @@ display:
             missing_label: others
             show_numbers: false
             processor_configs: {  }
+        facets_keywords_cfstdn:
+          id: facets_keywords_cfstdn
+          table: search_api_index_metsis
+          field: facets_keywords_cfstdn
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Climate and Forecast Standard Names '
+            description: 'https://vocab.nerc.ac.uk/standard_name'
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: keywords_cfstdn
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 20
+            min_count: 1
+            missing: false
+            missing_label: others
+            show_numbers: true
+            processor_configs:
+              count_limit:
+                processor_id: count_limit
+                weights:
+                  build: 50
+                settings:
+                  minimum_items: 1
+                  maximum_items: null
+              count_widget_order:
+                processor_id: count_widget_order
+                weights:
+                  sort: 30
+                settings:
+                  sort: DESC
         facets_observation_facility:
           id: facets_observation_facility
           table: search_api_index_metsis
@@ -543,7 +628,7 @@ display:
             min_count: 1
             missing: false
             missing_label: others
-            show_numbers: false
+            show_numbers: true
             processor_configs: {  }
       filter_groups:
         operator: AND

@@ -65,6 +65,9 @@ metsis_bokeh_form:
 
 metsis_vocab_popover:
   version: 1.x
+  css:
+    component:
+      css/metsis_vocab_popover.css: {}
   js:
     js/metsis-vocab-popover.js: {}
   dependencies:

@@ -339,6 +339,47 @@ final class MetadataDocumentNormalizerTest extends TestCase {
   }
 
   /**
+   * Ensure relations section is not returned and data access still works.
+   */
+  #[Test]
+  public function buildSectionsOmitsRelationsSectionAndNormalizesWmsDataAccess(): void {
+    $this->metVocabService->method('lookupByLabel')->willReturn(NULL);
+    $this->metVocabService->method('lookupByUri')->willReturn(NULL);
+
+    $sections = $this->normalizer->buildSections([
+      'related_dataset' => 'no.met.related.dataset',
+      'related_information_type' => 'Documentation',
+      'related_information_resource' => 'https://example.test/doc',
+      'related_information_description' => 'Dataset documentation',
+      'data_access_json' => [
+        [
+          'type' => 'OGC WMS',
+          'description' => 'WMS endpoint',
+          'resource' => 'https://wms.example.test/service?foo=bar',
+        ],
+      ],
+    ]);
+
+    $fields = array_column($sections, 'field');
+    $this->assertContains('data_access_json', $fields);
+    $this->assertNotContains('relations', $fields);
+
+    $data_access_section_index = array_search('data_access_json', $fields, TRUE);
+    $this->assertNotFalse($data_access_section_index);
+
+    $data_access_section = $sections[(int) $data_access_section_index];
+    $this->assertArrayHasKey('related_information_entries', $data_access_section);
+    $this->assertCount(1, $data_access_section['related_information_entries']);
+
+    $entry = $data_access_section['related_information_entries'][0];
+    $this->assertSame('WMS endpoint', $entry['link_text']);
+    $this->assertSame(
+      'https://wms.example.test/service?foo=bar&service=WMS&request=GetCapabilities',
+      $entry['resource_url'],
+    );
+  }
+
+  /**
    * Create a minimal concept info array for test assertions.
    *
    * @param string $uri

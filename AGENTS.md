@@ -899,6 +899,10 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-18 | TASK: Added mapped facet-header vocabulary popovers and split shared popover CSS into metsis_vocab_popover library
+          | FILES: src/Hook/MetsisThemeHooks.php, templates/facets-item-list.html.twig, css/metsis_vocab_popover.css, css/metsis_metadata_document.css, css/metsis_search_layout.css, templates/views-view--metsis-search--results.html.twig, metsis_drupal.libraries.yml
+          | NOTE: preprocess_facets_item_list now injects Activity type and Collection group metadata for popover rendering; search view now attaches metsis_vocab_popover so styles/behavior are shared across metadata and facet contexts
+
 2026-05-15 | TASK: Added HTMX AfterSwap vocab popover initializer with dynamic positioning attach for metadata dialog swaps
           | FILES: src/Plugin/views/row/MetsisSearchRow.php, js/metsis-vocab-popover.js
           | NOTE: Metadata trigger now invokes Drupal.metsis.vocabPopover.afterSwap(this); vocab popover script gained namespaced afterSwap resolver and reusable attach function to bind viewport-aware positioning for swapped dialog content

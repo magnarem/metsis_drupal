@@ -40,14 +40,14 @@
         "drupal/better_exposed_filters": "^7",
         "drupal/redis": "^1",
         "drupal/leaflet": "^10.4",
-        "drupal/geofield": "^10.3",
         "drupal/views_ajax_history": "^1.8",
         "drupal/views_filters_summary": "^3.2",
         "drupal/tagify": "^1.2"
     },
     "suggest": {
         "drupal/back_to_top": "Add back to top icon on scrolling",
-        "drupal/ext_link": "Add icon to external links"
+        "drupal/ext_link": "Add icon to external links",
+        "drupal/markdown": "Render help page README.md with markdown parser"
     },
     "require-dev": {
         "drupal/devel": "^4.0 || ^5.0",
@@ -73,8 +73,6 @@
         "phpstan/extension-installer": "*",
         "phpstan/phpstan-deprecation-rules": "*",
         "drupal/config_inspector": "^2.1",
-        "drupal/markdown": "^3.1",
-        "league/commonmark": "^2.8",
         "drupal/editoria11y": "^3",
         "rector/rector": "^2",
         "phpdocumentor/shim": "^3"

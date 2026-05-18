@@ -229,6 +229,11 @@ button.metsis-search-clear-button[hidden] {
   /* display: block; */
   margin-left: 0.5rem;
 }
+
+.metsis-search-layout .metsis-facet-vocab-popover-trigger {
+  margin-left: 0.35rem;
+}
+
 .metsis-search-layout .metsis-results-pager-rows-footer-wrapper {
   margin-top: 1rem;
 }
