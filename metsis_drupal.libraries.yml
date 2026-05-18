@@ -41,6 +41,7 @@ metsis_default_row_layout:
   dependencies:
     - core/drupal
     - core/once
+    - metsis_drupal/metsis_vocab_popover
 
 metsis_search_ajax:
   version: 1.x
@@ -62,16 +63,23 @@ metsis_bokeh_form:
   dependencies:
     - core/drupal
 
-metsis_metadata_document:
+metsis_vocab_popover:
   version: 1.x
-  css:
-    component:
-      css/metsis_metadata_document.css: {}
   js:
     js/metsis-vocab-popover.js: {}
   dependencies:
     - core/drupal
     - core/once
+
+metsis_metadata_document:
+  version: 1.x
+  css:
+    component:
+      css/metsis_metadata_document.css: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - metsis_drupal/metsis_vocab_popover
 
 metsis_metadata_dialog:
   version: 1.x

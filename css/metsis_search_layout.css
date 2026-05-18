@@ -125,35 +125,88 @@
 }
 
 /* styling for the search box and button */
+
+/* Container is the positioning anchor; input fills it naturally */
+.metsis-search-box-container {
+  position: relative;
+  display: block;
+}
+
+/* The form-actions wrapper sits absolutely over the left side of the input */
+.metsis-search-box-container > .form-actions {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  pointer-events: none; /* let clicks pass through to input unless on button */
+}
+
+/* Input fills full width; left padding creates the icon slot */
+.metsis-search-box-container > .form-item {
+  display: block;
+}
+
+.metsis-search-text__input {
+  padding-left: 2.2rem !important;
+  padding-right: 2.2rem !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.metsis-search-box-container.metsis-search-hide-idle-autocomplete-indicator
+  .metsis-search-text__input.form-autocomplete:not(.ui-autocomplete-loading) {
+  background-image: none !important;
+}
+
 button.metsis-search-box__button {
   border: none;
+  background: transparent;
   cursor: pointer;
   padding: 0;
   margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: stretch;
+  pointer-events: auto; /* re-enable clicks on the button itself */
+  color: #555;
+  transition: color 0.15s ease;
+}
+
+button.metsis-search-box__button:hover {
+  color: #000;
 }
 
 button.metsis-search-box__button svg {
-  height: 100%;
+  height: 1.1em;
   width: auto;
 }
 
-.metsis-search-box-container {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+button.metsis-search-clear-button {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
 }
 
-/* Flatten intermediate wrappers so flex alignment reaches button and input */
-.metsis-search-box-container > .form-actions,
-.metsis-search-box-container > .form-item {
-  display: contents;
+button.metsis-search-clear-button:hover {
+  color: #111;
 }
 
-/*.metsis-search-text__input */
+button.metsis-search-clear-button[hidden] {
+  display: none;
+}
 
 .metsis-search-layout .metsis-active-filters {
   margin-bottom: 1rem;

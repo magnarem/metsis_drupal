@@ -59,6 +59,33 @@ class MetsisSearchFormHooks {
       }
       $form['search-box-container']['#weight'] = -100;
 
+      // Add a secondary submit button with text and filter icon as the last element.
+      $form['actions'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['form-actions'],
+        ],
+        '#weight' => 100,
+      ];
+      $form['actions']['submit_filters'] = [
+        '#type' => 'component',
+        '#component' => 'metsis_drupal:icon_button',
+        '#props' => [
+          'icon_size' => 18,
+          'icon_pack' => 'metsis_drupal',
+          'icon_id' => 'filter',
+        ],
+        '#slots' => [
+          'button' => [
+            '#type' => 'submit',
+            '#value' => $this->t('Update filters'),
+            '#attributes' => [
+              'class' => ['metsis-update-filters-button'],
+            ],
+          ],
+        ],
+      ];
+
       unset($form['#disable_inline_form_errors']);
     }
   }

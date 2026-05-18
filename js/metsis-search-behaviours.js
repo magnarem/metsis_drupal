@@ -170,4 +170,74 @@ const isAjaxing = () =>
       });
     },
   };
+
+  Drupal.behaviors.metsisSearchInputClear = {
+    attach(context) {
+      once("metsis-search-clear", ".metsis-search-box-container", context).forEach(
+        (container) => {
+          const input = container.querySelector(".metsis-search-text__input");
+          if (!input) {
+            return;
+          }
+
+          let typingTimer = null;
+
+          const clearButton = document.createElement("button");
+          clearButton.type = "button";
+          clearButton.className = "metsis-search-clear-button";
+          clearButton.setAttribute("aria-label", "Clear search text");
+          clearButton.setAttribute("title", "Clear");
+          clearButton.innerHTML = "&times;";
+          container.appendChild(clearButton);
+
+          const updateClearVisibility = () => {
+            const hasText = (input.value || "").trim().length > 0;
+            const isLoading = input.classList.contains("ui-autocomplete-loading");
+            const isTyping = typingTimer !== null;
+            clearButton.hidden = !hasText || isLoading || isTyping;
+
+            container.classList.toggle(
+              "metsis-search-hide-idle-autocomplete-indicator",
+              !clearButton.hidden && !isLoading,
+            );
+          };
+
+          clearButton.addEventListener("click", () => {
+            input.value = "";
+            input.focus();
+            updateClearVisibility();
+          });
+
+          input.addEventListener("input", () => {
+            if (typingTimer) {
+              window.clearTimeout(typingTimer);
+            }
+            typingTimer = window.setTimeout(() => {
+              typingTimer = null;
+              updateClearVisibility();
+            }, 350);
+            updateClearVisibility();
+          });
+
+          input.addEventListener("blur", () => {
+            if (typingTimer) {
+              window.clearTimeout(typingTimer);
+              typingTimer = null;
+            }
+            updateClearVisibility();
+          });
+
+          const classObserver = new MutationObserver(() => {
+            updateClearVisibility();
+          });
+          classObserver.observe(input, {
+            attributes: true,
+            attributeFilter: ["class"],
+          });
+
+          updateClearVisibility();
+        },
+      );
+    },
+  };
 })(jQuery, Drupal, once);
