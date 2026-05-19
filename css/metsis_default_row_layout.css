@@ -53,7 +53,7 @@
 }
 
 /* Trigger button — sets a CSS anchor name so the popover can position itself. */
-.metsis-export-trigger {
+.metsis-popover-trigger {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -68,8 +68,8 @@
     box-shadow 0.15s ease;
 }
 
-.metsis-export-trigger:hover,
-.metsis-export-trigger:focus-visible {
+.metsis-popover-trigger:hover,
+.metsis-popover-trigger:focus-visible {
   background-color: rgba(0, 0, 0, 0.06);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   outline-offset: 2px;
@@ -102,12 +102,12 @@
 }
 
 /* Popover panel — display rules for native Popover API. */
-.metsis-export-popover {
+.metsis-popover-panel {
   /* Default: hidden by browser for native popover API. */
   display: none;
 }
 
-.metsis-export-popover:popover-open {
+.metsis-popover-panel:popover-open {
   /* Anchor below the trigger when CSS Anchor Positioning is available. */
   position: fixed;
   top: anchor(bottom);
@@ -128,18 +128,18 @@
   z-index: 100;
 }
 
-.metsis-export-popover[hidden] {
+.metsis-popover-panel[hidden] {
   display: none;
 }
 
-/* Export option buttons — override solo theme horizontal flex layout.
+/* Popover options — override solo theme horizontal flex layout.
    The icon_button wrapper takes the inset; the input fills 100% inside it. */
-.metsis-export-popover [data-component-id="metsis_drupal:icon_button"] {
+.metsis-popover-panel [data-component-id="metsis_drupal:icon_button"] {
   width: calc(100% - 0.5rem);
   margin: 0.125rem 0.25rem;
 }
 
-.metsis-export-popover input.metsis-export-option {
+.metsis-popover-panel .metsis-popover-option {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -154,10 +154,56 @@
   transition: background-color 0.12s ease;
 }
 
-.metsis-export-popover input.metsis-export-option:hover,
-.metsis-export-popover input.metsis-export-option:focus-visible {
+.metsis-popover-panel a.metsis-popover-option {
+  text-decoration: none;
+  color: inherit;
+}
+
+.metsis-popover-panel .metsis-popover-option:hover,
+.metsis-popover-panel .metsis-popover-option:focus-visible {
   background-color: rgba(0, 0, 0, 0.06);
   outline-offset: -2px;
+}
+
+/* Data-access rows: style each wrapper as a button-like surface.
+   This keeps export popover visuals untouched. */
+.metsis-data-access-popover .metsis-data-access-button {
+  width: calc(100% - 0.5rem);
+  margin: 0.125rem 0.25rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+/* Wrapper is the visual button shell; reset generic icon_button spacing inside it. */
+.metsis-data-access-popover .metsis-data-access-button [data-component-id="metsis_drupal:icon_button"] {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 6px;
+  background: #241571;
+  color: #fefdff;
+}
+
+.metsis-data-access-popover .metsis-data-access-button:hover,
+.metsis-data-access-popover .metsis-data-access-button:focus-within {
+
+  border-color: currentColor;
+  background-color: #fefdff;
+  color: #241571;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.metsis-data-access-popover .metsis-data-access-button a.metsis-data-access-option {
+  color:#fefdff;
+}
+.metsis-data-access-popover .metsis-data-access-button a.metsis-data-access-option:focus-within,
+.metsis-data-access-popover .metsis-data-access-button a.metsis-data-access-option:hover {
+  color: #241571;
+  background-color: #fefdff;
 }
 
 .metsis-plot-container {
@@ -336,7 +382,7 @@
   margin: 0;
 }
 
-.metsis-tooltip-popover p + p {
+.metsis-tooltip-popover p+p {
   margin-top: 0.45rem;
 }
 

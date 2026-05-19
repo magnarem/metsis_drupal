@@ -374,6 +374,11 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $this->buildExportOptions($operations, $metadata_identifier, $row_id, $popover_id);
     }
 
+    // Add data access options if row id is available.
+    if ($row_id !== '') {
+      $this->buildDataAccessOptions($operations, $solr_doc, $row_id);
+    }
+
     // Add plot trigger if applicable.
     $this->buildPlotTrigger($operations, $solr_doc, $row_id);
 
@@ -522,7 +527,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       '#value' => $this->t('Export metadata &#9662;'),
       '#attributes' => [
         'type' => 'button',
-        'class' => ['metsis-export-trigger'],
+        'class' => ['metsis-popover-trigger', 'metsis-export-trigger'],
         'style' => 'anchor-name: ' . $anchor_name . ';',
         'popovertarget' => $popover_id,
         'popovertargetaction' => 'toggle',
@@ -531,12 +536,12 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     ];
 
     // Popover panel with one download link per export type.
-    $operations['popover'] = [
+    $operations['export_popover'] = [
       '#type' => 'container',
       '#attributes' => [
         'id' => $popover_id,
         'popover' => '',
-        'class' => ['metsis-export-popover'],
+        'class' => ['metsis-popover-panel', 'metsis-export-popover'],
         'style' => 'position-anchor: ' . $anchor_name . ';',
         'data-nosnippet' => 'true',
       ],
@@ -562,7 +567,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         '#type' => 'button',
         '#value' => $link_label,
         '#attributes' => [
-          'class' => ['metsis-export-option'],
+          'class' => ['metsis-popover-option', 'metsis-export-option'],
           'rel' => 'nofollow noarchive noopener noreferrer',
           'referrerpolicy' => 'no-referrer',
           'data-nosnippet' => 'true',
@@ -578,7 +583,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         ->redirectHeader($download_url)
         ->applyTo($export_button);
 
-      $operations['popover']['item_' . $type_key] = [
+      $operations['export_popover']['item_' . $type_key] = [
         '#type' => 'component',
         '#component' => 'metsis_drupal:icon_button',
         '#props' => [
@@ -591,6 +596,292 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         ],
       ];
     }
+  }
+
+  /**
+   * Build download data popover from data_access_json.
+   *
+   * @param array $operations
+   *   The operations array to mutate.
+   * @param array $solr_doc
+   *   The Solr document.
+   * @param string $row_id
+   *   The row ID.
+   */
+  private function buildDataAccessOptions(array &$operations, array $solr_doc, string $row_id): void {
+    $rows = $this->extractDataAccessRows($solr_doc['data_access_json'] ?? []);
+    if ($rows === []) {
+      return;
+    }
+
+    $anchor_suffix = $this->buildAnchorSuffix($row_id, (string) ($solr_doc['id'] ?? ''));
+    $anchor_name = '--metsis-data-access-trigger-' . $anchor_suffix;
+    $popover_id = 'metsis-data-access-popover-' . $row_id;
+
+    $items = [];
+    foreach ($rows as $row_index => $entry) {
+      $type = trim((string) ($entry['type'] ?? ''));
+      $description = trim((string) ($entry['description'] ?? ''));
+      $resource = $this->normalizeUri($entry['resource'] ?? '');
+      if ($type === '' || $resource === '') {
+        continue;
+      }
+
+      $normalized_type = strtolower($type);
+      $url = $resource;
+      $target_blank = TRUE;
+      $label = $this->t('Download data (@type)', ['@type' => $type]);
+      $attributes = [
+        'class' => ['metsis-popover-option', 'metsis-data-access-option'],
+        'rel' => 'nofollow noarchive noopener noreferrer',
+        'referrerpolicy' => 'no-referrer',
+        'data-nosnippet' => 'true',
+      ];
+
+      if ($normalized_type === 'http') {
+        $label = $this->t('Direct HTTP Download');
+        $target_blank = FALSE;
+        $attributes['download'] = TRUE;
+      }
+      elseif ($normalized_type === 'opendap') {
+        $url = $this->normalizeOpendapLandingPageUrl($resource);
+        $label = $this->t('OPeNDAP access');
+      }
+      elseif ($normalized_type === 'ogc wms') {
+        $url = $this->normalizeOgcWmsCapabilitiesUrl($resource);
+        $label = $this->t('OGC WMS capabilities');
+      }
+
+      if ($description !== '') {
+        $attributes['title'] = $description;
+        $attributes['aria-label'] = $description;
+      }
+
+      if ($target_blank) {
+        $attributes['target'] = '_blank';
+      }
+
+      $items[] = [
+        'item_key' => 'item_' . $row_index,
+        'title' => $label,
+        'url' => $url,
+        'attributes' => $attributes,
+      ];
+    }
+
+    if ($items === []) {
+      return;
+    }
+
+    $operations['controls']['data_access_trigger'] = [
+      '#type' => 'button',
+      '#value' => $this->t('Download data &#9662;'),
+      '#attributes' => [
+        'type' => 'button',
+        'class' => ['metsis-popover-trigger', 'metsis-data-access-trigger'],
+        'style' => 'anchor-name: ' . $anchor_name . ';',
+        'popovertarget' => $popover_id,
+        'popovertargetaction' => 'toggle',
+        'aria-haspopup' => 'true',
+      ],
+    ];
+
+    $operations['data_access_popover'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => $popover_id,
+        'popover' => '',
+        'class' => ['metsis-popover-panel', 'metsis-data-access-popover'],
+        'style' => 'position-anchor: ' . $anchor_name . ';',
+        'data-nosnippet' => 'true',
+      ],
+    ];
+
+    foreach ($items as $item) {
+      $link = [
+        '#type' => 'link',
+        '#title' => $item['title'],
+        '#url' => Url::fromUri($item['url']),
+        '#attributes' => $item['attributes'],
+      ];
+
+      $operations['data_access_popover'][$item['item_key']] = [
+        '#prefix' => '<div class="metsis-data-access-button">',
+        '#suffix' => '</div>',
+        '#type' => 'component',
+        '#component' => 'metsis_drupal:icon_button',
+        '#props' => [
+          'icon_size' => 16,
+          'icon_pack' => 'metsis_drupal',
+          'icon_id' => 'download',
+        ],
+        '#slots' => [
+          'button' => $link,
+        ],
+      ];
+    }
+  }
+
+  /**
+   * Extract data access rows from Solr document value.
+   *
+   * @param mixed $value
+   *   Solr data_access_json value.
+   *
+   * @return array<int, array<string, mixed>>
+   *   Data access rows.
+   */
+  private function extractDataAccessRows(mixed $value): array {
+    if (!is_array($value) || $value === []) {
+      return [];
+    }
+
+    if (!array_is_list($value)) {
+      return [];
+    }
+
+    $first = reset($value);
+    if (is_array($first) && array_is_list($first)) {
+      $value = $first;
+    }
+
+    $rows = [];
+    foreach ($value as $entry) {
+      if (!is_array($entry)) {
+        continue;
+      }
+      $rows[] = $entry;
+    }
+
+    return $rows;
+  }
+
+  /**
+   * Build a safe anchor suffix for row-scoped popovers.
+   *
+   * @param string $row_id
+   *   Row ID.
+   * @param string $fallback
+   *   Fallback identifier.
+   *
+   * @return string
+   *   Safe anchor suffix.
+   */
+  private function buildAnchorSuffix(string $row_id, string $fallback): string {
+    $anchor_suffix = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $row_id) ?? '';
+    $anchor_suffix = trim($anchor_suffix, '-_');
+    if ($anchor_suffix === '') {
+      $anchor_suffix = md5($fallback);
+    }
+    return $anchor_suffix;
+  }
+
+  /**
+   * Normalize URI values and keep only valid absolute URLs.
+   *
+   * @param mixed $value
+   *   URI value.
+   *
+   * @return string
+   *   Valid URL or empty string.
+   */
+  private function normalizeUri(mixed $value): string {
+    if (is_array($value)) {
+      foreach ($value as $item) {
+        $uri = $this->normalizeUri($item);
+        if ($uri !== '') {
+          return $uri;
+        }
+      }
+      return '';
+    }
+
+    if (!is_scalar($value)) {
+      return '';
+    }
+
+    $uri = trim((string) $value);
+    if ($uri === '') {
+      return '';
+    }
+
+    return filter_var($uri, FILTER_VALIDATE_URL) ? $uri : '';
+  }
+
+  /**
+   * Convert OPeNDAP endpoint URL to THREDDS landing page URL.
+   *
+   * @param string $resource
+   *   Resource URL.
+   *
+   * @return string
+   *   Landing page URL with .html suffix.
+   */
+  private function normalizeOpendapLandingPageUrl(string $resource): string {
+    if (preg_match('/\.html?(?:[?#]|$)/i', $resource) === 1) {
+      return $resource;
+    }
+
+    if (preg_match('/^([^?#]+)([?#].*)?$/', $resource, $matches) !== 1) {
+      return $resource;
+    }
+
+    $base = $matches[1];
+    $suffix = $matches[2] ?? '';
+    return $base . '.html' . $suffix;
+  }
+
+  /**
+   * Normalize OGC WMS endpoint URL to include GetCapabilities params.
+   *
+   * @param string $resource
+   *   Resource URL.
+   *
+   * @return string
+   *   WMS URL with service/request query params.
+   */
+  private function normalizeOgcWmsCapabilitiesUrl(string $resource): string {
+    $parts = parse_url($resource);
+    if (!is_array($parts)) {
+      return $resource;
+    }
+
+    $query = [];
+    if (!empty($parts['query']) && is_string($parts['query'])) {
+      parse_str($parts['query'], $query);
+    }
+
+    $query['service'] = 'WMS';
+    $query['request'] = 'GetCapabilities';
+
+    $rebuilt = '';
+    if (!empty($parts['scheme'])) {
+      $rebuilt .= $parts['scheme'] . '://';
+    }
+    if (!empty($parts['user'])) {
+      $rebuilt .= $parts['user'];
+      if (!empty($parts['pass'])) {
+        $rebuilt .= ':' . $parts['pass'];
+      }
+      $rebuilt .= '@';
+    }
+    if (!empty($parts['host'])) {
+      $rebuilt .= $parts['host'];
+    }
+    if (!empty($parts['port'])) {
+      $rebuilt .= ':' . $parts['port'];
+    }
+    if (!empty($parts['path'])) {
+      $rebuilt .= $parts['path'];
+    }
+
+    $rebuilt .= '?' . http_build_query($query);
+
+    if (!empty($parts['fragment'])) {
+      $rebuilt .= '#' . $parts['fragment'];
+    }
+
+    return $rebuilt;
   }
 
   /**

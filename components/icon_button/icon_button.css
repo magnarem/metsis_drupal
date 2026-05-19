@@ -28,8 +28,10 @@
   z-index: 1;
 }
 
-/* Push the input text right to clear the icon: icon-size + left-offset + gap */
-[data-component-id="metsis_drupal:icon_button"] input[type="submit"] {
+/* Push the control text right to clear the icon: icon-size + left-offset + gap */
+[data-component-id="metsis_drupal:icon_button"] input[type="submit"],
+[data-component-id="metsis_drupal:icon_button"] a,
+[data-component-id="metsis_drupal:icon_button"] button {
   padding-left: calc(var(--icon-button-size, 20px) + 0.9rem) !important;
   width: 100%;
 }
