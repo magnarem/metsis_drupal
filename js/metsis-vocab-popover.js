@@ -55,7 +55,9 @@
     left = Math.max(VIEWPORT_GUTTER, left);
 
     const availableHeight = openAbove ? spaceAbove : spaceBelow;
-    const maxHeight = Math.max(160, availableHeight - TRIGGER_GAP);
+    const viewportCap = viewportHeight - VIEWPORT_GUTTER * 2;
+    const desiredMaxHeight = availableHeight - TRIGGER_GAP;
+    const maxHeight = Math.max(80, Math.min(viewportCap, desiredMaxHeight));
 
     if (mode === "native") {
       popover.style.position = "fixed";
@@ -68,6 +70,7 @@
     }
 
     popover.style.margin = "0";
+    popover.style.height = "auto";
     popover.style.maxHeight = maxHeight + "px";
     popover.style.overflowY = "auto";
     popover.dataset.positioned = "true";

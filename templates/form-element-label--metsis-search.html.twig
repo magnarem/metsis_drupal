@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Scoped form element label template for METSIS search filters.
+ *
+ * Adds an optional vocabulary info popover trigger beside the label text.
+ */
+#}
+{% set classes = [
+  title_display == 'after' ? 'option',
+  title_display == 'invisible' ? 'visually-hidden',
+  required ? 'js-form-required',
+  required ? 'form-required',
+] %}
+
+{% if title is not empty or required %}
+  <span class="metsis-search-label-with-popover">
+    <label{{ attributes.addClass(classes) }}>{{ title }}</label>
+    {% if metsis_vocab_popover is defined %}
+      {{ metsis_vocab_popover }}
+    {% endif %}
+  </span>
+{% endif %}

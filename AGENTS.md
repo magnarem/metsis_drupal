@@ -899,6 +899,14 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-19 | TASK: Added scoped METSIS exposed-form fieldset template with legend-embedded vocab popover support and modern card styling
+          | FILES: src/Hook/MetsisSearchFormHooks.php, src/Hook/MetsisThemeHooks.php, templates/fieldset--metsis-search.html.twig, css/metsis_search_layout.css, css/metsis_vocab_popover.css
+          | NOTE: Fieldsets in the METSIS search exposed form now use fieldset__metsis_search suggestion; facet popovers moved from description injection into legend header render slot to avoid spacing and checkbox/radio class bleed
+
+2026-05-19 | TASK: Normalized info icon SVG geometry for Drupal Icon API rendering and added inverted variant
+          | FILES: assets/icons/info.svg, assets/icons/info-inv.svg
+          | NOTE: Replaced inherited fill/stroke compound path with explicit circle/rect geometry so outline and fill render consistently through icon extraction/template sizing
+
 2026-05-18 | TASK: Added mapped facet-header vocabulary popovers and split shared popover CSS into metsis_vocab_popover library
           | FILES: src/Hook/MetsisThemeHooks.php, templates/facets-item-list.html.twig, css/metsis_vocab_popover.css, css/metsis_metadata_document.css, css/metsis_search_layout.css, templates/views-view--metsis-search--results.html.twig, metsis_drupal.libraries.yml
           | NOTE: preprocess_facets_item_list now injects Activity type and Collection group metadata for popover rendering; search view now attaches metsis_vocab_popover so styles/behavior are shared across metadata and facet contexts

@@ -230,8 +230,69 @@ button.metsis-search-clear-button[hidden] {
   margin-left: 0.5rem;
 }
 
-.metsis-search-layout .metsis-facet-vocab-popover-trigger {
-  margin-left: 0.35rem;
+.metsis-search-layout .metsis-search-fieldset {
+  width: 100%;
+  margin: 0 0 1rem;
+  border: 1px solid #d8e0e8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  padding: 0;
+  overflow: hidden;
+}
+
+.metsis-search-layout .metsis-search-fieldset__legend {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: #f7fafc;
+}
+
+.metsis-search-layout .metsis-search-fieldset__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+}
+
+.metsis-search-layout .metsis-search-fieldset__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.metsis-search-layout .metsis-search-fieldset__body {
+  border-top: 1px solid #dfe7ef;
+  padding: 0.8rem 0.85rem 0.9rem;
+}
+
+.metsis-search-layout .metsis-search-fieldset__body > .description {
+  margin: 0 0 0.55rem;
+}
+
+.metsis-search-layout .metsis-search-fieldset .metsis-facet-vocab-popover-container {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.metsis-search-layout .metsis-search-label-with-popover {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+}
+
+.metsis-search-layout .metsis-search-label-with-popover > label {
+  margin: 0;
+}
+
+.metsis-search-layout .metsis-search-label-with-popover .metsis-facet-vocab-popover-container {
+  display: inline-flex;
+  align-items: center;
 }
 
 .metsis-search-layout .metsis-results-pager-rows-footer-wrapper {

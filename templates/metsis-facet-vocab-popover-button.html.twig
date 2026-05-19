@@ -24,14 +24,13 @@
     aria-controls="{{ popover_id }}"
     aria-label="{{ trigger_label }}"
   >
-    {{ icon('metsis_drupal', 'circle-info', {'size': 14}) }}
+    {{ icon('metsis_drupal', 'info-filled', {'size': 18}) }}
   </button>
   <div
     id="{{ popover_id }}"
     class="metsis-vocab-popover"
     role="tooltip"
     popover="auto"
-    hidden
   >
     {% if label is not empty %}
       <p class="metsis-vocab-popover__title">{{ label }}</p>

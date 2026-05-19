@@ -5,8 +5,8 @@
   width: 1.35rem;
   height: 1.35rem;
   padding: 0;
-  border: 1px solid currentColor;
-  border-radius: 999px;
+  /* border: 1px solid currentColor;
+  border-radius: 999px; */
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -31,6 +31,9 @@
 .metsis-vocab-popover {
   display: none;
   max-width: min(50rem, calc(100vw - 24px));
+  height: auto;
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   padding: 0.75rem 0.9rem;
   border: 1px solid;
   border-radius: 0.35rem;
@@ -41,6 +44,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .metsis-vocab-popover:popover-open {
@@ -64,6 +68,7 @@
 
 .metsis-vocab-popover p {
   margin: 0;
+  line-height: normal;
 }
 
 .metsis-vocab-popover p + p {

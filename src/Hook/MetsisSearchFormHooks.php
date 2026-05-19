@@ -7,10 +7,6 @@ namespace Drupal\metsis_drupal\Hook;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Render\Markup;
-
-use Drupal\Component\Render\MarkupInterface;
-use Drupal\Component\Utility\Html;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 
@@ -38,11 +34,17 @@ class MetsisSearchFormHooks {
   #[Hook('form_views_exposed_form_alter')]
   public function metsisExposedFormAlter(&$form, FormStateInterface $form_state, $form_id) {
     if ($form_id === 'views_exposed_form' && $form['#id'] === 'views-exposed-form-' . MetsisConstants::METSIS_SEARCH_VIEW_NAME . '-results') {
+      if (!isset($form['#after_build']) || !is_array($form['#after_build'])) {
+        $form['#after_build'] = [];
+      }
+      $form['#after_build'][] = [self::class, 'markMetsisFieldsetsAfterBuild'];
+
       // Attach vocab popover library for facet filters.
       if (!isset($form['#attached']['library'])) {
         $form['#attached']['library'] = [];
       }
       $form['#attached']['library'][] = 'metsis_drupal/metsis_vocab_popover';
+      $form = self::markMetsisFieldsetsAfterBuild($form, $form_state);
       // Convert the search input to a button.
       $form['actions']['submit']['#attributes']['data-twig-suggestion'] = 'search_results_submit';
       $form['actions']['submit']['#attributes']['class'][] = 'metsis-search-box__button';
@@ -103,7 +105,7 @@ class MetsisSearchFormHooks {
       ];
 
       unset($form['#disable_inline_form_errors']);
-      // Inject vocabulary info popovers into fieldset descriptions for mapped filters.
+      // Inject vocabulary info popovers into mapped filter fieldsets.
       // Key: exposed form field name, value: [vocab_group_key, safe_id_suffix].
       $fieldset_vocab_map = [
         'activity_type' => ['Activity_Type', 'activity-type'],
@@ -117,7 +119,7 @@ class MetsisSearchFormHooks {
         if (!$this->hasFacetChoices($form[$field_name])) {
           continue;
         }
-        if ($this->elementHasPopover($form[$field_name]['#description'] ?? NULL)) {
+        if ($this->elementHasPopover($form[$field_name]['#metsis_vocab_popover'] ?? NULL)) {
           continue;
         }
 
@@ -144,30 +146,61 @@ class MetsisSearchFormHooks {
           '#title' => $original_title,
         ];
 
-        if (!isset($form[$field_name]['#description'])) {
-          $form[$field_name]['#description'] = '';
-        }
-
-        if (is_string($form[$field_name]['#description'])) {
-          $existing = $form[$field_name]['#description'];
-        } elseif ($form[$field_name]['#description'] instanceof MarkupInterface) {
-          $existing = (string) $form[$field_name]['#description'];
-        } else {
-          $existing = '';
-        }
-
-        $description_array = [];
-        if ($existing !== '') {
-          $description_array['existing'] = [
-            '#markup' => '<span class="description">' . Html::escape($existing) . '</span>',
-          ];
-        }
-        $description_array['popover'] = $popover_element;
-
-        $form[$field_name]['#description'] = $description_array;
-        $form[$field_name]['#description_display'] = 'before';
+        $form[$field_name]['#metsis_vocab_popover'] = $popover_element;
       }
     }
+  }
+
+  /**
+   * After-build callback to mark fieldset-like elements in the exposed form.
+   */
+  public static function markMetsisFieldsetsAfterBuild(array $form, FormStateInterface $form_state): array {
+    self::markMetsisSearchFieldsets($form);
+    return $form;
+  }
+
+  /**
+   * Mark fieldsets and wrappers in the exposed form for scoped suggestions.
+   */
+  private static function markMetsisSearchFieldsets(array &$element): void {
+    foreach ($element as $key => &$child) {
+      if (!is_string($key) || str_starts_with($key, '#') || !is_array($child)) {
+        continue;
+      }
+
+      // Keep a form-scoped marker even for empty arrays; facet modules may
+      // populate these later in the build pipeline.
+      $child['#metsis_search_form_element'] = TRUE;
+
+      if (($child['#type'] ?? NULL) === 'fieldset' || self::hasFieldsetWrapper($child)) {
+        $child['#metsis_fieldset_variant'] = 'metsis_search';
+      }
+
+      self::markMetsisSearchFieldsets($child);
+    }
+  }
+
+  /**
+   * Check whether the render element is themed through a fieldset wrapper.
+   */
+  private static function hasFieldsetWrapper(array $element): bool {
+    $wrappers = $element['#theme_wrappers'] ?? NULL;
+    if (!is_array($wrappers)) {
+      return FALSE;
+    }
+
+    foreach ($wrappers as $key => $value) {
+      $wrapper = is_string($key) ? $key : (is_string($value) ? $value : NULL);
+      if ($wrapper === NULL) {
+        continue;
+      }
+
+      if ($wrapper === 'fieldset' || str_starts_with($wrapper, 'fieldset__')) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   /**
@@ -191,16 +224,9 @@ class MetsisSearchFormHooks {
    * Avoid duplicate popovers when the exposed form is altered multiple times.
    */
   private function elementHasPopover(mixed $value): bool {
-    // Check render array structure for popover theme hook.
-    if (is_array($value)) {
-      return isset($value['popover']['#theme']) && $value['popover']['#theme'] === 'metsis_facet_vocab_popover_button';
-    }
-
-    if (!is_string($value) && !$value instanceof MarkupInterface) {
-      return FALSE;
-    }
-
-    return str_contains((string) $value, 'metsis-facet-vocab-popover-trigger');
+    return is_array($value)
+      && isset($value['#theme'])
+      && $value['#theme'] === 'metsis_facet_vocab_popover_button';
   }
 
 }
