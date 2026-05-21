@@ -10,4 +10,4 @@ ddev eslint
 ddev prettier-fix
 ddev prettier-check
 ddev buildjs
-
+ddev paratest

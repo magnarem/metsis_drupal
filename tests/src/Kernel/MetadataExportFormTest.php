@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\metsis_drupal\Form\MetadataExportForm;
 use Drupal\metsis_drupal\Service\MetadataExportService;
+use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,13 +18,15 @@ use PHPUnit\Framework\Attributes\Test;
  */
 #[CoversClass(MetadataExportForm::class)]
 #[Group('metsis_drupal')]
-class MetadataExportFormTest extends KernelTestBase {
+final class MetadataExportFormTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
     'system',
+    'search_api',
+    'search_api_solr',
     'leaflet',
     'geofield',
     'metsis_drupal',
@@ -67,14 +70,9 @@ class MetadataExportFormTest extends KernelTestBase {
     $form_state = new FormState();
     $form = $this->form->buildForm([], $form_state, '');
 
-    $this->assertArrayHasKey('#prefix', $form);
-    $this->assertArrayHasKey('#suffix', $form);
-    $this->assertArrayHasKey('solr_id', $form);
-    $this->assertSame('', $form['solr_id']['#value']);
-
-    // Should have markup explaining missing ID.
     $this->assertArrayHasKey('export', $form);
     $this->assertSame('markup', $form['export']['#type']);
+    $this->assertStringContainsString('Missing dataset identifier', (string) $form['export']['#markup']);
   }
 
   /**
@@ -112,8 +110,6 @@ class MetadataExportFormTest extends KernelTestBase {
    */
   #[Test]
   public function testBuildFormValidIdWithAllowedChars(): void {
-    $form_state = new FormState();
-
     // Valid patterns: letters, numbers, dots, colons, hyphens, underscores.
     $valid_ids = [
       'simple-id',
@@ -126,10 +122,16 @@ class MetadataExportFormTest extends KernelTestBase {
 
     foreach ($valid_ids as $id) {
       $form_state = new FormState();
+      $form_state->set('mmd', '<mmd />');
+      $form_state->set('export_options', ['mmd' => 'MMD']);
+      $form_state->set('default_export', 'mmd');
       $form = $this->form->buildForm([], $form_state, $id);
 
-      $this->assertArrayHasKey('solr_id', $form);
-      $this->assertSame($id, $form['solr_id']['#value']);
+      $this->assertArrayHasKey('export', $form);
+      $this->assertSame('fieldset', $form['export']['#type']);
+      $this->assertSame(MetsisSolrUtilities::toSolrId($id), $form['export']['solr_id']['#default_value']);
+      $this->assertSame('<mmd />', $form['export']['mmd']['#default_value']);
+      $this->assertSame('select', $form['export']['list']['#type']);
     }
   }
 
@@ -257,11 +259,14 @@ class MetadataExportFormTest extends KernelTestBase {
     $form_state = new FormState();
 
     foreach ($valid_ids as $id) {
+      $form_state = new FormState();
+      $form_state->set('mmd', '<mmd />');
+      $form_state->set('export_options', ['mmd' => 'MMD']);
+      $form_state->set('default_export', 'mmd');
       $form = $this->form->buildForm([], $form_state, $id);
 
-      // Valid IDs should at least have solr_id field set.
-      $this->assertArrayHasKey('solr_id', $form);
-      $this->assertSame($id, $form['solr_id']['#value']);
+      $this->assertArrayHasKey('export', $form);
+      $this->assertSame(MetsisSolrUtilities::toSolrId($id), $form['export']['solr_id']['#default_value']);
     }
   }
 

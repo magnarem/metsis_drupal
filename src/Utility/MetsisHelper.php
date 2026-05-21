@@ -258,7 +258,7 @@ final class MetsisHelper {
    */
   public function linkify(string $text): string {
     return preg_replace_callback(
-      '/(?<!href=")(https?:\/\/|www\.)[^\s<]+/i',
+      '/(?<![="\'])(https?:\/\/|www\.)[^\s<]+/i',
       function ($m) {
         $url = $m[0];
         $href = preg_match('/^www\./i', $url) ? 'http://' . $url : $url;

@@ -77,6 +77,7 @@
         "rector/rector": "^2",
         "drupal/markdown": "^3.1",
         "league/commonmark": "^2.8",
+        "brianium/paratest": "^7",
         "phpdocumentor/shim": "^3"
     },
     "config": {

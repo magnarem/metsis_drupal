@@ -124,9 +124,6 @@ final class MetadataExportService {
     $query->setQuery('id:"' . $id . '"');
     $query->setRows(1);
     $query->setFields(['mmd_xml_file']);
-    // Use the default JSON response writer so the [xml] transformer result is
-    // JSON-encoded. Embedding raw XML inside an XML response body causes
-    // parse failures when the MMD content contains unescaped & < > chars.
     /** @var \Solarium\QueryType\Select\Result\Result $result */
     $result = $connector->execute($query);
 

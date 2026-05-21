@@ -121,9 +121,6 @@ final class ResultRowRenderer {
 
     try {
       $rendered = check_markup($abstract_text, $format);
-      if ($is_markdown && !empty($rendered)) {
-        $this->getLogger()->debug('Abstract rendered as markdown');
-      }
     }
     catch (\Exception $e) {
       // If markdown rendering fails, fall back to HTML format.
@@ -137,6 +134,12 @@ final class ResultRowRenderer {
       else {
         throw $e;
       }
+    }
+
+    // After markdown rendering, linkify any bare URLs that were not written
+    // as markdown links and therefore not wrapped in <a> tags.
+    if ($is_markdown) {
+      $rendered = $this->metsisHelper->linkify((string) $rendered);
     }
 
     return [
@@ -185,7 +188,7 @@ final class ResultRowRenderer {
 
     // Build leaflet map if geometry is available.
     if (!empty($solr_doc['geometry_geojson'])) {
-      $fields['leaflet_map'] = $this->leafletMapRenderer->buildLeafletMap($solr_doc['geometry_geojson'], '250px');
+      $fields['leaflet_map'] = $this->leafletMapRenderer->buildLeafletMap($solr_doc['geometry_geojson'], '250px', $solr_doc['id']);
     }
     if (!empty($solr_doc['use_constraint_identifier'])) {
       $fields['license_icon'] = $this->getLicenseIconMarkup(

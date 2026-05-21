@@ -180,7 +180,9 @@
 }
 
 /* Wrapper is the visual button shell; reset generic icon_button spacing inside it. */
-.metsis-data-access-popover .metsis-data-access-button [data-component-id="metsis_drupal:icon_button"] {
+.metsis-data-access-popover
+  .metsis-data-access-button
+  [data-component-id="metsis_drupal:icon_button"] {
   width: 100%;
   margin: 0;
   border: 0;
@@ -191,17 +193,22 @@
 
 .metsis-data-access-popover .metsis-data-access-button:hover,
 .metsis-data-access-popover .metsis-data-access-button:focus-within {
-
   border-color: currentColor;
   background-color: #fefdff;
   color: #241571;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
-.metsis-data-access-popover .metsis-data-access-button a.metsis-data-access-option {
-  color:#fefdff;
+.metsis-data-access-popover
+  .metsis-data-access-button
+  a.metsis-data-access-option {
+  color: #fefdff;
 }
-.metsis-data-access-popover .metsis-data-access-button a.metsis-data-access-option:focus-within,
-.metsis-data-access-popover .metsis-data-access-button a.metsis-data-access-option:hover {
+.metsis-data-access-popover
+  .metsis-data-access-button
+  a.metsis-data-access-option:focus-within,
+.metsis-data-access-popover
+  .metsis-data-access-button
+  a.metsis-data-access-option:hover {
   color: #241571;
   background-color: #fefdff;
 }
@@ -276,7 +283,7 @@
   margin-right: 0.5em;
   margin-left: 0.5em;
   overflow: hidden;
-  float: left;
+  margin-top: 1em;
 }
 
 .metsis-search-content {
@@ -284,7 +291,14 @@
   overflow: hidden;
 }
 
+.metsis-abstract-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .metsis-search-quote {
+  position: relative;
   font-size: 1em;
   line-height: normal;
   overflow-wrap: break-word;
@@ -292,7 +306,79 @@
   word-break: break-word;
   /* font-style: italic; */
   overflow: hidden;
-  /* height: 350px; */
+  height: 350px;
+  transition: height 0.25s ease;
+}
+
+.metsis-search-quote::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4.5rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1)
+  );
+}
+
+.metsis-abstract-wrapper.is-expanded .metsis-search-quote::after,
+.metsis-abstract-wrapper.is-not-overflowing .metsis-search-quote::after {
+  display: none;
+}
+
+.metsis-abstract-toggle {
+  -webkit-appearance: none;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0.35rem auto 0;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  border-color: lightgray;
+  background-color: #fff;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.metsis-abstract-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.metsis-abstract-toggle-icon svg {
+  display: block;
+}
+
+.metsis-abstract-wrapper.is-expanded .metsis-abstract-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.metsis-abstract-wrapper.is-not-overflowing .metsis-abstract-toggle {
+  display: none;
+}
+
+.metsis-abstract-toggle:hover,
+.metsis-abstract-toggle:focus-visible {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.06);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metsis-search-quote,
+  .metsis-abstract-toggle-icon {
+    transition: none;
+  }
 }
 
 .metsis-icon-wrapper {
@@ -384,7 +470,7 @@
   margin: 0;
 }
 
-.metsis-tooltip-popover p+p {
+.metsis-tooltip-popover p + p {
   margin-top: 0.45rem;
 }
 

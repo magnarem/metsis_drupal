@@ -98,14 +98,22 @@
 			</div>
 		{% endif %}
 		<div class="metsis-search-content">
-			{{ excerpt }}
-			<div class="metsis-search-quote">
-				{% if highlighted.abstract_hl is defined and highlighted.abstract_hl is not empty %}
-					{{ highlighted.abstract_hl[0]|raw }}
-				{% else %}
-					{{ fields.abstract }}
-				{% endif %}
-			</div>
+			{% if excerpt is defined and excerpt is not empty %}
+				{{ excerpt }}
+			{% endif %}
+			{% if fields.abstract is defined and fields.abstract is not empty %}
+				<div class="metsis-abstract-wrapper">
+					<div id="abstract-{{ fields.id }}" class="metsis-search-quote">
+						{{ fields.abstract }}
+					</div>
+					<button type="button" class="metsis-abstract-toggle" aria-expanded="false" aria-controls="abstract-{{ fields.id }}" aria-label="{{ 'Expand abstract'|t }}">
+						<span class="metsis-abstract-toggle-icon" aria-hidden="true">{{ icon('metsis_drupal', 'down-arrow', {'size': '36'}) }}</span>
+						<span class="sr-only metsis-abstract-toggle-text">{{ 'Expand abstract'|t }}</span>
+					</button>
+				</div>
+
+
+			{% endif %}
 		</div>
 		<div class="metsis-icon-wrapper metsis-icon-wrapper--align-{{ icon_alignment }}">
 			{% if fields.doi_icon %}
@@ -132,7 +140,8 @@
 	</div>
 	{% if fields.license_text is defined and fields.license_text is not empty %}
 		<div class="metsis-row-license-text-wrapper">
-			<strong>License:</strong> <em>{{ fields.license_text }}</em>
+			<strong>License:</strong>
+			<em>{{ fields.license_text }}</em>
 		</div>
 	{% endif %}
 

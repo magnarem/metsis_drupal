@@ -18,7 +18,7 @@ final class MarkdownDetector implements MarkdownDetectorInterface {
    *
    * @var int
    */
-  private const PATTERN_THRESHOLD = 2;
+  private const PATTERN_THRESHOLD = 1;
 
   /**
    * {@inheritdoc}

@@ -16,9 +16,7 @@
         context,
       ).forEach((wrapper) => {
         const icon = wrapper.querySelector(".icon-button__icon");
-        const button = wrapper.querySelector(
-          "input[type='submit'], a, button",
-        );
+        const button = wrapper.querySelector("input[type='submit'], a, button");
 
         if (!icon || !button) {
           return;

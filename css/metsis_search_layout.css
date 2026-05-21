@@ -273,7 +273,9 @@ button.metsis-search-clear-button[hidden] {
   margin: 0 0 0.55rem;
 }
 
-.metsis-search-layout .metsis-search-fieldset .metsis-facet-vocab-popover-container {
+.metsis-search-layout
+  .metsis-search-fieldset
+  .metsis-facet-vocab-popover-container {
   display: inline-flex;
   align-items: center;
   margin-left: auto;
@@ -290,7 +292,9 @@ button.metsis-search-clear-button[hidden] {
   margin: 0;
 }
 
-.metsis-search-layout .metsis-search-label-with-popover .metsis-facet-vocab-popover-container {
+.metsis-search-layout
+  .metsis-search-label-with-popover
+  .metsis-facet-vocab-popover-container {
   display: inline-flex;
   align-items: center;
 }

@@ -21,7 +21,10 @@ proj4.defs(
 );
 
 // Define EPSG:3574
-proj4.defs("EPSG:3574","+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +type=crs");
+proj4.defs(
+  "EPSG:3574",
+  "+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +type=crs",
+);
 // Register proj4 with OpenLayers
 register(proj4);
 

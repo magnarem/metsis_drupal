@@ -66,12 +66,12 @@ class MarkdownDetectorTest extends UnitTestCase {
   /**
    * Test detection with single markdown header.
    *
-   * Should be FALSE - below threshold.
+   * Should be TRUE because one pattern now meets the threshold.
    */
   public function testDetectMarkdownSingleHeader(): void {
     $text = '# Header 1';
     $result = $this->detector->detectMarkdown($text);
-    $this->assertFalse($result, 'Single pattern (header only) should not pass threshold of 2+');
+    $this->assertTrue($result, 'Single pattern (header only) should be detected as markdown');
   }
 
   /**

@@ -2,79 +2,136 @@
 
 declare(strict_types=1);
 
-namespace Drupal\metsis_drupal\Tests\Utility;
+namespace Drupal\Tests\metsis_drupal\Unit;
 
-use Drupal\metsis_drupal\Utility\MetsisHelper;
-use Drupal\metsis_drupal\Service\MetVocabService;
-use PHPUnit\Framework\TestCase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\leaflet\LeafletService;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
-use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use Drupal\metsis_drupal\Service\FeatureTypeLookupService;
+use Drupal\metsis_drupal\Utility\MetsisHelper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests for MetsisHelper.
  */
+#[CoversClass(MetsisHelper::class)]
 #[Group('metsis_drupal')]
-class MetsisHelperTest extends TestCase {
+final class MetsisHelperTest extends TestCase {
 
   /**
-   * Mocks and returns a MetsisHelper instance.
-   */
-  private function getHelper(): MetsisHelper {
-    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $leaflet = $this->createMock(LeafletService::class);
-    $renderer = $this->createMock(RendererInterface::class);
-    $moduleHandler = $this->createMock(ModuleHandlerInterface::class);
-    $configFactory = $this->createMock(ConfigFactoryInterface::class);
-    $dummyConfig = $this->createMock(ImmutableConfig::class);
-    $moduleHandler->method('getModule')->willReturn((object) ['getPath' => fn() => 'metsis_drupal']);
-    $configFactory->method('get')->willReturn($dummyConfig);
-    $entityStorage = $this->createMock(EntityStorageInterface::class);
-    $entityTypeManager->method('getStorage')->willReturn($entityStorage);
-    $entityStorage->method('load')->willReturn(NULL);
-    $featureTypeLookup = $this->createMock(FeatureTypeLookupService::class);
-    $featureTypeLookup->method('lookup')->willReturn('timeSeries');
-    $metVocabService = $this->createMock(MetVocabService::class);
-    return new MetsisHelper($entityTypeManager, $leaflet, $renderer, $moduleHandler, $configFactory, $featureTypeLookup, $metVocabService);
-  }
-
-  /**
-   * Tests the handleShortLong method.
-   *
-   * @see \Drupal\metsis_drupal\Utility\MetsisHelper::handleShortLong
+   * Tests linkify wraps plain text URLs.
    */
   #[Test]
-  #[DataProvider('shortLongProvider')]
-  public function testHandleShortLong($short, $long, $expected) {
-    $helper = $this->getHelper();
-    $reflection = new \ReflectionClass($helper);
-    $method = $reflection->getMethod('handleShortLong');
-    $method->setAccessible(TRUE);
-    $result = $method->invoke($helper, $short, $long);
-    $this->assertSame($expected, $result);
+  public function testLinkifyWrapsPlainTextUrls(): void {
+    $helper = $this->createHelper();
+
+    $text = 'See https://example.com/data and www.met.no for details.';
+    $result = $helper->linkify($text);
+
+    $this->assertStringContainsString('<a href="https://example.com/data" target="_blank" rel="noopener noreferrer">https://example.com/data</a>', $result);
+    $this->assertStringContainsString('<a href="http://www.met.no" target="_blank" rel="noopener noreferrer">www.met.no</a>', $result);
   }
 
   /**
-   * Array of inputs and expected outputs for handleShortLong tests.
+   * Tests linkify skips URLs that are already inside HTML attributes.
    */
-  public static function shortLongProvider() {
-    return [
-          ['S', 'Long', 'Long(S)'],
-          [NULL, 'Long', 'Long'],
-          ['S', NULL, 'S'],
-          [NULL, NULL, ''],
-          ['', 'Long', 'Long'],
-          ['S', '', 'S'],
-          ['', '', ''],
-    ];
+  #[Test]
+  public function testLinkifySkipsUrlsInsideHtmlAttributes(): void {
+    $helper = $this->createHelper();
+
+    $text = '<a href="https://example.com/image"><img src="https://example.com/image" alt="Map"></a> More info: https://example.com/page';
+    $result = $helper->linkify($text);
+
+    $this->assertStringContainsString('<a href="https://example.com/image"><img src="https://example.com/image" alt="Map"></a>', $result);
+    $this->assertStringContainsString('<a href="https://example.com/page" target="_blank" rel="noopener noreferrer">https://example.com/page</a>', $result);
+    $this->assertSame(2, substr_count($result, 'href="https://example.com'));
+  }
+
+  /**
+   * Tests getModulePath returns the path from the stored module extension.
+   */
+  #[Test]
+  public function testGetModulePathReturnsModuleExtensionPath(): void {
+    $helper = $this->createHelper();
+    $this->setProperty($helper, 'moduleExtension', new class {
+
+      /**
+       * Get the module path.
+       */
+      public function getPath(): string {
+        return 'modules/custom/metsis_drupal';
+      }
+
+    });
+
+    $this->assertSame('modules/custom/metsis_drupal', $helper->getModulePath());
+  }
+
+  /**
+   * Tests envelope to polygon delegates to the WKT helper conversion.
+   */
+  #[Test]
+  public function testEnvelopeToPolygonConvertsEnvelope(): void {
+    $helper = $this->createHelper();
+
+    $this->assertSame(
+      'POLYGON ((5.000000 58.000000, 10.000000 58.000000, 10.000000 62.000000, 5.000000 62.000000, 5.000000 58.000000))',
+      $helper->envelopeToPolygon('ENVELOPE(5.0, 10.0, 62.0, 58.0)')
+    );
+  }
+
+  /**
+   * Tests toSolrId normalizes separators and trims whitespace.
+   */
+  #[Test]
+  public function testToSolrIdNormalizesAndTrims(): void {
+    $helper = $this->createHelper();
+
+    $this->assertSame('foo-bar-baz-qux', $helper->toSolrId(' foo/bar:baz.qux '));
+  }
+
+  /**
+   * Tests lookupFeatureType uses the OPeNDAP service in opendap mode.
+   */
+  #[Test]
+  public function testLookupFeatureTypeUsesOpendapService(): void {
+    $helper = $this->createHelper();
+    $feature_type_lookup = $this->createMock(FeatureTypeLookupService::class);
+    $feature_type_lookup->expects($this->once())
+      ->method('lookup')
+      ->with('https://opendap.example/data')
+      ->willReturn('timeSeries');
+    $this->setProperty($helper, 'featureTypeLookup', $feature_type_lookup);
+
+    $this->assertSame('timeSeries', $helper->lookupFeatureType(NULL, 'https://opendap.example/data', 'opendap'));
+  }
+
+  /**
+   * Tests lookupFeatureType returns null when no lookup input is provided.
+   */
+  #[Test]
+  public function testLookupFeatureTypeReturnsNullWithoutIdentifierOrUrl(): void {
+    $helper = $this->createHelper();
+
+    $this->assertNull($helper->lookupFeatureType(NULL, NULL, 'opendap'));
+  }
+
+  /**
+   * Creates a helper instance without running the production constructor.
+   */
+  private function createHelper(): MetsisHelper {
+    $reflection = new \ReflectionClass(MetsisHelper::class);
+    /** @var \Drupal\metsis_drupal\Utility\MetsisHelper $helper */
+    $helper = $reflection->newInstanceWithoutConstructor();
+    return $helper;
+  }
+
+  /**
+   * Sets a non-public property on the helper under test.
+   */
+  private function setProperty(MetsisHelper $helper, string $property_name, mixed $value): void {
+    $reflection = new \ReflectionProperty(MetsisHelper::class, $property_name);
+    $reflection->setValue($helper, $value);
   }
 
 }

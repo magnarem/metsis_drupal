@@ -27,11 +27,17 @@ final class LeafletMapRenderer {
    *   The geometry data (typically GeoJSON or WKT).
    * @param string $height
    *   The map container height (CSS string, e.g., "400px").
+   * @param string $id
+   *   The solr document id.
    *
    * @return array
    *   A render array for the Leaflet map.
    */
-  public function buildLeafletMap(string $geometry, string $height): array {
+  public function buildLeafletMap(string $geometry, string $height, string $id = ''): array {
+    if (!empty($id)) {
+      $id = 'geometry-map-' . uniqid();
+      $map['id'] = $id;
+    }
     $map = $this->leaflet->leafletMapGetInfo('openstreetmap');
     $map['settings']['leaflet_markercluster'] = ['control' => FALSE];
     $map['settings']['zoomControl'] = FALSE;
