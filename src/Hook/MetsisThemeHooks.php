@@ -127,13 +127,6 @@ class MetsisThemeHooks {
         'base hook' => 'form_element_label',
         'template' => 'form-element-label--metsis-search',
       ],
-      'metsis_collection_icon_component' => [
-        'variables' => [
-          'image_path' => NULL,
-          'parent_id' => NULL,
-        ],
-        'template' => 'components/metsis-collection-icon-component',
-      ],
       'metsis_facet_vocab_popover_button' => [
         'variables' => [
           'popover_id' => '',

@@ -1,0 +1,33 @@
+uuid: a6067ab8-5020-4d4c-a311-f2ede3517c11
+langcode: en
+status: true
+dependencies:
+  module:
+    - markdown
+name: 'Metsis Markdown'
+format: metsis_markdown
+weight: 0
+filters:
+  markdown:
+    id: markdown
+    provider: markdown
+    status: true
+    weight: -15
+    settings:
+      id: commonmark
+      enabled: true
+      render_strategy:
+        type: filter_output
+        custom_allowed_html: ''
+        plugins:
+          commonmark: true
+          commonmark-external-links: false
+          commonmark-footnotes: false
+          commonmark-heading-permalink: false
+          commonmark-strikethrough: false
+          commonmark-table: false
+          commonmark-task-list: false
+          filter_align: false
+          filter_caption: false
+      override: false
+    filterFormat: metsis_markdown

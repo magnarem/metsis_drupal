@@ -70,9 +70,14 @@
     }
 
     popover.style.margin = "0";
-    popover.style.height = "auto";
     popover.style.maxHeight = maxHeight + "px";
-    popover.style.overflowY = "auto";
+
+    // Avoid large empty space for short content while still allowing
+    // scrolling when content exceeds available viewport height.
+    const contentHeight = Math.max(1, popover.scrollHeight);
+    const renderedHeight = Math.min(contentHeight, maxHeight);
+    popover.style.height = renderedHeight + "px";
+    popover.style.overflowY = contentHeight > maxHeight ? "auto" : "hidden";
     popover.dataset.positioned = "true";
   }
 

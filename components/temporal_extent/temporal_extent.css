@@ -14,7 +14,9 @@
   width: fit-content;
   max-width: 100%;
 }
-
+[data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-body {
+  line-height: normal;
+}
 /* Legend row: icon + "Temporal extent" heading */
 [data-component-id="metsis_drupal:temporal_extent"] .temporal-extent-legend {
   display: flex;

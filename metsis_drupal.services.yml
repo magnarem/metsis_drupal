@@ -68,6 +68,9 @@ services:
   metsis_drupal.metadata_document_normalizer:
     class: Drupal\metsis_drupal\Service\MetadataDocumentNormalizer
 
+  metsis_drupal.markdown_detector:
+    class: Drupal\metsis_drupal\Service\MarkdownDetector
+
   # Alias for autowiring.
   Drupal\metsis_drupal\Service\SolrConnectorProvider:
     alias: "metsis_drupal.solr_connector_provider"
@@ -80,6 +83,9 @@ services:
 
   Drupal\metsis_drupal\Service\MetadataDocumentNormalizer:
     alias: "metsis_drupal.metadata_document_normalizer"
+
+  Drupal\metsis_drupal\Service\MarkdownDetectorInterface:
+    alias: "metsis_drupal.markdown_detector"
 
   # --- Tier 2: Configuration & Domain Services -------------------------------
 
@@ -134,7 +140,17 @@ services:
         "@metsis_drupal.config_provider",
         "@metsis_drupal.leaflet_map_renderer",
         "@metsis_drupal.met_vocab_service",
+        "@metsis_drupal.markdown_detector",
       ]
+
+  metsis_drupal.metadata_document_controller:
+    class: Drupal\metsis_drupal\Controller\MetadataDocumentController
+    arguments:
+      - "@metsis_drupal.metadata_document_normalizer"
+      - "@metsis_drupal.result_row_renderer"
+
+  Drupal\metsis_drupal\Controller\MetadataDocumentController:
+    alias: "metsis_drupal.metadata_document_controller"
 
   metsis_drupal.metadata_export_service:
     class: Drupal\metsis_drupal\Service\MetadataExportService

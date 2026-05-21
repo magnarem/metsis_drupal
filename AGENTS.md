@@ -899,6 +899,18 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-05-20 | SECURITY: Added CSS ID sanitization for Solr-derived values to prevent unsafe selector injection
+           | FILES: src/Plugin/views/row/MetsisSearchRow.php
+           | NOTE: New sanitizeIdValue() method ensures all IDs from Solr data (row_id, metadata_identifier) are safe for CSS selectors before use; reusable for popover IDs, anchor names, plot element IDs
+
+2026-05-20 | TASK: Fixed vocabulary popover empty-space regression by sizing rendered height to content while keeping viewport cap
+          | FILES: js/metsis-vocab-popover.js
+          | NOTE: positionPopover now computes contentHeight via scrollHeight and sets explicit height=min(content, viewport cap); overflow remains auto only when content exceeds available height
+
+2026-05-20 | TASK: Adjusted vocabulary popover sizing to shrink-wrap short text while preserving viewport-aware expansion for longer content
+          | FILES: css/metsis_vocab_popover.css
+          | NOTE: Switched to intrinsic width (inline-size:max-content + max-inline-size cap) and enabled overflow-wrap:anywhere so long unbroken terms can wrap without forcing oversized popovers
+
 2026-05-19 | TASK: Added scoped METSIS exposed-form fieldset template with legend-embedded vocab popover support and modern card styling
           | FILES: src/Hook/MetsisSearchFormHooks.php, src/Hook/MetsisThemeHooks.php, templates/fieldset--metsis-search.html.twig, css/metsis_search_layout.css, css/metsis_vocab_popover.css
           | NOTE: Fieldsets in the METSIS search exposed form now use fieldset__metsis_search suggestion; facet popovers moved from description injection into legend header render slot to avoid spacing and checkbox/radio class bleed

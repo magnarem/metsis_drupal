@@ -123,29 +123,21 @@ final class MetadataExportService {
     $query = $connector->getSelectQuery();
     $query->setQuery('id:"' . $id . '"');
     $query->setRows(1);
-    $query->setFields(['mmd_xml_file:[xml]']);
-    $query->setResponseWriter('xml');
+    $query->setFields(['mmd_xml_file']);
+    // Use the default JSON response writer so the [xml] transformer result is
+    // JSON-encoded. Embedding raw XML inside an XML response body causes
+    // parse failures when the MMD content contains unescaped & < > characters.
 
     /** @var \Solarium\QueryType\Select\Result\Result $result */
     $result = $connector->execute($query);
 
-    $dom = new \DOMDocument();
-    $dom->loadXML($result->getResponse()->getBody());
-
-    // Find the <raw> element.
-    $xpath = new \DOMXPath($dom);
-    $rawNode = $xpath->query('//raw[@name="mmd_xml_file"]')->item(0);
-
-    // Extract the inner XML content.
-    $rawXmlContent = '';
-    if ($rawNode) {
-      foreach ($rawNode->childNodes as $child) {
-        $rawXmlContent .= $dom->saveXML($child);
-      }
+    $documents = $result->getDocuments();
+    if (empty($documents)) {
+      return NULL;
     }
 
-    // Output the raw XML content.
-    return html_entity_decode($rawXmlContent);
+    $mmd = $documents[0]['mmd_xml_file'] ?? NULL;
+    return is_string($mmd) && $mmd !== '' ? $mmd : NULL;
 
   }
 

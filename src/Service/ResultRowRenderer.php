@@ -35,6 +35,13 @@ final class ResultRowRenderer {
   protected $moduleExtension;
 
   /**
+   * The module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected ModuleHandlerInterface $moduleHandler;
+
+  /**
    * The config provider service.
    *
    * @var \Drupal\metsis_drupal\Service\ConfigProvider
@@ -56,6 +63,13 @@ final class ResultRowRenderer {
   protected MetVocabServiceInterface $metVocabService;
 
   /**
+   * The markdown detector service.
+   *
+   * @var \Drupal\metsis_drupal\Service\MarkdownDetectorInterface
+   */
+  protected MarkdownDetectorInterface $markdownDetector;
+
+  /**
    * Constructs a ResultRowRenderer object.
    */
   public function __construct(
@@ -64,12 +78,70 @@ final class ResultRowRenderer {
     ConfigProvider $config_provider,
     LeafletMapRenderer $leaflet_map_renderer,
     MetVocabServiceInterface $met_vocab_service,
+    MarkdownDetectorInterface $markdown_detector,
   ) {
     $this->metsisHelper = $metsis_helper;
     $this->moduleExtension = $module_handler->getModule('metsis_drupal');
+    $this->moduleHandler = $module_handler;
     $this->configProvider = $config_provider;
     $this->leafletMapRenderer = $leaflet_map_renderer;
     $this->metVocabService = $met_vocab_service;
+    $this->markdownDetector = $markdown_detector;
+  }
+
+  /**
+   * Render abstract field using appropriate markup format.
+   *
+   * Automatically detects markdown content and uses metsis_markdown filter
+   * when markdown module is installed and metsis_markdown filter exists.
+   * Falls back to metsis_html for non-markdown content or if markdown
+   * rendering fails.
+   *
+   * @param string $abstract_text
+   *   The raw abstract text from Solr.
+   *
+   * @return array
+   *   Render array with '#markup' key containing the rendered HTML.
+   */
+  private function renderAbstractField(string $abstract_text): array {
+    if (empty($abstract_text)) {
+      return [
+        '#markup' => '',
+      ];
+    }
+
+    // Check if markdown module is installed and filter format exists.
+    $markdown_available = $this->moduleHandler->moduleExists('markdown');
+
+    // Detect markdown patterns in the abstract.
+    $is_markdown = $markdown_available && $this->markdownDetector->detectMarkdown($abstract_text);
+
+    // Choose filter format based on detection.
+    $format = $is_markdown ? 'metsis_markdown' : 'metsis_html';
+
+    try {
+      $rendered = check_markup($abstract_text, $format);
+      if ($is_markdown && !empty($rendered)) {
+        $this->getLogger()->debug('Abstract rendered as markdown');
+      }
+    }
+    catch (\Exception $e) {
+      // If markdown rendering fails, fall back to HTML format.
+      if ($is_markdown) {
+        $this->getLogger()->warning(
+          'Markdown rendering failed for abstract, falling back to metsis_html: @error',
+          ['@error' => $e->getMessage()]
+        );
+        $rendered = check_markup($abstract_text, 'metsis_html');
+      }
+      else {
+        throw $e;
+      }
+    }
+
+    return [
+      '#markup' => $rendered ?? '',
+    ];
   }
 
   /**
@@ -100,16 +172,14 @@ final class ResultRowRenderer {
     // Handle abstract/description. Use highlighted field if available.
     $fields['metadata_identifier'] = $solr_doc['metadata_identifier'] ?? '';
     $fields['id'] = $this->metsisHelper->toSolrId($solr_doc['metadata_identifier']);
-    $fields['abstract'] = [
-      '#markup' => check_markup($solr_doc['abstract'], 'metsis_html') ?? '',
-    ];
+
+    // Render abstract with markdown detection support.
+    $abstract_text = $solr_doc['abstract'] ?? '';
     if (!empty($highlighted['abstract_hl'])) {
-      $abstract = $highlighted['abstract_hl'][0];
-      $abstract_html = check_markup($abstract, 'metsis_html');
-      $fields['abstract'] = $abstract_html;
+      $abstract_text = $highlighted['abstract_hl'][0];
     }
-    // Convert plain URLs in abstract to <a href> links.
-    // $fields['abstract'] = $this->linkify($fields['abstract']);
+    $fields['abstract'] = $this->renderAbstractField($abstract_text);
+
     // Labding page URL.
     $fields['landing_page'] = $solr_doc['related_url_landing_page'] ?? '';
 
@@ -121,6 +191,9 @@ final class ResultRowRenderer {
       $fields['license_icon'] = $this->getLicenseIconMarkup(
         $solr_doc['use_constraint_identifier']
       );
+    }
+    if (!empty($solr_doc['use_constraint_license_text'])) {
+      $fields['license_text'] = $solr_doc['use_constraint_license_text'];
     }
     if (!empty($solr_doc['isParent']) && $solr_doc['isParent'] == TRUE) {
       $fields['parent'] = $this->getCollectionIconMarkup(
@@ -261,18 +334,34 @@ final class ResultRowRenderer {
     bool $short_notation = FALSE,
     bool $compact_labels = TRUE,
   ): array {
-    $start_date = '';
-    $end_date = '';
-
-    if (!empty($solr_doc['temporal_extent_start_date'])) {
-      $start_date = (string) $solr_doc['temporal_extent_start_date'][0];
+    // Get and normalize start dates.
+    $start_dates = $solr_doc['temporal_extent_start_date'] ?? [];
+    if (!is_array($start_dates)) {
+      $start_dates = !empty($start_dates) ? [$start_dates] : [];
     }
-    if (!empty($solr_doc['temporal_extent_end_date'])) {
-      $end_date = (string) $solr_doc['temporal_extent_end_date'][0];
-    }
+    $start_dates = array_filter(array_map('strval', $start_dates), static fn($d) => $d !== '');
 
-    if ($start_date === '') {
+    // Get and normalize end dates.
+    $end_dates = $solr_doc['temporal_extent_end_date'] ?? [];
+    if (!is_array($end_dates)) {
+      $end_dates = !empty($end_dates) ? [$end_dates] : [];
+    }
+    $end_dates = array_filter(array_map('strval', $end_dates), static fn($d) => $d !== '');
+
+    if (empty($start_dates)) {
       return [];
+    }
+
+    // Get earliest start date (sort and take first)
+    sort($start_dates);
+    $start_date = reset($start_dates);
+
+    // Determine end date: open-ended if more start dates than end dates.
+    $end_date = '';
+    if (count($end_dates) > 0 && count($start_dates) <= count($end_dates)) {
+      // Get latest end date (sort and take last)
+      sort($end_dates);
+      $end_date = end($end_dates);
     }
 
     return [
@@ -369,12 +458,13 @@ final class ResultRowRenderer {
    *   The render array for this component.
    */
   public function getCollectionIconMarkup(string $parent_id): array {
-    $image_path = '/' . $this->metsisHelper->getModulePath() . '/assets/images/collection';
-
     return [
-      '#theme' => 'metsis_collection_icon_component',
-      '#image_path' => $image_path,
-      '#parent_id' => $parent_id,
+      '#type' => 'component',
+      '#component' => 'metsis_drupal:collection',
+      '#props' => [
+        'icon_alt_text' => 'Collection',
+        'width' => 88,
+      ],
     ];
   }
 

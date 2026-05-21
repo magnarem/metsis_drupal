@@ -34,6 +34,39 @@
   overflow-wrap: anywhere;
 }
 
+.metsis-metadata__abstract {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid;
+  border-radius: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+.metsis-metadata__abstract summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border-radius: 0.2rem;
+  user-select: none;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.metsis-metadata__abstract summary:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.metsis-metadata__abstract summary:focus-visible {
+  outline: 2px solid;
+  outline-offset: 2px;
+}
+
+.metsis-metadata__abstract > p {
+  margin: 0.75rem 0 0;
+  line-height: 1.6;
+}
+
 .metsis-metadata__section,
 .metsis-metadata__summary {
   margin-top: 1.25rem;
@@ -111,6 +144,7 @@
 
 .metsis-metadata__personnel-role {
   border: 1px solid;
+  border-radius: 0.35rem;
   padding: 0.85rem;
 }
 

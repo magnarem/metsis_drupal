@@ -35,8 +35,8 @@ final class MetadataDocumentNormalizer {
   public function buildSummary(array $document): array {
     $license_identifier = $document['use_constraint_identifier'] ?? '';
     $license_display = $license_identifier;
-    if ($this->toInlineText($license_display) === '') {
-      $license_display = $document['use_constraint_resource'] ?? $document['use_constraint_license_text'] ?? '';
+    if ($this->toInlineText($license_display) === '' || $license_display === 'Not provided') {
+      $license_display = $document['use_constraint_resource'] ?? $document['use_constraint_license_text'] ?? 'Not provided';
     }
 
     return [
@@ -243,7 +243,7 @@ final class MetadataDocumentNormalizer {
 
     if (!empty($time_geography_data) || $geometry_render_array !== NULL) {
       $sections[] = [
-        'title' => 'Time and geography',
+        'title' => 'SpatioTemporal inforamation',
         'field' => 'time_geography',
         'is_structured' => FALSE,
         'is_two_column' => TRUE,

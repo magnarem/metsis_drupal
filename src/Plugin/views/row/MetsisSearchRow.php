@@ -344,6 +344,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $metadata_identifier = (string) ($solr_doc['id'] ?? '');
     $dataset_identifier = (string) ($fields['metadata_identifier'] ?? '');
     $row_id = (string) ($fields['id'] ?? '');
+    // Sanitize row_id for safe use in CSS IDs and selectors.
+    $row_id = $this->sanitizeIdValue($row_id);
     $popover_id = 'metsis-export-popover-' . $row_id;
 
     $is_parent = !empty($solr_doc['isParent']) && $solr_doc['isParent'] == TRUE;
@@ -497,11 +499,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    *   The popover ID.
    */
   private function buildExportOptions(array &$operations, string $metadata_identifier, string $row_id, string $popover_id): void {
-    $anchor_suffix = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $row_id) ?? '';
-    $anchor_suffix = trim($anchor_suffix, '-_');
-    if ($anchor_suffix === '') {
-      $anchor_suffix = md5($metadata_identifier);
-    }
+    $anchor_suffix = $this->buildAnchorSuffix($row_id, $metadata_identifier);
     $anchor_name = '--metsis-export-trigger-' . $anchor_suffix;
 
     // Load export options once per render pass and cache on the instance.
@@ -771,9 +769,35 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $anchor_suffix = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $row_id) ?? '';
     $anchor_suffix = trim($anchor_suffix, '-_');
     if ($anchor_suffix === '') {
-      $anchor_suffix = md5($fallback);
+      $anchor_suffix = substr(md5($fallback), 0, 16);
     }
     return $anchor_suffix;
+  }
+
+  /**
+   * Sanitize a value for safe use as a CSS ID attribute or selector.
+   *
+   * CSS IDs must only contain: a-z, A-Z, 0-9, hyphen, underscore.
+   * Non-matching characters are replaced with hyphens, and leading/trailing
+   * special characters are trimmed. If the result is empty, a safe hash-based
+   * fallback is used.
+   *
+   * @param string $value
+   *   Value to sanitize.
+   *
+   * @return string
+   *   Safe CSS ID value.
+   */
+  private function sanitizeIdValue(string $value): string {
+    // Replace non-alphanumeric chars (except hyphens/underscores).
+    $sanitized = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $value) ?? '';
+    // Trim leading/trailing special characters.
+    $sanitized = trim($sanitized, '-_');
+    // If the result is empty, use a hash-based fallback.
+    if ($sanitized === '') {
+      $sanitized = 'id-' . substr(md5($value), 0, 8);
+    }
+    return $sanitized;
   }
 
   /**

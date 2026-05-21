@@ -30,8 +30,9 @@
 
 .metsis-vocab-popover {
   display: none;
-  max-width: min(50rem, calc(100vw - 24px));
-  height: auto;
+  inline-size: max-content;
+  max-inline-size: min(50rem, calc(100vw - 24px));
+  /* height: auto; */
   max-height: calc(100vh - 24px);
   max-height: calc(100dvh - 24px);
   padding: 0.75rem 0.9rem;
@@ -43,6 +44,7 @@
   z-index: 140;
   overflow-x: hidden;
   overflow-y: auto;
+  overflow-wrap: anywhere;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }

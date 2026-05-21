@@ -1,6 +1,6 @@
 /**
  * @file
- * Fallback behavior for export popovers when native Popover API is unavailable.
+ * Shared fallback behavior for row-operation popovers.
  */
 
 (function (Drupal, once) {
@@ -66,10 +66,10 @@
     popover.style.margin = "0";
   };
 
-  const attachExportPopovers = (context) => {
+  const attachRowOperationPopovers = (context) => {
     once(
-      "metsis-export-popover-trigger",
-      ".metsis-export-trigger",
+      "metsis-row-popover-trigger",
+      ".metsis-popover-trigger",
       context,
     ).forEach((trigger) => {
       const popoverId = trigger.getAttribute("popovertarget");
@@ -150,13 +150,21 @@
   Drupal.metsis.exportPopover.afterSwap = (trigger, event) => {
     const target = resolveSwapTarget(trigger, event);
     if (target instanceof HTMLElement) {
-      attachExportPopovers(target);
+      attachRowOperationPopovers(target);
+    }
+  };
+
+  Drupal.metsis.dataAccessPopover = Drupal.metsis.dataAccessPopover || {};
+  Drupal.metsis.dataAccessPopover.afterSwap = (trigger, event) => {
+    const target = resolveSwapTarget(trigger, event);
+    if (target instanceof HTMLElement) {
+      attachRowOperationPopovers(target);
     }
   };
 
   Drupal.behaviors.metsisExportPopoverFallback = {
     attach(context) {
-      attachExportPopovers(context);
+      attachRowOperationPopovers(context);
     },
   };
 })(Drupal, once);

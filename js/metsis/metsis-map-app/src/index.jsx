@@ -35,6 +35,7 @@ const baseMapAppSettings = {
       "EPSG:4326": "WGS 84",
       "EPSG:3857": "Pseudo-Mercator",
       "EPSG:32661": "UPS North (WGS 84)",
+      "EPSG:3574": "North Pole LAEA Atlantic (WGS 84)",
       "EPSG:32761": "UPS South (WGS 84)",
     },
     defaultProjection: "EPSG:3857",
@@ -43,6 +44,7 @@ const baseMapAppSettings = {
       "EPSG:3857": [0, 0],
       "EPSG:32661": [2000000, 2000000],
       "EPSG:32761": [2000000, 2000000],
+      "EPSG:3574": [1779594.83, -2120838.53],
     },
   },
 };

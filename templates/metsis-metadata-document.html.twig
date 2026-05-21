@@ -17,7 +17,7 @@
 		{% endif %}
 		{% if has_vocab %}
 			<button type="button" class="metsis-vocab-popover-trigger" aria-label="Show vocabulary information for {{ value.text }}" aria-haspopup="dialog" aria-expanded="false" popovertarget="{{ value.popover_id }}" popovertargetaction="toggle">
-				<span class="metsis-vocab-popover-trigger__icon" aria-hidden="true">{{ icon('metsis_drupal', 'info', {'size': 14}) }}</span>
+				<span class="metsis-vocab-popover-trigger__icon" aria-hidden="true">{{ icon('metsis_drupal', 'info-filled', {'size': 14}) }}</span>
 			</button>
 			<div id="{{ value.popover_id }}" class="metsis-vocab-popover" popover="auto">
 				{% if has_vocab_entries %}
@@ -73,9 +73,10 @@
 <article class="metsis-metadata" aria-labelledby="metsis-metadata-title">
 	<header class="metsis-metadata__header">
 		<h1 id="metsis-metadata-title" class="metsis-metadata__title">{{ title }}</h1>
-		<p class="metsis-metadata__abstract">
-			<em>{{ abstract }}</em>
-		</p>
+		<details class="metsis-metadata__abstract">
+			<summary>Abstract</summary>
+			<div>{{ abstract }}</div>
+		</details>
 	</header>
 	{% if metadata_updates %}
 		<section class="metsis-metadata__section" aria-label="Metadata update info">

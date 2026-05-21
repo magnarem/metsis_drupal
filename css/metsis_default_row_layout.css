@@ -286,11 +286,13 @@
 
 .metsis-search-quote {
   font-size: 1em;
-  line-height: 1.5em;
+  line-height: normal;
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
-  font-style: italic;
+  /* font-style: italic; */
+  overflow: hidden;
+  /* height: 350px; */
 }
 
 .metsis-icon-wrapper {

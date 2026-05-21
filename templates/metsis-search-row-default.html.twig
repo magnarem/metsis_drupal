@@ -130,6 +130,12 @@
 			{% endif %}
 		</div>
 	</div>
+	{% if fields.license_text is defined and fields.license_text is not empty %}
+		<div class="metsis-row-license-text-wrapper">
+			<strong>License:</strong> <em>{{ fields.license_text }}</em>
+		</div>
+	{% endif %}
+
 	{% if operations is defined and operations is not empty %}
 		<div class="metsis-row-operations-wrapper">
 			{{ operations }}

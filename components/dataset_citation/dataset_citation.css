@@ -5,6 +5,7 @@
 
 [data-component-id="metsis_drupal:dataset_citation"] .dataset-citation__entry {
   border: 1px solid;
+  border-radius: 0.35rem;
   padding: 0.85rem;
 }
 
