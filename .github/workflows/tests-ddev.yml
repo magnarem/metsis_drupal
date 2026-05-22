@@ -11,21 +11,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup DDEV
         uses: ddev/github-action-setup-ddev@v1
-        with:
-          autostart: false
-
-      - name: Start DDEV
-        timeout-minutes: 15
-        run: |
-          set -euo pipefail
-          echo "Starting DDEV..."
-          ddev start -y
-          echo "DDEV started successfully"
-          ddev status
 
       - name: Install dependencies via DDEV
         shell: bash
