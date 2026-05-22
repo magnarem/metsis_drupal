@@ -94,7 +94,7 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp/phptools
-          "composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer [true|false]
+          composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer install --prefer-dist --no-interaction --no-progress
           ln -sfn /tmp/phptools/vendor "$GITHUB_WORKSPACE/vendor"
 
@@ -135,7 +135,7 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp/phptools
-          "composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer [true|false]
+          composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer install --prefer-dist --no-interaction --no-progress
           ln -sfn /tmp/phptools/vendor "$GITHUB_WORKSPACE/vendor"
 
