@@ -172,7 +172,8 @@ class MetsisSearchFormHooks {
       // populate these later in the build pipeline.
       $child['#metsis_search_form_element'] = TRUE;
 
-      if (($child['#type'] ?? NULL) === 'fieldset' || self::hasFieldsetWrapper($child)) {
+      if ((($child['#type'] ?? NULL) === 'fieldset' || self::hasFieldsetWrapper($child))
+        && !isset($child['#metsis_fieldset_variant'])) {
         $child['#metsis_fieldset_variant'] = 'metsis_search';
       }
 

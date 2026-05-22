@@ -1,61 +1,72 @@
-(function (Drupal) {
+(function (Drupal, once) {
   Drupal.behaviors.bboxFormTabs = {
     attach(context) {
-      context.addEventListener("DOMContentLoaded", () => {
-        const tabs = document.querySelectorAll('[role="tab"]');
-        const panels = document.querySelectorAll('[role="tabpanel"]');
+      once(
+        "bbox-form-tabs",
+        '[data-component-id="metsis_drupal:bbox_form_tabs"]',
+        context,
+      ).forEach((wrapper) => {
+        const tabs = Array.from(wrapper.querySelectorAll('[role="tab"]'));
+        const panels = Array.from(
+          wrapper.querySelectorAll('[role="tabpanel"]'),
+        );
 
-        tabs.forEach((tab) => {
-          console.log("Initializing tab:", tab);
-          tab.addEventListener("click", () => {
-            // Deactivate all tabs and panels.
-            tabs.forEach((t) => {
-              t.setAttribute("aria-selected", "false");
-              t.setAttribute("tabindex", "-1");
-              t.classList.remove("is-active");
-            });
-            panels.forEach((panel) => panel.setAttribute("hidden", true));
+        if (!tabs.length || !panels.length) {
+          return;
+        }
 
-            // Activate the clicked tab and its panel.
-            tab.setAttribute("aria-selected", "true");
-            tab.setAttribute("tabindex", "0");
-            tab.classList.add("is-active");
-            document
-              .getElementById(tab.getAttribute("aria-controls"))
-              .removeAttribute("hidden");
+        const setActiveTab = (activeTab) => {
+          tabs.forEach((tab) => {
+            const isActive = tab === activeTab;
+            tab.setAttribute("aria-selected", isActive ? "true" : "false");
+            tab.setAttribute("tabindex", isActive ? "0" : "-1");
+            tab.classList.toggle("is-active", isActive);
           });
 
-          // Add keyboard support.
+          panels.forEach((panel) => {
+            const isActive =
+              panel.id === activeTab.getAttribute("aria-controls");
+            panel.classList.toggle("is-active", isActive);
+            panel.toggleAttribute("hidden", !isActive);
+          });
+        };
+
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            setActiveTab(tab);
+          });
+
           tab.addEventListener("keydown", (event) => {
-            let newTab;
+            let newIndex = -1;
+
             if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-              newTab =
-                tabs[
-                  (Array.prototype.indexOf.call(tabs, tab) - 1 + tabs.length) %
-                    tabs.length
-                ];
+              newIndex = (tabs.indexOf(tab) - 1 + tabs.length) % tabs.length;
             } else if (
               event.key === "ArrowRight" ||
               event.key === "ArrowDown"
             ) {
-              newTab =
-                tabs[
-                  (Array.prototype.indexOf.call(tabs, tab) + 1) % tabs.length
-                ];
+              newIndex = (tabs.indexOf(tab) + 1) % tabs.length;
             } else if (event.key === "Home") {
-              newTab = tabs[0];
+              newIndex = 0;
             } else if (event.key === "End") {
-              newTab = tabs[tabs.length - 1];
+              newIndex = tabs.length - 1;
             }
 
-            if (newTab) {
-              newTab.focus();
-              newTab.click();
-              event.preventDefault();
+            if (newIndex === -1) {
+              return;
             }
+
+            event.preventDefault();
+            tabs[newIndex].focus();
+            setActiveTab(tabs[newIndex]);
           });
         });
+
+        const initiallySelected =
+          tabs.find((tab) => tab.getAttribute("aria-selected") === "true") ??
+          tabs[0];
+        setActiveTab(initiallySelected);
       });
     },
   };
-})(Drupal);
+})(Drupal, once);

@@ -67,7 +67,7 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
     // Allow map input instead of manual coordinate input.
     $options['expose']['contains']['map_input'] = ['default' => FALSE];
     $options['expose']['contains']['user_input'] = ['default' => FALSE];
-    $options['expose']['contains']['user_input_collapsed'] = ['default' => FALSE];
+    $options['expose']['contains']['tabs_component'] = ['default' => FALSE];
 
     return $options;
   }
@@ -122,85 +122,62 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
 
     $identifier = $this->options['expose']['identifier'];
     $wrapper = $identifier . '_wrapper';
+    $operator_key = $identifier . '_op';
+    $map_input_enabled = !empty($this->options['expose']['map_input']);
+    $user_input_enabled = !empty($this->options['expose']['user_input']);
+    $tabs_component_enabled = !empty($this->options['expose']['tabs_component']);
+
     if (empty($form[$wrapper][$identifier])) {
       return;
     }
     $form[$wrapper]['#tree'] = FALSE;
     $form[$wrapper][$identifier]['#tree'] = TRUE;
     $form[$wrapper]['#attributes']['class'][] = "bbox-exposed-filter-wrapper";
+    $form[$wrapper]['#metsis_fieldset_variant'] = 'metsis_bbox_filter';
+    $form[$wrapper]['#metsis_bbox_identifier'] = $identifier;
+    $form[$wrapper]['#metsis_bbox_operator_key'] = $operator_key;
+    $form[$wrapper]['#metsis_bbox_show_map'] = $map_input_enabled;
+    $form[$wrapper]['#metsis_bbox_show_coords'] = !$map_input_enabled || $user_input_enabled;
+    $form[$wrapper]['#metsis_bbox_use_tabs'] = $map_input_enabled && $user_input_enabled && $tabs_component_enabled;
 
-    if (
-    !$this->options['expose']['map_input']
-    || empty($this->options['expose']['map_input'])
-    ) {
+    if (!$map_input_enabled) {
       return;
     }
 
-    // Check if the map_input option is enabled.
-    if (!empty($this->options['expose']['map_input'])) {
-      $form[$wrapper]['bbox_map_filter'] = [
-        '#type' => 'container',
-        '#title' => $this->t('Select bounding box on map'),
-        '#tree' => FALSE,
-        '#attributes' => [
-          'id' => 'bbox-map-filter-container',
-          'class' => ['bbox-map-filter-container'],
-        ],
-      ];
-      $form[$wrapper]['bbox_map_filter']['coords'] = [
-        '#type' => 'markup',
-        '#markup' => '<div id="coords">
-          <span class="coords">Create filter...</span>
-          <i class="bbox-remove fa fa-remove"></i>
-          </div>',
-      ];
+    // Guard: Views and BEF may invoke buildExposedForm more than once.
+    // Reuse the existing container if it already exists.
+    $form[$wrapper]['bbox_map_filter'] = [
+      '#type' => 'container',
+      '#title' => $this->t('Select bounding box on map'),
+      '#tree' => FALSE,
+      '#attributes' => [
+        'id' => 'bbox-map-filter-container',
+        'class' => ['bbox-map-filter-container'],
+      ],
+    ];
+    $form[$wrapper]['bbox_map_filter']['coords'] = [
+      '#type' => 'markup',
+      '#markup' => '<div id="coords">
+        <span class="coords">Create filter...</span>
+        <i class="bbox-remove fa fa-remove"></i>
+        </div>',
+    ];
 
-      if (empty($this->options['expose']['user_input'])) {
-        // Hide the exposed form inputs by rendering them as hidden fields.
-        $form[$wrapper][$identifier]['minX']['#type'] = 'hidden';
-        $form[$wrapper][$identifier]['maxX']['#type'] = 'hidden';
-        $form[$wrapper][$identifier]['maxY']['#type'] = 'hidden';
-        $form[$wrapper][$identifier]['minY']['#type'] = 'hidden';
-      }
-
-      // If both map and user input are enabled,
-      // group them into horizontal tabs.
-      // if (!empty($this->options['expose']['user_input'])) {
-      //   $form[$wrapper]['horizontal_tabs'] = [
-      //     '#type' => 'horizontal_tabs',
-      //     '#title' => $this->t('Geographic filter options'),
-      //     '#title_display' => 'invisible',
-      //     '#weight' => -10,
-      //   ];.
-      // $form[$wrapper]['bbox_map_filter_tab'] = [
-      //     '#type' => 'details',
-      //     '#title' => $this->t('Map'),
-      //     '#group' => 'horizontal_tabs',
-      //     '#open' => TRUE,
-      //   ];
-      // if (isset($form[$wrapper]['bbox_map_filter'])) {
-      //     $form[$wrapper]['bbox_map_filter_tab']['bbox_map_filter'] = $form[$wrapper]['bbox_map_filter'];
-      //     unset($form[$wrapper]['bbox_map_filter']);
-      //   }.
-      // $form[$wrapper]['bbox_coordinates_tab'] = [
-      //     '#type' => 'details',
-      //     '#title' => $this->t('Coordinates'),
-      //     '#group' => 'horizontal_tabs',
-      //     '#open' => empty($this->options['expose']['user_input_collapsed']),
-      //   ];
-      // if (isset($form[$wrapper][$identifier])) {
-      //     $form[$wrapper]['bbox_coordinates_tab'][$identifier] = $form[$wrapper][$identifier];
-      //     unset($form[$wrapper][$identifier]);
-      //   }
-      // }.
-      $form = BubbleableMetadata::mergeAttachments($form, [
-        '#attached' => [
-          'library' => [
-            'metsis_drupal/bbox_map_filter',
-          ],
-        ],
-      ]);
+    if (!$user_input_enabled) {
+      // Map-only mode: hide the coordinate text inputs.
+      $form[$wrapper][$identifier]['minX']['#type'] = 'hidden';
+      $form[$wrapper][$identifier]['maxX']['#type'] = 'hidden';
+      $form[$wrapper][$identifier]['maxY']['#type'] = 'hidden';
+      $form[$wrapper][$identifier]['minY']['#type'] = 'hidden';
     }
+
+    $form = BubbleableMetadata::mergeAttachments($form, [
+      '#attached' => [
+        'library' => [
+          'metsis_drupal/bbox_map_filter',
+        ],
+      ],
+    ]);
   }
 
   /**
@@ -230,11 +207,11 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
         ],
       ],
     ];
-    $form['expose']['user_input_collapsed'] = [
+    $form['expose']['tabs_component'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Collapse user input fields by default'),
-      '#description' => $this->t('Enable this option to have the user input fields collapsed by default when both map and user input fields are shown.'),
-      '#default_value' => $this->options['expose']['user_input_collapsed'],
+      '#title' => $this->t('Use tabs component for map and coordinates'),
+      '#description' => $this->t('Enable this option to render map and coordinate inputs inside the bbox tabs component when both are shown.'),
+      '#default_value' => $this->options['expose']['tabs_component'],
       "#states" => [
         'visible' => [
           ':input[name="options[expose][user_input]"]' => ['checked' => TRUE],

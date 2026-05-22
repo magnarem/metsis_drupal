@@ -10,6 +10,19 @@ let bboxFilterSource;
 let bboxFilterVectorLayer;
 let olModulesPromise;
 
+function getBboxInputs(root = document) {
+  const minX = root.querySelector('input[name="bbox[minX]"]');
+  const maxX = root.querySelector('input[name="bbox[maxX]"]');
+  const minY = root.querySelector('input[name="bbox[minY]"]');
+  const maxY = root.querySelector('input[name="bbox[maxY]"]');
+
+  if (minX && maxX && minY && maxY) {
+    return [minX, maxX, minY, maxY];
+  }
+
+  return [];
+}
+
 function loadOlModules() {
   if (!olModulesPromise) {
     olModulesPromise = Promise.all([
@@ -82,6 +95,17 @@ async function initializeMap() {
 
   console.log("Initializing BBOX Filter map...");
 
+  const mapContainer = document.getElementById("bbox-map-filter-container");
+  if (!mapContainer) {
+    return;
+  }
+
+  const form = mapContainer.closest("form");
+  const fieldset = mapContainer.closest("fieldset");
+  const bboxInputs = fieldset
+    ? getBboxInputs(fieldset)
+    : getBboxInputs(form ?? document);
+
   // Add osm baseLayer
   const baseLayer = new TileLayer({
     source: new OSM(),
@@ -133,14 +157,14 @@ async function initializeMap() {
   });
 
   // Add the draw interaction
-  addBboxDrawFilterInteraction(Draw, createBox);
+  addBboxDrawFilterInteraction(Draw, createBox, form, bboxInputs);
 
   // Draw existing bbox if present in input fields
   drawBoundingBoxFromInputs(Polygon, Feature);
 }
 
 // Add draw interaction to the map
-function addBboxDrawFilterInteraction(Draw, createBox) {
+function addBboxDrawFilterInteraction(Draw, createBox, form, bboxInputs) {
   // const bboxGeometryFunction = createRegularPolygon(4);
   const bboxGeometryFunction = createBox();
 
@@ -155,75 +179,88 @@ function addBboxDrawFilterInteraction(Draw, createBox) {
     bboxFilterSource.clear();
   });
 
-  (function ($) {
-    draw.on("drawend", function (event) {
-      console.log("drawend event");
+  draw.on("drawend", function (event) {
+    console.log("drawend event");
 
-      // Remove the previous geometry
-      bboxFilterSource.clear();
+    // Remove the previous geometry
+    bboxFilterSource.clear();
 
-      // Add the new geometry
-      const polygon = event.feature.getGeometry();
-      console.log("Drawn polygon coordinates:", polygon.getCoordinates());
+    // Add the new geometry
+    const polygon = event.feature.getGeometry();
+    console.log("Drawn polygon coordinates:", polygon.getCoordinates());
 
-      console.log("Polygon get Extent:", polygon.getExtent());
+    console.log("Polygon get Extent:", polygon.getExtent());
+    console.log(
+      "Polygon Extent transformed:",
+      polygon.transform("EPSG:4326", "EPSG:4326").getExtent(),
+    );
+    //Get the extent of the polygon
+    const extent = polygon.getExtent();
+    let minX = extent[0];
+    const minY = extent[1];
+    let maxX = extent[2];
+    const maxY = extent[3];
+    // Test if crosses dateline, if so normalize lon values
+    let crossesDateline;
+    if (minX < -180 || minX > 180) {
+      crossesDateline = true;
       console.log(
-        "Polygon Extent transformed:",
-        polygon.transform("EPSG:4326", "EPSG:4326").getExtent(),
+        "minX: ",
+        minX,
+        " Crosses dateline. Normalizing...: ",
+        crossesDateline,
       );
-      //Get the extent of the polygon
-      const extent = polygon.getExtent();
-      let minX = extent[0];
-      const minY = extent[1];
-      let maxX = extent[2];
-      const maxY = extent[3];
-      // Test if crosses dateline, if so normalize lon values
-      let crossesDateline;
-      if (minX < -180 || minX > 180) {
-        crossesDateline = true;
-        console.log(
-          "minX: ",
-          minX,
-          " Crosses dateline. Normalizing...: ",
-          crossesDateline,
-        );
-        minX = normalizeLon(minX);
+      minX = normalizeLon(minX);
+    }
+    if (maxX < -180 || maxX > 180) {
+      crossesDateline = true;
+      console.log(
+        "maxX: ",
+        maxX,
+        " Crosses dateline. Normalizing...: ",
+        crossesDateline,
+      );
+      maxX = normalizeLon(maxX);
+    }
+
+    console.log("BBox values: ENVELOPE(", minX, maxX, maxY, minY, ")");
+
+    // Update the exposed-form fields in the current filter fieldset.
+    const originalValues = [
+      minX.toFixed(8),
+      maxX.toFixed(8),
+      minY.toFixed(8),
+      maxY.toFixed(8),
+    ];
+
+    bboxInputs.forEach((input, index) => {
+      if (!input) {
+        return;
       }
-      if (maxX < -180 || maxX > 180) {
-        crossesDateline = true;
-        console.log(
-          "maxX: ",
-          maxX,
-          " Crosses dateline. Normalizing...: ",
-          crossesDateline,
-        );
-        maxX = normalizeLon(maxX);
-      }
 
-      console.log("BBox values: ENVELOPE(", minX, maxX, maxY, minY, ")");
-
-      // Update the hidden form fields with the bbox values
-      document.querySelector('input[name="bbox[minX]"]').value =
-        minX.toFixed(8);
-      document.querySelector('input[name="bbox[maxX]"]').value =
-        maxX.toFixed(8);
-      document.querySelector('input[name="bbox[minY]"]').value =
-        minY.toFixed(8);
-      document.querySelector('input[name="bbox[maxY]"]').value =
-        maxY.toFixed(8);
-
-      // Submit the form after 500ms
-      setTimeout(() => {
-        const form = document.querySelector('input[name="bbox[minX]"]').form;
-        if (form) {
-          const submitButton = form.querySelector('[type="submit"]');
-          if (submitButton) {
-            $(submitButton).trigger("click"); // Trigger the AJAX behavior.
-          }
-        }
-      }, 500);
+      input.value = originalValues[index] ?? "";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
     });
-  })(jQuery);
+
+    // Submit the form after 500ms
+    setTimeout(() => {
+      if (!form) {
+        return;
+      }
+
+      const submitButton = form.querySelector('[type="submit"]');
+      if (!submitButton) {
+        return;
+      }
+
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit(submitButton);
+      } else {
+        submitButton.click();
+      }
+    }, 500);
+  });
 
   map.addInteraction(draw);
 }
@@ -235,10 +272,11 @@ function normalizeLon(lon) {
 
 // Function to draw the bounding box from input values
 function drawBoundingBoxFromInputs(Polygon, Feature) {
-  const minXInput = document.querySelector('input[name="bbox[minX]"]');
-  const maxXInput = document.querySelector('input[name="bbox[maxX]"]');
-  const minYInput = document.querySelector('input[name="bbox[minY]"]');
-  const maxYInput = document.querySelector('input[name="bbox[maxY]"]');
+  const bboxInputs = getBboxInputs(document);
+  const minXInput = bboxInputs[0] ?? null;
+  const maxXInput = bboxInputs[1] ?? null;
+  const minYInput = bboxInputs[2] ?? null;
+  const maxYInput = bboxInputs[3] ?? null;
 
   if (
     minXInput &&

@@ -1,0 +1,92 @@
+{#
+/**
+ * @file
+ * Scoped fieldset template for the METSIS bbox exposed filter.
+ *
+ * Renders original Form API elements in one of three modes:
+ * 1) Map only
+ * 2) Coordinates only
+ * 3) Both inside bbox_form_tabs SDC
+ */
+#}
+
+{% set classes = [
+  'metsis-search-fieldset',
+  'metsis-bbox-fieldset',
+  'js-form-item',
+  'form-item',
+  'js-form-wrapper',
+  'form-wrapper',
+] %}
+{% set bbox_identifier = metsis_bbox_identifier|default('bbox') %}
+{% set bbox_operator_key = metsis_bbox_operator_key|default('bbox_op') %}
+{% set show_map = metsis_bbox_show_map|default(false) %}
+{% set show_coords = metsis_bbox_show_coords|default(true) %}
+{% set use_tabs = metsis_bbox_use_tabs|default(false) %}
+
+{% set operator_element = attribute(element, bbox_operator_key)|default(null) %}
+{% set map_element = attribute(element, 'bbox_map_filter')|default(null) %}
+{% set coords_element = attribute(element, bbox_identifier)|default(null) %}
+
+<fieldset{{ attributes.addClass(classes) }}>
+  {% set legend_span_classes = [
+    'fieldset-legend',
+    required ? 'js-form-required',
+    required ? 'form-required',
+    'metsis-search-fieldset__title',
+  ] %}
+  <legend{{ legend.attributes.addClass('metsis-search-fieldset__legend') }}>
+    <span class="metsis-search-fieldset__header">
+      <span{{ legend_span.attributes.addClass(legend_span_classes) }}>{{ legend.title }}</span>
+      {% if metsis_vocab_popover is defined %}
+        {{ metsis_vocab_popover }}
+      {% endif %}
+    </span>
+  </legend>
+
+  <div class="fieldset-wrapper metsis-search-fieldset__body">
+    {% if description_display == 'before' and description.content %}
+      <div{{ description.attributes.addClass('description') }}>{{ description.content }}</div>
+    {% endif %}
+
+    {% if errors %}
+      <div>{{ errors }}</div>
+    {% endif %}
+
+    {% if prefix %}
+      <span class="field-prefix">{{ prefix }}</span>
+    {% endif %}
+
+    {% if operator_element %}
+      {{ operator_element }}
+    {% endif %}
+
+    {% if show_map and show_coords and use_tabs and map_element and coords_element %}
+      {% embed 'metsis_drupal:bbox_form_tabs' with {default_tab: 'map'} %}
+        {% block map_input_tab %}
+          {{ map_element }}
+        {% endblock %}
+        {% block coords_input_tab %}
+          {{ coords_element }}
+        {% endblock %}
+      {% endembed %}
+    {% elseif show_map and show_coords and coords_element and map_element %}
+      {{ coords_element }}
+      {{ map_element }}
+    {% elseif show_map and map_element %}
+      {{ map_element }}
+    {% elseif show_coords and coords_element %}
+      {{ coords_element }}
+    {% else %}
+      {{ children }}
+    {% endif %}
+
+    {% if suffix %}
+      <span class="field-suffix">{{ suffix }}</span>
+    {% endif %}
+
+    {% if description_display in ['after', 'invisible'] and description.content %}
+      <div{{ description.attributes.addClass('description') }}>{{ description.content }}</div>
+    {% endif %}
+  </div>
+</fieldset>

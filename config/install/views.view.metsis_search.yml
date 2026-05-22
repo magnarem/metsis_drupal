@@ -328,7 +328,7 @@ display:
               authenticated: authenticated
             map_input: 1
             user_input: 1
-            user_input_collapsed: 1
+            tabs_component: 1
           is_grouped: false
           group_info:
             label: ''

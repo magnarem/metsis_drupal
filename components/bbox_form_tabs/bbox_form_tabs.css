@@ -1,36 +1,87 @@
-/* Base styles for the tabs */
-[data-component-id="metsis:bbox_form_tabs"] .tabs {
+[data-component-id="metsis_drupal:bbox_form_tabs"].bbox-form-tabs {
+  --bbox-tabs-border: #cfd8e3;
+  --bbox-tabs-surface: #f7f9fc;
+  --bbox-tabs-surface-active: #ffffff;
+  --bbox-tabs-text: #314155;
+  --bbox-tabs-text-muted: #617286;
+  --bbox-tabs-accent: #005ea2;
+  --bbox-tabs-accent-soft: rgba(0, 94, 162, 0.08);
+  /* border: 1px solid var(--bbox-tabs-border);
+  border-radius: 16px; */
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  box-shadow: 0 8px 24px rgba(29, 44, 66, 0.08);
+  overflow: clip;
+}
+
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tabs {
   display: flex;
-  border-bottom: 2px solid #ccc;
+  gap: 0.5rem;
+  padding: 0.75rem 0.75rem 0;
+  border-bottom: 1px solid var(--bbox-tabs-border);
+  background: linear-gradient(
+    180deg,
+    #fefeff 0%,
+    var(--bbox-tabs-surface) 100%
+  );
 }
 
-[data-component-id="metsis:bbox_form_tabs"] .tab-button {
-  background: none;
-  border: none;
-  padding: 10px 20px;
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: -1px;
+  background: transparent;
+  color: var(--bbox-tabs-text-muted);
   cursor: pointer;
-  font-size: 16px;
-  color: #333;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
-[data-component-id="metsis:bbox_form_tabs"] .tab-button.is-active {
-  border-bottom: 2px solid #0074d9;
-  font-weight: bold;
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button:hover {
+  color: var(--bbox-tabs-text);
+  background: rgba(255, 255, 255, 0.75);
 }
 
-[data-component-id="metsis:bbox_form_tabs"] .tab-button:focus {
-  outline: 2px solid #0074d9;
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button.is-active {
+  color: var(--bbox-tabs-accent);
+  background: var(--bbox-tabs-surface-active);
+  border-color: var(--bbox-tabs-border);
+  box-shadow:
+    0 -2px 0 0 var(--bbox-tabs-accent) inset,
+    0 8px 18px rgba(29, 44, 66, 0.06);
+  transform: translateY(1px);
 }
 
-/* Panels */
-[data-component-id="metsis:bbox_form_tabs"] .tab-panels {
-  margin-top: 10px;
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button:focus-visible {
+  outline: 3px solid var(--bbox-tabs-accent-soft);
+  outline-offset: 2px;
 }
 
-[data-component-id="metsis:bbox_form_tabs"] .tab-panel {
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-panels {
+  padding: 1.1rem;
+}
+
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-panel {
   display: none;
+  /* padding: 1rem; */
+  /* border: 1px solid var(--bbox-tabs-border);
+  border-radius: 14px; */
+  background: #fff;
 }
 
-[data-component-id="metsis:bbox_form_tabs"] .tab-panel.is-active {
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-panel.is-active {
   display: block;
+}
+
+[data-component-id="metsis_drupal:bbox_form_tabs"] .tab-panel:focus-within {
+  box-shadow: 0 0 0 3px var(--bbox-tabs-accent-soft);
 }

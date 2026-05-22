@@ -95,10 +95,10 @@ views.filter.metsis_filter_bbox:
           label: "Use OL Map as input widget"
         user_input:
           type: integer
-          label: "Provide manual input fields for coordinates alosing with map"
-        user_input_collapsed:
+          label: "Provide manual coordinate input fields alongside map"
+        tabs_component:
           type: integer
-          label: "Manual input fields collapsed by default"
+          label: "Render map and coordinate inputs in tabs"
 
 views.row.metsis_search_row:
   type: mapping

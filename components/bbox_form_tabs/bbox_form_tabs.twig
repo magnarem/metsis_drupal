@@ -1,20 +1,25 @@
-<div {{ attributes }}>
-{% block map_input_tab %}
-	<div class="tabs" role="tablist">
-		{% for tab in tabs %}
-			<button id="tab-{{ loop.index }}" role="tab" class="tab-button {% if loop.first %}is-active{% endif %}" aria-selected="{{ loop.first ? 'true' : 'false' }}" aria-controls="panel-{{ loop.index }}" tabindex="{{ loop.first ? '0' : '-1' }}">
-				{{ tab.label }}
-			</button>
-		{% endfor %}
+{% set active_tab = default_tab|default('map') %}
+{% set map_active = active_tab == 'map' %}
+{% set coords_active = active_tab == 'coords' %}
+
+<div {{ attributes.addClass('bbox-form-tabs') }}>
+	<div class="tabs" role="tablist" aria-label="Bbox form tabs">
+		<button id="tab-map" type="button" role="tab" class="tab-button{% if map_active %} is-active{% endif %}" aria-selected="{{ map_active ? 'true' : 'false' }}" aria-controls="panel-map" tabindex="{{ map_active ? '0' : '-1' }}">
+			Map input
+		</button>
+		<button id="tab-coords" type="button" role="tab" class="tab-button{% if coords_active %} is-active{% endif %}" aria-selected="{{ coords_active ? 'true' : 'false' }}" aria-controls="panel-coords" tabindex="{{ coords_active ? '0' : '-1' }}">
+			Coordinates input
+		</button>
 	</div>
-  {% endblock %}
 
 	<div class="tab-panels">
-		{% for tab in tabs %}
-			<div id="panel-{{ loop.index }}" role="tabpanel" class="tab-panel {% if loop.first %}is-active{% endif %}" aria-labelledby="tab-{{ loop.index }}" {% if not loop.first %} hidden {% endif %}>
-				{{ tab.content }}
-			</div>
-		{% endfor %}
+		<div id="panel-map" role="tabpanel" class="tab-panel{% if map_active %} is-active{% endif %}" aria-labelledby="tab-map"{% if not map_active %} hidden{% endif %}>
+			{% block map_input_tab %}
+			{% endblock %}
+		</div>
+		<div id="panel-coords" role="tabpanel" class="tab-panel{% if coords_active %} is-active{% endif %}" aria-labelledby="tab-coords"{% if not coords_active %} hidden{% endif %}>
+			{% block coords_input_tab %}
+			{% endblock %}
+		</div>
 	</div>
-	{% block coords_input_tab %}{% endblock %}
 </div>

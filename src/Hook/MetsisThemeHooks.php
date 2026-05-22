@@ -122,6 +122,11 @@ class MetsisThemeHooks {
         'base hook' => 'fieldset',
         'template' => 'fieldset--metsis-search',
       ],
+      'fieldset__metsis_bbox_filter' => [
+        'render element' => 'element',
+        'base hook' => 'fieldset',
+        'template' => 'fieldset--metsis-bbox-filter',
+      ],
       'form_element_label__metsis_search' => [
         'render element' => 'element',
         'base hook' => 'form_element_label',
@@ -177,6 +182,11 @@ class MetsisThemeHooks {
   #[Hook('theme_suggestions_fieldset_alter')]
   public function themeSuggestionsFieldsetAlter(array &$suggestions, array $variables): void {
     $element = $variables['element'] ?? [];
+    if (($element['#metsis_fieldset_variant'] ?? NULL) === 'metsis_bbox_filter') {
+      $suggestions[] = 'fieldset__metsis_bbox_filter';
+      return;
+    }
+
     if (($element['#metsis_fieldset_variant'] ?? NULL) === 'metsis_search') {
       $suggestions[] = 'fieldset__metsis_search';
       return;
@@ -262,6 +272,15 @@ class MetsisThemeHooks {
   #[Hook('preprocess_fieldset')]
   public function preprocessFieldset(array &$variables): void {
     $element = $variables['element'] ?? [];
+
+    if (($element['#metsis_fieldset_variant'] ?? NULL) === 'metsis_bbox_filter') {
+      $variables['metsis_bbox_identifier'] = (string) ($element['#metsis_bbox_identifier'] ?? 'bbox');
+      $variables['metsis_bbox_operator_key'] = (string) ($element['#metsis_bbox_operator_key'] ?? 'bbox_op');
+      $variables['metsis_bbox_show_map'] = !empty($element['#metsis_bbox_show_map']);
+      $variables['metsis_bbox_show_coords'] = !empty($element['#metsis_bbox_show_coords']);
+      $variables['metsis_bbox_use_tabs'] = !empty($element['#metsis_bbox_use_tabs']);
+    }
+
     if (isset($element['#metsis_vocab_popover']) && is_array($element['#metsis_vocab_popover'])) {
       $variables['metsis_vocab_popover'] = $element['#metsis_vocab_popover'];
     }
