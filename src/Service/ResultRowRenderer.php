@@ -196,7 +196,12 @@ final class ResultRowRenderer {
       );
     }
     if (!empty($solr_doc['use_constraint_license_text'])) {
-      $fields['license_text'] = $solr_doc['use_constraint_license_text'];
+      $fields['license_text'] = [
+        '#markup' => $this->metsisHelper->linkify($solr_doc['use_constraint_license_text']),
+        '#attributes' => [
+          'class' => ['metsis-search-license-text'],
+        ],
+      ];
     }
     if (!empty($solr_doc['isParent']) && $solr_doc['isParent'] == TRUE) {
       $fields['parent'] = $this->getCollectionIconMarkup(

@@ -494,6 +494,9 @@
 .metsis-license-icon-slot {
   margin-top: auto;
 }
+.metsis-row-license-text-wrapper {
+  line-height: normal;
+}
 
 .metsis-collection-image {
   display: flex;

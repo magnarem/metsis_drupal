@@ -6,6 +6,7 @@
         const panels = document.querySelectorAll('[role="tabpanel"]');
 
         tabs.forEach((tab) => {
+          console.log("Initializing tab:", tab);
           tab.addEventListener("click", () => {
             // Deactivate all tabs and panels.
             tabs.forEach((t) => {

@@ -13,3 +13,11 @@ metsis_components_tests.cc_license_component_test:
     _controller: '\Drupal\metsis_components_tests\Controller\CcLicenseComponentTestController'
   requirements:
     _permission: "access content"
+
+metsis_components_tests.bbox_form_tabs_component_test:
+  path: "/test/bbox-form-tabs"
+  defaults:
+    _title: "Bbox Form Tabs Component Test"
+    _controller: '\Drupal\metsis_components_tests\Controller\BboxFormTabsComponentTestController'
+  requirements:
+    _permission: "access content"
