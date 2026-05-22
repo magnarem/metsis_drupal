@@ -1,0 +1,109 @@
+name: Quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Run ESLint
+        run: npx eslint .
+
+  prettier-check:
+    name: Prettier Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Run Prettier check
+        run: npx prettier --check .
+
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon
+
+  phpcs:
+    name: PHPCS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Collect tracked PHP-like files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git ls-files -z | grep -zE '\.(php|module|install|inc|theme|profile|test)$' > /tmp/phpcs-files.zlist || true
+          if [ ! -s /tmp/phpcs-files.zlist ]; then
+            echo "No tracked PHP-like files found."
+            exit 0
+          fi
+          tr '\0' '\n' < /tmp/phpcs-files.zlist | sed '/^$/d' > /tmp/phpcs-files.txt
+          echo "Found $(wc -l < /tmp/phpcs-files.txt) files for PHPCS"
+
+      - name: Run PHPCS (Drupal standard, explicit file list)
+        shell: bash
+        run: |
+          set -euo pipefail
+          xargs -a /tmp/phpcs-files.txt vendor/bin/phpcs --standard=Drupal
