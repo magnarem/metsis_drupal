@@ -19,7 +19,13 @@ jobs:
           autostart: false
 
       - name: Start DDEV
-        run: ddev start -y
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          echo "Starting DDEV..."
+          ddev start -y
+          echo "DDEV started successfully"
+          ddev status
 
       - name: Install dependencies via DDEV
         shell: bash

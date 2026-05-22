@@ -67,8 +67,35 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Create minimal composer.json for dev tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/phptools
+          cd /tmp/phptools
+          cat > composer.json <<'EOF'
+          {
+            "require-dev": {
+              "phpstan/phpstan": "*",
+              "phpstan/extension-installer": "*",
+              "phpstan/phpstan-deprecation-rules": "*",
+              "drupal/coder": "*"
+            },
+            "config": {
+              "allow-plugins": {
+                "phpstan/extension-installer": true
+              }
+            }
+          }
+          EOF
+
+      - name: Install PHPStan and coding standards
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/phptools
+          composer install --prefer-dist --no-interaction --no-progress
+          ln -sfn /tmp/phptools/vendor "$GITHUB_WORKSPACE/vendor"
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon
@@ -87,8 +114,28 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Create minimal composer.json for dev tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/phptools
+          cd /tmp/phptools
+          cat > composer.json <<'EOF'
+          {
+            "require-dev": {
+              "drupal/coder": "*",
+              "slevomat/coding-standard": "*"
+            }
+          }
+          EOF
+
+      - name: Install PHPCS and Drupal coding standards
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/phptools
+          composer install --prefer-dist --no-interaction --no-progress
+          ln -sfn /tmp/phptools/vendor "$GITHUB_WORKSPACE/vendor"
 
       - name: Collect tracked PHP-like files
         shell: bash
