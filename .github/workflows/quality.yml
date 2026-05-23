@@ -78,7 +78,7 @@ jobs:
           test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer config --no-plugins allow-plugins.phpstan/extension-installe true
-          composer require-dev drupal/core-dev:^11
+          composer require --dev -W drupal/core-dev:^11
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
@@ -110,7 +110,7 @@ jobs:
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer config --no-plugins allow-plugins.phpstan/extension-installe true
           composer update
-          composer require drupal/core-dev:^11 --no-install
+          composer require --dev -W drupal/core-dev:^11 --no-install
           composer install -W -o
 
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"

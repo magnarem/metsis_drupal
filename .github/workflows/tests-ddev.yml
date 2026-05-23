@@ -21,8 +21,8 @@ jobs:
         run: |
           ddev add-on get ddev/ddev-drupal-contrib
           ddev add-on get tyler36/ddev-vite
-          ddev add-on get ddev/ddev-redis
           ddev add-on get ddev/ddev-solr
+        # ddev add-on get ddev/ddev-redis
 
       - name: Start DDEV
         run: ddev restart
