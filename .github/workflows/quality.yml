@@ -159,8 +159,7 @@ jobs:
           rm -rf "$MODULE_DIR"
           mkdir -p "$MODULE_DIR"
           git -C "$GITHUB_WORKSPACE" ls-files -z \
-            | tar --null -T - -cf - -C "$GITHUB_WORKSPACE" \
-            | tar -xf - -C "$MODULE_DIR"
+            | rsync -a --from0 --files-from=- "$GITHUB_WORKSPACE/" "$MODULE_DIR/"
 
       - name: Run PHPCS
         run: |
@@ -199,8 +198,7 @@ jobs:
           rm -rf "$MODULE_DIR"
           mkdir -p "$MODULE_DIR"
           git -C "$GITHUB_WORKSPACE" ls-files -z \
-            | tar --null -T - -cf - -C "$GITHUB_WORKSPACE" \
-            | tar -xf - -C "$MODULE_DIR"
+            | rsync -a --from0 --files-from=- "$GITHUB_WORKSPACE/" "$MODULE_DIR/"
           mkdir -p "$GITHUB_WORKSPACE/web/sites/simpletest/browser_output"
           mkdir -p "$GITHUB_WORKSPACE/web/sites/default/files"
           chmod -R u+rwX "$GITHUB_WORKSPACE/web/sites/simpletest" "$GITHUB_WORKSPACE/web/sites/default/files"
