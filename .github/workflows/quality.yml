@@ -183,11 +183,21 @@ jobs:
           name: php-tools
           path: /tmp
 
-      - name: Symlink vendor and web
+      - name: Prepare Drupal paths and PHPUnit config
         run: |
+          set -euo pipefail
           tar -xzf /tmp/phptools.tar.gz -C /tmp
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
+          mkdir -p "$GITHUB_WORKSPACE/web/modules/custom"
+          ln -sfn "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/web/modules/custom/metsis_drupal"
+          mkdir -p "$GITHUB_WORKSPACE/web/sites/simpletest/browser_output"
+          mkdir -p "$GITHUB_WORKSPACE/web/sites/default/files"
+          chmod -R u+rwX "$GITHUB_WORKSPACE/web/sites/simpletest" "$GITHUB_WORKSPACE/web/sites/default/files"
+          sed "s|/var/www/html|$GITHUB_WORKSPACE|g" "$GITHUB_WORKSPACE/phpunit.xml" > /tmp/phpunit.ci.xml
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit --configuration=phpunit.xml tests/
+        run: |
+          set -euo pipefail
+          export SIMPLETEST_DB="sqlite://localhost/$GITHUB_WORKSPACE/web/sites/default/files/simpletest.sqlite"
+          vendor/bin/phpunit --configuration=/tmp/phpunit.ci.xml tests/
