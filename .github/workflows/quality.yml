@@ -144,11 +144,19 @@ jobs:
           name: php-tools
           path: /tmp
 
-      - name: Symlink vendor and web
+      - name: Prepare Drupal paths for PHPCS
         run: |
+          set -euo pipefail
           tar -xzf /tmp/phptools.tar.gz -C /tmp
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
+          mkdir -p "$GITHUB_WORKSPACE/web/modules/custom"
+          mkdir -p "$GITHUB_WORKSPACE/web/themes/custom"
+          mkdir -p "$GITHUB_WORKSPACE/web/profiles/custom"
+          mkdir -p "$GITHUB_WORKSPACE/web/sites/default"
+          touch "$GITHUB_WORKSPACE/web/sites/default/settings.php"
+          touch "$GITHUB_WORKSPACE/web/sites/default/settings.local.php"
+          ln -sfn "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/web/modules/custom/metsis_drupal"
 
       - name: Run PHPCS
         run: |
