@@ -15,11 +15,17 @@ jobs:
         uses: ddev/github-action-setup-ddev@v1
         with:
           autostart: false # Disable autostart to install add-ons first
+      - name: Ddev version
+        run: ddev version
       - name: Install Add-ons
         run: |
           ddev add-on get ddev/ddev-drupal-contrib
+          ddev add-on get tyler36/ddev-vite
+          ddev add-on get ddev/ddev-redis
+          ddev add-on get ddev/ddev-solr
+
       - name: Start DDEV
-        run: ddev start
+        run: ddev restart
       - name: Install packages (ddev poser) and symlink project
         run: ddev poser && ddev symlink-project
       - run: |
