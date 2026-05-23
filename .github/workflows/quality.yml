@@ -158,11 +158,9 @@ jobs:
           MODULE_DIR="$GITHUB_WORKSPACE/web/modules/custom/metsis_drupal"
           rm -rf "$MODULE_DIR"
           mkdir -p "$MODULE_DIR"
-          rsync -a --delete \
-            --exclude='.git/' \
-            --exclude='vendor/' \
-            --exclude='web/' \
-            "$GITHUB_WORKSPACE/" "$MODULE_DIR/"
+          git -C "$GITHUB_WORKSPACE" ls-files -z \
+            | tar --null -T - -cf - -C "$GITHUB_WORKSPACE" \
+            | tar -xf - -C "$MODULE_DIR"
 
       - name: Run PHPCS
         run: |
@@ -200,11 +198,9 @@ jobs:
           MODULE_DIR="$GITHUB_WORKSPACE/web/modules/custom/metsis_drupal"
           rm -rf "$MODULE_DIR"
           mkdir -p "$MODULE_DIR"
-          rsync -a --delete \
-            --exclude='.git/' \
-            --exclude='vendor/' \
-            --exclude='web/' \
-            "$GITHUB_WORKSPACE/" "$MODULE_DIR/"
+          git -C "$GITHUB_WORKSPACE" ls-files -z \
+            | tar --null -T - -cf - -C "$GITHUB_WORKSPACE" \
+            | tar -xf - -C "$MODULE_DIR"
           mkdir -p "$GITHUB_WORKSPACE/web/sites/simpletest/browser_output"
           mkdir -p "$GITHUB_WORKSPACE/web/sites/default/files"
           chmod -R u+rwX "$GITHUB_WORKSPACE/web/sites/simpletest" "$GITHUB_WORKSPACE/web/sites/default/files"
