@@ -79,7 +79,7 @@ jobs:
               "phpstan/phpstan": "*",
               "phpstan/extension-installer": "*",
               "phpstan/phpstan-deprecation-rules": "*",
-              "drupal/coder": "*"
+              "drupal/core-dev": "^11"
             },
             "config": {
               "allow-plugins": {

@@ -10,36 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
+      - uses: actions/checkout@v5
       - name: Setup DDEV
         uses: ddev/github-action-setup-ddev@v1
-
-      - name: Install dependencies via DDEV
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ddev help poser >/dev/null 2>&1; then
-            ddev poser
-          else
-            ddev composer install --prefer-dist --no-interaction --no-progress
-          fi
-
-      - name: Symlink project into Drupal custom modules path
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ddev help symlink-project >/dev/null 2>&1; then
-            ddev symlink-project
-          else
-            ddev exec mkdir -p /var/www/html/web/modules/custom
-            ddev exec ln -sfn /var/www/html /var/www/html/web/modules/custom/metsis_drupal
-          fi
-
-      - name: Run tests in parallel
-        shell: bash
-        run: |
+      - run: ddev poser && ddev symlink-project
+      - run: |
           set -euo pipefail
           PROCESSES="$(nproc || echo 4)"
           ddev exec vendor/bin/paratest --processes="${PROCESSES}"
