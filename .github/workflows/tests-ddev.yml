@@ -26,6 +26,12 @@ jobs:
 
       - name: Start DDEV
         run: ddev restart
+        if: failure()
+        timeout-minutes: 10
+      - name: DDEV logs
+        run: ddev logs
+
+
       - name: Install packages (ddev poser) and symlink project
         run: ddev poser && ddev symlink-project
       - run: |

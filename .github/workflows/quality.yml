@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -34,10 +34,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -53,12 +53,12 @@ jobs:
       - name: Run Prettier check
         run: npx prettier --check .
 
-  phpstan:
-    name: PHPStan
+  php-setup:
+    name: PHP Tools Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -67,18 +67,55 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Create minimal composer.json for dev tools
+      - name: Install Drupal dev tools
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/phptools
           cd /tmp/phptools
-          composer create-project drupal/recommended-project:^11 check-metsis
+          composer create-project drupal/recommended-project:^11 check-metsis --no-interaction --no-progress
           cd check-metsis
-          test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer config --no-plugins allow-plugins.phpstan/extension-installe true
-          composer require --dev -W drupal/core-dev:^11
+          composer config --no-plugins allow-plugins.phpstan/extension-installer true
+          composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
+          composer require wikimedia/composer-merge-plugin:^2.0 --no-interaction --no-progress
+          composer config --json extra.merge-plugin.include "[\"${GITHUB_WORKSPACE}/composer.json\"]"
+          composer require --dev -W drupal/core-dev:^11 --no-interaction --no-progress
+
+      - name: Archive PHP tools
+        run: tar -czf /tmp/phptools.tar.gz -C /tmp phptools/
+
+      - name: Upload PHP tools artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: php-tools
+          path: /tmp/phptools.tar.gz
+          retention-days: 1
+
+  phpstan:
+    name: PHPStan
+    needs: php-setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v8
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      - name: Download and extract PHP tools
+        uses: actions/download-artifact@v4
+        with:
+          name: php-tools
+          path: /tmp
+
+      - name: Symlink vendor and web
+        run: |
+          tar -xzf /tmp/phptools.tar.gz -C /tmp
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
@@ -87,10 +124,11 @@ jobs:
 
   phpcs:
     name: PHPCS
+    needs: php-setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -99,25 +137,19 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Create minimal composer.json for dev tools
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p /tmp/phptools
-          cd /tmp/phptools
-          composer create-project drupal/recommended-project check-metsis
-          cd check-metsis
-          composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer config --no-plugins allow-plugins.phpstan/extension-installe true
-          composer update
-          composer require --dev -W drupal/core-dev:^11 --no-install
-          composer install -W -o
+      - name: Download and extract PHP tools
+        uses: actions/download-artifact@v8
+        with:
+          name: php-tools
+          path: /tmp
 
+      - name: Symlink vendor and web
+        run: |
+          tar -xzf /tmp/phptools.tar.gz -C /tmp
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
-
 
       - name: Run PHPCS
         run: |
           test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
-          vendor/bin/phpcs -s -report-full --report-summary
+          vendor/bin/phpcs -s --report-full --report-summary
