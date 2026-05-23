@@ -73,30 +73,13 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/phptools
           cd /tmp/phptools
-          cat > composer.json <<'EOF'
-          {
-            "require-dev": {
-              "phpstan/phpstan": "*",
-              "phpstan/extension-installer": "*",
-              "phpstan/phpstan-deprecation-rules": "*",
-              "drupal/core-dev": "^11"
-            },
-            "config": {
-              "allow-plugins": {
-                "phpstan/extension-installer": true
-              }
-            }
-          }
-          EOF
-
-      - name: Install PHPStan and coding standards
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/phptools
+          composer create-project drupal/recommended-project check-metsis
+          cd check-metsis
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer install --prefer-dist --no-interaction --no-progress
-          ln -sfn /tmp/phptools/vendor "$GITHUB_WORKSPACE/vendor"
+          composer config --no-plugins allow-plugins.phpstan/extension-installe true
+          composer require drupal/core-dev
+          ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
+          ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon
@@ -121,38 +104,16 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/phptools
           cd /tmp/phptools
-          cat > composer.json <<'EOF'
-          {
-            "require-dev": {
-              "drupal/coder": "*",
-              "slevomat/coding-standard": "*"
-            }
-          }
-          EOF
-
-      - name: Install PHPCS and Drupal coding standards
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/phptools
+          composer create-project drupal/recommended-project check-metsis
+          cd check-metsis
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer install --prefer-dist --no-interaction --no-progress
-          ln -sfn /tmp/phptools/vendor "$GITHUB_WORKSPACE/vendor"
+          composer config --no-plugins allow-plugins.phpstan/extension-installe true
+          composer require drupal/core-dev
+          ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
+          ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
-      - name: Collect tracked PHP-like files
-        shell: bash
-        run: |
-          set -euo pipefail
-          git ls-files -z | grep -zE '\.(php|module|install|inc|theme|profile|test)$' > /tmp/phpcs-files.zlist || true
-          if [ ! -s /tmp/phpcs-files.zlist ]; then
-            echo "No tracked PHP-like files found."
-            exit 0
-          fi
-          tr '\0' '\n' < /tmp/phpcs-files.zlist | sed '/^$/d' > /tmp/phpcs-files.txt
-          echo "Found $(wc -l < /tmp/phpcs-files.txt) files for PHPCS"
 
-      - name: Run PHPCS (Drupal standard, explicit file list)
-        shell: bash
+      - name: Run PHPCS
         run: |
-          set -euo pipefail
-          xargs -a /tmp/phpcs-files.txt vendor/bin/phpcs --standard=Drupal
+          test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
+          vendor/bin/phpcs -s -report-full --report-summary
