@@ -149,7 +149,6 @@ jobs:
           set -euo pipefail
           tar -xzf /tmp/phptools.tar.gz -C /tmp
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
-          ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
           mkdir -p "$GITHUB_WORKSPACE/web/modules/custom"
           mkdir -p "$GITHUB_WORKSPACE/web/themes/custom"
           mkdir -p "$GITHUB_WORKSPACE/web/profiles/custom"
