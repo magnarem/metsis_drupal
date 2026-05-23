@@ -190,4 +190,4 @@ jobs:
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit --configuration=phpunit.xml
+        run: vendor/bin/phpunit --configuration=phpunit.xml tests/
