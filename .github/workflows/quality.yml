@@ -194,10 +194,10 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/web/sites/simpletest/browser_output"
           mkdir -p "$GITHUB_WORKSPACE/web/sites/default/files"
           chmod -R u+rwX "$GITHUB_WORKSPACE/web/sites/simpletest" "$GITHUB_WORKSPACE/web/sites/default/files"
-          sed "s|/var/www/html|$GITHUB_WORKSPACE|g" "$GITHUB_WORKSPACE/phpunit.xml" > /tmp/phpunit.ci.xml
+          sed "s|/var/www/html|$GITHUB_WORKSPACE|g" "$GITHUB_WORKSPACE/phpunit.xml" > "$GITHUB_WORKSPACE/phpunit.ci.xml"
 
       - name: Run PHPUnit
         run: |
           set -euo pipefail
           export SIMPLETEST_DB="sqlite://localhost/$GITHUB_WORKSPACE/web/sites/default/files/simpletest.sqlite"
-          vendor/bin/phpunit --configuration=/tmp/phpunit.ci.xml tests/
+          vendor/bin/phpunit --configuration="$GITHUB_WORKSPACE/phpunit.ci.xml" tests/
