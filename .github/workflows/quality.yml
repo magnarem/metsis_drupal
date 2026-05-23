@@ -75,9 +75,10 @@ jobs:
           cd /tmp/phptools
           composer create-project drupal/recommended-project check-metsis
           cd check-metsis
+          test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer config --no-plugins allow-plugins.phpstan/extension-installe true
-          composer require drupal/core-dev
+          composer require drupal/core-dev:^11
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
@@ -106,9 +107,11 @@ jobs:
           cd /tmp/phptools
           composer create-project drupal/recommended-project check-metsis
           cd check-metsis
+          composer update
+          composer install -o
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer config --no-plugins allow-plugins.phpstan/extension-installe true
-          composer require drupal/core-dev
+          composer require drupal/core-dev:^11
           ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
           ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
 
