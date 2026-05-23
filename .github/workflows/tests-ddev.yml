@@ -8,64 +8,33 @@ jobs:
   paratest-ddev:
     name: Paratest in DDEV
     runs-on: ubuntu-latest
-    timeout-minutes: 60 # Hard ceiling for the whole job
 
     steps:
       - uses: actions/checkout@v5
-
       - name: Setup DDEV
         uses: ddev/github-action-setup-ddev@v1
         with:
           autostart: false # Disable autostart to install add-ons first
-
-      - name: DDEV version
+      - name: Ddev version
         run: ddev version
-
-      - name: Install add-ons
-        timeout-minutes: 5
+      - name: Install Add-ons
         run: |
           ddev add-on get ddev/ddev-drupal-contrib
           ddev add-on get tyler36/ddev-vite
           ddev add-on get ddev/ddev-solr
-          mkdir web
-
-      # ddev add-on get ddev/ddev-redis
+        # ddev add-on get ddev/ddev-redis
 
       - name: Start DDEV
-        timeout-minutes: 10
         run: ddev restart
+        if: failure()
+        timeout-minutes: 10
+      - name: DDEV logs
+        run: ddev logs
 
-      - name: Install packages and symlink project
-        timeout-minutes: 15
+
+      - name: Install packages (ddev poser) and symlink project
         run: ddev poser && ddev symlink-project
-
-      - name: Run tests (paratest)
-        timeout-minutes: 30
-        run: |
+      - run: |
           set -euo pipefail
           PROCESSES="$(nproc || echo 4)"
           ddev exec vendor/bin/paratest --processes="${PROCESSES}"
-
-      # --- Debug steps: only run when something above failed ---
-
-      - name: "Debug: DDEV status and service logs"
-        if: failure()
-        run: |
-          echo '=== ddev status ===' && ddev status || true
-          echo '=== ddev describe ===' && ddev describe || true
-          echo '=== ddev logs (web) ===' && ddev logs || true
-          echo '=== ddev logs (db) ===' && ddev logs --service db || true
-          echo '=== docker ps -a ===' && docker ps -a || true
-
-      - name: "Debug: Drupal watchdog errors"
-        if: failure()
-        run: ddev exec drush watchdog:show --count=50 --severity=Error || true
-
-      - name: "Debug: upload DDEV container logs"
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: ddev-failure-logs
-          path: |
-            ~/.ddev/
-          retention-days: 3

@@ -1,4 +1,4 @@
-name: Quality
+name: Quality and Tests
 
 on:
   push:
@@ -161,3 +161,33 @@ jobs:
         run: |
           test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
           vendor/bin/phpcs -s --report-full --report-summary
+
+  phpunit:
+    name: PHPUnit
+    needs: php-setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      - name: Download and extract PHP tools
+        uses: actions/download-artifact@v8
+        with:
+          name: php-tools
+          path: /tmp
+
+      - name: Symlink vendor and web
+        run: |
+          tar -xzf /tmp/phptools.tar.gz -C /tmp
+          ln -sfn /tmp/phptools/check-metsis/vendor "$GITHUB_WORKSPACE/vendor"
+          ln -sfn /tmp/phptools/check-metsis/web "$GITHUB_WORKSPACE/web"
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --configuration=phpunit.xml
