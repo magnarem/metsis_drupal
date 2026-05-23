@@ -78,6 +78,7 @@ jobs:
           composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer config --no-plugins allow-plugins.phpstan/extension-installer true
           composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
+          composer config --no-plugins allow-plugins.phpdocumentor/shim true
           composer require wikimedia/composer-merge-plugin:^2.0 --no-interaction --no-progress
           composer config --json extra.merge-plugin.include "[\"${GITHUB_WORKSPACE}/composer.json\"]"
           composer require --dev -W drupal/core-dev:^11 --no-interaction --no-progress
