@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v8
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -109,7 +109,7 @@ jobs:
           tools: composer:v2
 
       - name: Download and extract PHP tools
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: php-tools
           path: /tmp
