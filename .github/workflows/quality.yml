@@ -181,7 +181,6 @@ jobs:
 
   phpcs:
     name: PHPCS
-    needs: php-setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -239,7 +238,7 @@ jobs:
 
       - name: Run PHPCS
         run: |
-          test -e phpcs.xml.dist || curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/assets/phpcs.xml.dist
+          cd $GITHUB_WORKSPACE
           vendor/bin/phpcs -s --report-full --report-summary
 
   phpunit:
