@@ -91,6 +91,9 @@ jobs:
           curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/symlink_project.php
           export DDEV_DOCROOT="$GITHUB_WORKSPACE/web"
           export DRUPAL_PROJECTS_PATH="modules/custom"
+          if [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then
+            mkdir -p "$DDEV_DOCROOT/themes/custom"
+          fi
           if [ -n "${PROJECT_FILES-}" ]; then
             # Suppress a warning.
             PROJECT_FILES=$(ls -A --ignore="web" --ignore="vendor" --ignore="symlink_project.php" --ignore=".ddev" --ignore=".idea")
@@ -141,7 +144,9 @@ jobs:
           tar -xzf /tmp/phptools.tar.gz -C $GITHUB_WORKSPACE
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --configuration=phpstan.neon
+        run: |
+          cd $GITHUB_WORKSPACE
+          vendor/bin/phpstan analyse --configuration=phpstan.neon
 
   phpcs:
     name: PHPCS
@@ -187,6 +192,9 @@ jobs:
           curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/symlink_project.php
           export DDEV_DOCROOT="$GITHUB_WORKSPACE/web"
           export DRUPAL_PROJECTS_PATH="modules/custom"
+          if [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then
+            mkdir -p "$DDEV_DOCROOT/themes/custom"
+          fi
           if [ -n "${PROJECT_FILES-}" ]; then
             # Suppress a warning.
             PROJECT_FILES=$(ls -A --ignore="web" --ignore="vendor" --ignore="symlink_project.php" --ignore=".ddev" --ignore=".idea")
@@ -250,6 +258,9 @@ jobs:
           curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/symlink_project.php
           export DDEV_DOCROOT="$GITHUB_WORKSPACE/web"
           export DRUPAL_PROJECTS_PATH="modules/custom"
+          if [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then
+            mkdir -p "$DDEV_DOCROOT/themes/custom"
+          fi
           if [ -n "${PROJECT_FILES-}" ]; then
             # Suppress a warning.
             PROJECT_FILES=$(ls -A --ignore="web" --ignore="vendor" --ignore="symlink_project.php" --ignore=".ddev" --ignore=".idea")
