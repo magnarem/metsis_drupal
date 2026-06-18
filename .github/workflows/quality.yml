@@ -255,12 +255,6 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Download and extract PHP tools
-        uses: actions/download-artifact@v8
-        with:
-          name: php-tools
-          path: /tmp
-
       - name: Prepare Drupal paths and PHPUnit config
         run: |
           set -eu -o pipefail
@@ -301,6 +295,7 @@ jobs:
           rm -f symlink_project.php
 
           sed "s|/var/www/html|$GITHUB_WORKSPACE|g" "$GITHUB_WORKSPACE/phpunit.xml" > "$GITHUB_WORKSPACE/phpunit.ci.xml"
+          drush en -y metsis_drupal
 
       - name: Run PHPUnit
         run: |

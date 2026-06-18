@@ -16,6 +16,7 @@
   <exclude-pattern>./core/lib/Drupal/Component/Diff/</exclude-pattern>
   <exclude-pattern>./core/phpstan-tmp/*</exclude-pattern>
   <exclude-pattern>./core/tests/Drupal/Tests/Component/Annotation/Doctrine/</exclude-pattern>
+  <exclude-pattern>./sites/*/*setting.php</exclude-pattern>
 
   <!--Exclude test files that are intentionally empty, or intentionally violate coding standards.-->
   <exclude-pattern>./modules/system/tests/fixtures/HtaccessTest</exclude-pattern>
