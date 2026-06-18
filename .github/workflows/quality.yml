@@ -296,7 +296,7 @@ jobs:
 
           sed "s|/var/www/html|$GITHUB_WORKSPACE|g" "$GITHUB_WORKSPACE/phpunit.xml" > "$GITHUB_WORKSPACE/phpunit.ci.xml"
           cd $GITHUB_WORKSPACE
-          vendor/bin/drush en -y metsis_drupal
+          # vendor/bin/drush en -y metsis_drupal
 
       - name: Run PHPUnit
         run: |
