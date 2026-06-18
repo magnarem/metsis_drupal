@@ -20,8 +20,6 @@
   <file>./web/modules/custom/</file>
   <file>./web/themes/custom/</file>
   <file>./web/profiles/custom/</file>
-  <file>./web/sites/default/settings.php</file>
-  <file>./web/sites/default/settings.local.php</file>
   <exclude-pattern>*/.git/*</exclude-pattern>
   <exclude-pattern>*/config/*</exclude-pattern>
   <exclude-pattern>*/css/*</exclude-pattern>
