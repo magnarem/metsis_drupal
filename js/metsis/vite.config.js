@@ -24,11 +24,14 @@ export default defineConfig({
         olCss: path.resolve(__dirname, "node_modules/ol/ol.css"),
       },
       output: {
-        /*        manualChunks(id) {
-          if (id.includes("node_modules/ol")) {
-            return "ol"; // Place OpenLayers (ol) in its own chunk
+        manualChunks(id) {
+          if (id.includes("node_modules/preact")) {
+            return "preact"; // Place Preact in its own chunk
           }
-        },*/
+          if (id.includes("node_modules/proj4")) {
+            return "proj4"; // Place proj4 in its own chunk
+          }
+        },
       },
     },
     outDir: path.resolve(__dirname, "dist"), // Output to the module's dist directory

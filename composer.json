@@ -46,7 +46,7 @@
     },
     "suggest": {
         "drupal/back_to_top": "Add back to top icon on scrolling",
-        "drupal/ext_link": "Add icon to external links",
+        "drupal/extlink": "Add icon to external links",
         "drupal/markdown": "Render help page README.md with markdown parser"
     },
     "require-dev": {

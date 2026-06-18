@@ -16,30 +16,49 @@ const MapApp = ({ config }) => {
   const [projection, setProjection] = useState(
     config?.features?.defaultProjection || "EPSG:3857",
   ); //Hold the proejction state
-  const [BoundingBoxDrawer, setBoundingBoxDrawer] = useState(null);
-  const [WMSLayerManager, setWmsLayerManager] = useState(null);
+  const [boundingBoxDrawerModule, setBoundingBoxDrawerModule] = useState(null);
+  const [wmsLayerManagerModule, setWmsLayerManagerModule] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (!config?.features?.boundingBox) {
-      setBoundingBoxDrawer(null);
+      setBoundingBoxDrawerModule(null);
       return;
     }
 
     import("@components/BoundingBoxDrawer.jsx").then((module) => {
-      setBoundingBoxDrawer(() => module.default);
+      if (isMounted) {
+        setBoundingBoxDrawerModule({ component: module.default });
+      }
     });
+
+    return () => {
+      isMounted = false;
+    };
   }, [config?.features?.boundingBox]);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (!config?.features?.wms) {
-      setWmsLayerManager(null);
+      setWmsLayerManagerModule(null);
       return;
     }
 
     import("@components/WMSLayerManager.jsx").then((module) => {
-      setWmsLayerManager(() => module.default);
+      if (isMounted) {
+        setWmsLayerManagerModule({ component: module.default });
+      }
     });
+
+    return () => {
+      isMounted = false;
+    };
   }, [config?.features?.wms]);
+
+  const BoundingBoxDrawer = boundingBoxDrawerModule?.component || null;
+  const WMSLayerManager = wmsLayerManagerModule?.component || null;
 
   // The geojson data of the current search from drupal settings
   const geojsonResultData = useReactiveDrupalSettings();
@@ -82,6 +101,11 @@ const MapApp = ({ config }) => {
       {config.features.wms && WMSLayerManager && (
         <WMSLayerManager
           mapInstance={olMap}
+          currentProjection={projection}
+          supportedProjectionCodes={Object.keys(
+            config?.features?.supportedProjections || {},
+          )}
+          onProjectionChange={setProjection}
           wmsConfig={{
             endpoints: config.features.wmsEndpoints,
             wmsUrls: config.features.wmsUrl,

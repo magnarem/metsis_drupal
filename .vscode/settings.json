@@ -1,6 +1,6 @@
 {
  "[javascript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint",
       "editor.formatOnType": false, // required
       "editor.formatOnPaste": true, // optional
       "editor.formatOnSave": true, // optional

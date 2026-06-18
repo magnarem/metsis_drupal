@@ -5,7 +5,7 @@ metsis_map:
     version: 1.x
   js:
     js/metsis/metsis-map-app/src/index.jsx:
-      { attributes: { type: module }, defer: true }
+      { attributes: { type: module }, defer: true, preprocess: false }
   dependencies:
     - core/drupal
     - core/drupalSettings
@@ -17,7 +17,7 @@ bbox_map_filter:
     version: 1.x
   js:
     js/metsis/bbox-map-filter/src/main.js:
-      { attributes: { type: module }, defer: true }
+      { attributes: { type: module }, defer: true, preprocess: false }
   dependencies:
     - core/drupal
     - core/drupalSettings

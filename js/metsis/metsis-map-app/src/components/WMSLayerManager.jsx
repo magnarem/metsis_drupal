@@ -1,7 +1,14 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import TileLayer from "ol/layer/Tile.js";
 import TileWMS from "ol/source/TileWMS.js";
 import WMSCapabilities from "ol/format/WMSCapabilities.js";
+import {
+  chooseBestProjectionForExtent,
+  deriveCapabilitiesVersion,
+  extractLayerGeographicExtent,
+  fitViewToGeographicExtent,
+  switchMapViewProjection,
+} from "@utils/mapProjection";
 
 function collectNamedLayers(layer, layers = []) {
   if (!layer || typeof layer !== "object") {
@@ -9,9 +16,11 @@ function collectNamedLayers(layer, layers = []) {
   }
 
   if (typeof layer.Name === "string" && layer.Name.trim() !== "") {
+    const geographicExtent = extractLayerGeographicExtent(layer);
     layers.push({
       name: layer.Name,
       title: layer.Title || layer.Name,
+      geographicExtent,
       styles: Array.isArray(layer.Style)
         ? layer.Style.map((style) => ({
             name: style?.Name || "",
@@ -76,13 +85,21 @@ function selectInitialLayer(filteredLayers, preferredLayers) {
   return filteredLayers[0].name;
 }
 
-const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
+const WMSLayerManager = ({
+  mapInstance,
+  wmsConfig,
+  currentProjection,
+  supportedProjectionCodes = [],
+  onProjectionChange,
+}) => {
   const [activeEndpointId, setActiveEndpointId] = useState("");
   const [availableLayers, setAvailableLayers] = useState([]);
   const [selectedLayer, setSelectedLayer] = useState("");
   const [selectedStyle, setSelectedStyle] = useState("");
+  const [wmsVersion, setWmsVersion] = useState("1.3.0");
   const [isLoading, setIsLoading] = useState(false);
   const [capabilitiesError, setCapabilitiesError] = useState("");
+  const lastFittedLayerRef = useRef("");
 
   const endpoints = useMemo(() => normalizeEndpoints(wmsConfig), [wmsConfig]);
   const blacklistedLayersSet = useMemo(() => {
@@ -141,6 +158,7 @@ const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
 
         const xml = await response.text();
         const parsed = capabilitiesFormat.read(xml);
+        setWmsVersion(deriveCapabilitiesVersion(parsed));
         const capabilityLayers =
           parsed?.Capability?.Layer?.Layer &&
           Array.isArray(parsed.Capability.Layer.Layer)
@@ -170,6 +188,7 @@ const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
           setCapabilitiesError(
             "Failed to load WMS capabilities for the selected endpoint.",
           );
+          setWmsVersion("1.3.0");
         }
       } finally {
         setIsLoading(false);
@@ -204,6 +223,7 @@ const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
     const params = {
       LAYERS: selectedLayer,
       TILED: true,
+      VERSION: wmsVersion,
     };
     if (selectedStyle) {
       params.STYLES = selectedStyle;
@@ -212,6 +232,7 @@ const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
     const layer = new TileLayer({
       source: new TileWMS({
         url: activeEndpoint.serviceUrl,
+        reprojectionErrorThreshold: 0.1,
         params,
       }),
     });
@@ -221,11 +242,60 @@ const WMSLayerManager = ({ mapInstance, wmsConfig }) => {
     return () => {
       mapInstance.removeLayer(layer);
     };
-  }, [mapInstance, activeEndpoint, selectedLayer, selectedStyle]);
+  }, [mapInstance, activeEndpoint, selectedLayer, selectedStyle, wmsVersion]);
 
   const selectedLayerDefinition = availableLayers.find(
     (layer) => layer.name === selectedLayer,
   );
+
+  useEffect(() => {
+    if (!mapInstance || !selectedLayerDefinition?.geographicExtent) {
+      return;
+    }
+
+    const supportedCodes = Array.isArray(supportedProjectionCodes)
+      ? supportedProjectionCodes
+      : [];
+    const fallbackCode =
+      currentProjection || mapInstance.getView()?.getProjection()?.getCode();
+    const targetProjection = chooseBestProjectionForExtent(
+      selectedLayerDefinition.geographicExtent,
+      supportedCodes,
+      {
+        preferredCode: "EPSG:32661",
+        fallbackCode,
+      },
+    );
+
+    if (!targetProjection) {
+      return;
+    }
+
+    const fitKey = `${selectedLayerDefinition.name}|${targetProjection}|${selectedLayerDefinition.geographicExtent.join(",")}`;
+    if (lastFittedLayerRef.current === fitKey) {
+      return;
+    }
+
+    switchMapViewProjection(mapInstance, targetProjection);
+    fitViewToGeographicExtent(
+      mapInstance,
+      selectedLayerDefinition.geographicExtent,
+      targetProjection,
+      { maxZoom: 8 },
+    );
+
+    if (typeof onProjectionChange === "function") {
+      onProjectionChange(targetProjection);
+    }
+
+    lastFittedLayerRef.current = fitKey;
+  }, [
+    mapInstance,
+    selectedLayerDefinition,
+    supportedProjectionCodes,
+    currentProjection,
+    onProjectionChange,
+  ]);
 
   if (!endpoints.length) {
     return null;

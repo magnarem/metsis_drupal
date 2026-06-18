@@ -899,6 +899,22 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-06-01 | PROBLEM/SOLUTION: Replaced direct dynamic imports of proj4 internal package files with a local wrapper module to avoid Vite dev-server MIME/CORS failures for custom projection loading
+           | FILES: js/metsis/metsis-map-app/src/projections.js, js/metsis/metsis-map-app/src/utils/proj4Runtime.js
+           | NOTE: Vite now resolves the minimal proj4 runtime through a local source module instead of browser-loading bare package-internal URLs like proj4/lib/projections/laea.js
+
+2026-06-01 | PERF: Halved proj4 chunk by replacing full package import with minimal core+defs runtime and only required stere/laea projection modules loaded lazily
+           | FILES: js/metsis/metsis-map-app/src/projections.js, js/metsis/metsis-map-app/src/index.jsx, js/metsis/metsis-map-app/src/components/MapContainer.jsx, js/metsis/metsis-map-app/src/components/ProjectionSwitcher.jsx, js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx
+           | NOTE: proj4 vendor chunk reduced from 129.21 kB (43.14 kB gzip) to 65.44 kB (22.31 kB gzip) while keeping OL proj4 bridge as a small dynamic chunk and preserving on-demand loading
+
+2026-06-01 | PERF: Reduced map app bundle size by replacing WebGL OSM base layer with Tile+OSM and removing redundant EPSG:4326 WKT projection registration
+           | FILES: js/metsis/metsis-map-app/src/components/MapContainer.jsx, js/metsis/metsis-map-app/src/projections.js, js/metsis/metsis-map-app/src/utils/mapProjection.js
+           | NOTE: Build dropped from 353 to 333 transformed modules; primary entry chunk reduced from 225.08 kB (72.90 kB gzip) to 156.83 kB (52.91 kB gzip) while preserving shared OL chunks across metsis-map-app and bbox-map-filter
+
+2026-06-01 | TASK: Derived WMS VERSION from capabilities, auto-selected supported map projection, and fit view to selected WMS layer extent
+           | FILES: js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx, js/metsis/metsis-map-app/src/components/ProjectionSwitcher.jsx, js/metsis/metsis-map-app/src/components/MapApp.jsx, js/metsis/metsis-map-app/src/utils/mapProjection.js
+           | NOTE: Added reusable projection utility functions; prefers EPSG:32661 when selected layer extent fits projection world extent; keeps projection switcher state synchronized with parent updates
+
 2026-05-20 | SECURITY: Added CSS ID sanitization for Solr-derived values to prevent unsafe selector injection
            | FILES: src/Plugin/views/row/MetsisSearchRow.php
            | NOTE: New sanitizeIdValue() method ensures all IDs from Solr data (row_id, metadata_identifier) are safe for CSS selectors before use; reusable for popover IDs, anchor names, plot element IDs

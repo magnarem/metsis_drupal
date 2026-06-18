@@ -3,10 +3,8 @@ import "ol/ol.css";
 import "../styles/MapContainer.css";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
-// import TileLayer from "ol/layer/Tile";
-import TileLayer from "ol/layer/WebGLTile.js";
-import Source from "ol/source/ImageTile.js";
-// import OSM from "ol/source/OSM";
+import TileLayer from "ol/layer/Tile.js";
+import OSM from "ol/source/OSM.js";
 import ScaleLine from "ol/control/ScaleLine.js";
 import { defaults as defaultControls } from "ol/control/defaults.js";
 import FullScreen from "ol/control/FullScreen.js";
@@ -42,12 +40,7 @@ const MapContainer = ({ setMap, config, projection, children }) => {
       target: mapRef.current,
       layers: [
         new TileLayer({
-          source: new Source({
-            url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-            crossOrigin: "anonymous",
-            attributions:
-              '&#169; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors.',
-          }), // OpenStreetMap tiles
+          source: new OSM(),
         }),
       ],
       view: new View({
@@ -75,7 +68,6 @@ const MapContainer = ({ setMap, config, projection, children }) => {
 
     setMap(olMap);
 
-    // Clean up
     return () => {
       olMap.setTarget(null);
     };

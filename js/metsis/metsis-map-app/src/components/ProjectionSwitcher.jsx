@@ -1,6 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import { get as getProjection, transform, getPointResolution } from "ol/proj";
-import View from "ol/View";
+import { switchMapViewProjection } from "@utils/mapProjection";
 
 const ProjectionSwitcher = ({
   mapInstance,
@@ -11,43 +10,18 @@ const ProjectionSwitcher = ({
   const [selectedProjection, setSelectedProjection] =
     useState(defaultProjection);
 
+  useEffect(() => {
+    if (defaultProjection && defaultProjection !== selectedProjection) {
+      setSelectedProjection(defaultProjection);
+    }
+  }, [defaultProjection]);
+
   // Update the map's projection whenever the selected projection changes
   useEffect(() => {
     if (!mapInstance) return;
 
     console.log("Selected projection:", selectedProjection);
-    // Get the current center and zoom of the map
-    const currentView = mapInstance.getView();
-    const currentProjection = currentView.getProjection();
-    const newProjection = getProjection(selectedProjection);
-    const currentResolution = currentView.getResolution();
-    const currentCenter = currentView.getCenter();
-    const currentRotation = currentView.getRotation();
-    const newCenter = transform(
-      currentCenter,
-      currentProjection,
-      newProjection,
-    );
-    const currentMPU = currentProjection.getMetersPerUnit();
-    const newMPU = newProjection.getMetersPerUnit();
-    const currentPointResolution =
-      getPointResolution(
-        currentProjection,
-        1 / currentMPU,
-        currentCenter,
-        "m",
-      ) * currentMPU;
-    const newPointResolution =
-      getPointResolution(newProjection, 1 / newMPU, newCenter, "m") * newMPU;
-    const newResolution =
-      (currentResolution * currentPointResolution) / newPointResolution;
-    const newView = new View({
-      center: newCenter,
-      resolution: newResolution,
-      rotation: currentRotation,
-      projection: newProjection,
-    });
-    mapInstance.setView(newView);
+    switchMapViewProjection(mapInstance, selectedProjection);
 
     if (setProjection) {
       setProjection(selectedProjection); // Notify parent
