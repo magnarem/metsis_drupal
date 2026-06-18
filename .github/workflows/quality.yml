@@ -120,7 +120,6 @@ jobs:
 
   phpstan:
     name: PHPStan
-    needs: php-setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -133,15 +132,47 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Download and extract PHP tools
-        uses: actions/download-artifact@v8
-        with:
-          name: php-tools
-          path: /tmp
-
-      - name: Symlink vendor and web
+      - name: Prepare project for PHPStan
         run: |
-          tar -xzf /tmp/phptools.tar.gz -C $GITHUB_WORKSPACE
+          set -eu -o pipefail
+          export COMPOSER=composer.contrib.json
+          export DRUPAL_CORE=${DRUPAL_CORE:-^11}
+          export DDEV_SITENAME=metsis_drupal
+          curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/expand_composer_json.php
+          _ddev_drupal_contrib_empty_composer=false
+          if [[ ! -f composer.json ]]; then
+            echo "{}" > composer.json
+            _ddev_drupal_contrib_empty_composer=true
+          fi
+          php expand_composer_json.php "$DDEV_SITENAME"
+          rm -f expand_composer_json.php
+          if [ "$_ddev_drupal_contrib_empty_composer" = true ];  then
+            rm -f composer.json
+          fi
+          composer install "$@"
+          # The -f flag suppresses errors if lock file does not exist.
+          rm -f composer.contrib.json composer.contrib.lock
+          curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/symlink_project.php
+          export DDEV_DOCROOT="$GITHUB_WORKSPACE/web"
+          export DRUPAL_PROJECTS_PATH="modules/custom"
+          if [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then
+            mkdir -p "$DDEV_DOCROOT/themes/custom"
+          fi
+          if [ ! -d "$DDEV_DOCROOT/profiles/custom" ]; then
+            mkdir -p "$DDEV_DOCROOT/profiles/custom"
+          fi
+          if [ -n "${PROJECT_FILES-}" ]; then
+            # Suppress a warning.
+            PROJECT_FILES=$(ls -A --ignore="web" --ignore="vendor" --ignore="symlink_project.php" --ignore=".ddev" --ignore=".idea")
+            export PROJECT_FILES
+          fi
+
+          # Symlink name using underscores.
+          # @see https://www.drupal.org/docs/develop/creating-modules/naming-and-placing-your-drupal-module
+          # DRUPAL_PROJECT_FOLDER is used by the symlink-project script in gitlab_templates
+          export DRUPAL_PROJECT_FOLDER=${DDEV_DOCROOT}/${DRUPAL_PROJECTS_PATH}/${DDEV_SITENAME//-/_}
+          php symlink_project.php
+          rm -f symlink_project.php
 
       - name: Run PHPStan
         run: |
@@ -162,12 +193,6 @@ jobs:
           php-version: "8.4"
           coverage: none
           tools: composer:v2
-
-      - name: Download and extract PHP tools
-        uses: actions/download-artifact@v8
-        with:
-          name: php-tools
-          path: /tmp
 
       - name: Prepare Drupal paths for PHPCS
         run: |
@@ -195,6 +220,9 @@ jobs:
           if [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then
             mkdir -p "$DDEV_DOCROOT/themes/custom"
           fi
+          if [ ! -d "$DDEV_DOCROOT/profiles/custom" ]; then
+            mkdir -p "$DDEV_DOCROOT/profiles/custom"
+          fi
           if [ -n "${PROJECT_FILES-}" ]; then
             # Suppress a warning.
             PROJECT_FILES=$(ls -A --ignore="web" --ignore="vendor" --ignore="symlink_project.php" --ignore=".ddev" --ignore=".idea")
@@ -216,7 +244,6 @@ jobs:
 
   phpunit:
     name: PHPUnit
-    needs: php-setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
