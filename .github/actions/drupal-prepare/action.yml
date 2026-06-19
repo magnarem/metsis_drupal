@@ -1,0 +1,81 @@
+name: Prepare Drupal Project
+description: Set up Drupal dev tools, expand composer, install dependencies, and symlink custom modules
+
+inputs:
+  site-name:
+    description: "DDEV site name (e.g., metsis_drupal)"
+    required: true
+    default: "metsis_drupal"
+  project-paths:
+    description: "Relative paths under web/ where custom projects live (e.g., modules/custom)"
+    required: true
+    default: "modules/custom"
+  ensure-themes-custom:
+    description: "Create web/themes/custom if missing"
+    required: false
+    default: "true"
+  ensure-profiles-custom:
+    description: "Create web/profiles/custom if missing"
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Expand composer and install
+      shell: bash
+      run: |
+        set -eu -o pipefail
+        export COMPOSER=composer.contrib.json
+        export DRUPAL_CORE=${DRUPAL_CORE:-^11}
+        export DDEV_SITENAME="${{ inputs.site-name }}"
+
+        curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/expand_composer_json.php
+
+        _ddev_drupal_contrib_empty_composer=false
+        if [[ ! -f composer.json ]]; then
+          echo "{}" > composer.json
+          _ddev_drupal_contrib_empty_composer=true
+        fi
+
+        php expand_composer_json.php "$DDEV_SITENAME"
+        rm -f expand_composer_json.php
+
+        if [ "$_ddev_drupal_contrib_empty_composer" = true ]; then
+          rm -f composer.json
+        fi
+
+        composer install "$@"
+        rm -f composer.contrib.json composer.contrib.lock
+
+    - name: Symlink custom project files
+      shell: bash
+      run: |
+        set -eu -o pipefail
+        export DDEV_DOCROOT="$GITHUB_WORKSPACE/web"
+        export DRUPAL_PROJECTS_PATH="${{ inputs.project-paths }}"
+        export DDEV_SITENAME="${{ inputs.site-name }}"
+
+        # Create custom directories if requested
+        if [[ "${{ inputs.ensure-themes-custom }}" == "true" ]] && [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then
+          mkdir -p "$DDEV_DOCROOT/themes/custom"
+        fi
+
+        if [[ "${{ inputs.ensure-profiles-custom }}" == "true" ]] && [ ! -d "$DDEV_DOCROOT/profiles/custom" ]; then
+          mkdir -p "$DDEV_DOCROOT/profiles/custom"
+        fi
+
+        # Download and run symlink script
+        curl -OL https://git.drupalcode.org/project/gitlab_templates/-/raw/default-ref/scripts/symlink_project.php
+
+        if [ -n "${PROJECT_FILES-}" ]; then
+          PROJECT_FILES=$(ls -A --ignore="web" --ignore="vendor" --ignore="symlink_project.php" --ignore=".ddev" --ignore=".idea")
+          export PROJECT_FILES
+        fi
+
+        # Symlink name using underscores
+        # @see https://www.drupal.org/docs/develop/creating-modules/naming-and-placing-your-drupal-module
+        # DRUPAL_PROJECT_FOLDER is used by the symlink-project script in gitlab_templates
+        export DRUPAL_PROJECT_FOLDER=${DDEV_DOCROOT}/${DRUPAL_PROJECTS_PATH}/${DDEV_SITENAME//-/_}
+        php symlink_project.php
+        rm -f symlink_project.php
