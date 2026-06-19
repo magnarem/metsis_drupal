@@ -142,6 +142,7 @@ jobs:
           project-paths: modules/custom
           ensure-themes-custom: "true"
           ensure-profiles-custom: "false"
+          provision-mmd: "true"
 
       - name: Prepare PHPUnit config
         run: |

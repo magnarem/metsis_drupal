@@ -18,6 +18,18 @@ inputs:
     description: "Create web/profiles/custom if missing"
     required: false
     default: "false"
+  provision-mmd:
+    description: "Clone metno/mmd into vendor/metno/mmd if missing"
+    required: false
+    default: "false"
+  mmd-repo-url:
+    description: "Repository URL for metno/mmd"
+    required: false
+    default: "https://github.com/metno/mmd.git"
+  mmd-ref:
+    description: "Optional git ref (branch/tag/sha) for metno/mmd"
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -55,6 +67,21 @@ runs:
         export DDEV_DOCROOT="$GITHUB_WORKSPACE/web"
         export DRUPAL_PROJECTS_PATH="${{ inputs.project-paths }}"
         export DDEV_SITENAME="${{ inputs.site-name }}"
+
+        if [[ "${{ inputs.provision-mmd }}" == "true" ]]; then
+          MMD_TARGET="$GITHUB_WORKSPACE/vendor/metno/mmd"
+          mkdir -p "$(dirname "$MMD_TARGET")"
+
+          if [ ! -d "$MMD_TARGET/.git" ]; then
+            rm -rf "$MMD_TARGET"
+            git clone --depth 1 "${{ inputs.mmd-repo-url }}" "$MMD_TARGET"
+          fi
+
+          if [[ -n "${{ inputs.mmd-ref }}" ]]; then
+            git -C "$MMD_TARGET" fetch --depth 1 origin "${{ inputs.mmd-ref }}"
+            git -C "$MMD_TARGET" checkout --detach FETCH_HEAD
+          fi
+        fi
 
         # Create custom directories if requested
         if [[ "${{ inputs.ensure-themes-custom }}" == "true" ]] && [ ! -d "$DDEV_DOCROOT/themes/custom" ]; then

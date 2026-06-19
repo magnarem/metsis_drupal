@@ -51,6 +51,9 @@ final class MetsisSettingsFormTest extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
+    $this->container->get('config.factory')->getEditable('metsis_drupal.settings')
+      ->set('vocab_source_path', 'vendor/metno/mmd/thesauri/mmd-vocabulary.ttl')
+      ->save();
     $this->form = MetsisSettingsForm::create($this->container);
   }
 
