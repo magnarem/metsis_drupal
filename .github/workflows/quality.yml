@@ -53,20 +53,6 @@ jobs:
       - name: Run Prettier check
         run: npx prettier --check .
 
-  php-setup:
-    name: PHP Tools Setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          coverage: none
-          tools: composer:v2
-
   phpstan:
     name: PHPStan
     runs-on: ubuntu-latest
