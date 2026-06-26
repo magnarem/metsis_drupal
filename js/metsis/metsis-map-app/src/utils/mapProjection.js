@@ -41,8 +41,139 @@ function normalizeNumericExtent(values) {
   return normalized;
 }
 
-export function extractLayerGeographicExtent(layerDefinition) {
+function normalizeExtentValue(value) {
+  if (Array.isArray(value)) {
+    return normalizeNumericExtent(value);
+  }
+
+  if (value && typeof value === "object" && Array.isArray(value.extent)) {
+    return normalizeNumericExtent(value.extent);
+  }
+
+  return null;
+}
+
+function normalizeProjectionCode(code) {
+  return typeof code === "string" ? code.trim().toUpperCase() : "";
+}
+
+function normalizeBoundingBoxEntry(bbox) {
+  if (!bbox || typeof bbox !== "object") {
+    return null;
+  }
+
+  const projectionCode = normalizeProjectionCode(
+    bbox.crs || bbox.CRS || bbox.srs || bbox.SRS,
+  );
+
+  const rawExtent =
+    normalizeExtentValue(bbox) ||
+    normalizeNumericExtent([
+      bbox.minx ?? bbox.minX,
+      bbox.miny ?? bbox.minY,
+      bbox.maxx ?? bbox.maxX,
+      bbox.maxy ?? bbox.maxY,
+    ]);
+  if (!rawExtent) {
+    return null;
+  }
+
+  if (projectionCode === "EPSG:4326") {
+    return {
+      projectionCode,
+      extent: normalizeNumericExtent([
+        rawExtent[1],
+        rawExtent[0],
+        rawExtent[3],
+        rawExtent[2],
+      ]),
+    };
+  }
+
+  if (projectionCode === "CRS:84") {
+    return {
+      projectionCode,
+      extent: rawExtent,
+    };
+  }
+
+  return {
+    projectionCode,
+    extent: rawExtent,
+  };
+}
+
+function extractExtentFromBoundingBoxes(layerDefinition) {
+  const rawBoundingBoxes = layerDefinition?.BoundingBox;
+  const boundingBoxes = Array.isArray(rawBoundingBoxes)
+    ? rawBoundingBoxes
+    : rawBoundingBoxes
+      ? [rawBoundingBoxes]
+      : [];
+
+  const normalizedBoxes = boundingBoxes
+    .map((bbox) => normalizeBoundingBoxEntry(bbox))
+    .filter(Boolean);
+
+  const epsg4326Box = normalizedBoxes.find(
+    (bbox) => bbox.projectionCode === "EPSG:4326",
+  );
+  if (epsg4326Box?.extent) {
+    return epsg4326Box.extent;
+  }
+
+  const crs84Box = normalizedBoxes.find(
+    (bbox) => bbox.projectionCode === "CRS:84",
+  );
+  if (crs84Box?.extent) {
+    return crs84Box.extent;
+  }
+
+  return null;
+}
+
+export function mergeGeographicExtents(extents) {
+  if (!Array.isArray(extents) || extents.length === 0) {
+    return null;
+  }
+
+  let mergedExtent = null;
+
+  for (const extent of extents) {
+    const normalized = normalizeNumericExtent(extent);
+    if (!normalized) {
+      continue;
+    }
+
+    if (!mergedExtent) {
+      mergedExtent = [...normalized];
+      continue;
+    }
+
+    mergedExtent[0] = Math.min(mergedExtent[0], normalized[0]);
+    mergedExtent[1] = Math.min(mergedExtent[1], normalized[1]);
+    mergedExtent[2] = Math.max(mergedExtent[2], normalized[2]);
+    mergedExtent[3] = Math.max(mergedExtent[3], normalized[3]);
+  }
+
+  return mergedExtent;
+}
+
+export function extractLayerGeographicExtent(
+  layerDefinition,
+  fallbackExtent = null,
+) {
+  const bboxExtent = extractExtentFromBoundingBoxes(layerDefinition);
+  if (bboxExtent) {
+    return bboxExtent;
+  }
+
   const geographicBbox = layerDefinition?.EX_GeographicBoundingBox;
+  const parsedGeographicExtent = normalizeExtentValue(geographicBbox);
+  if (parsedGeographicExtent) {
+    return parsedGeographicExtent;
+  }
+
   if (geographicBbox && typeof geographicBbox === "object") {
     const parsedExtent = normalizeNumericExtent([
       geographicBbox.westBoundLongitude,
@@ -57,6 +188,11 @@ export function extractLayerGeographicExtent(layerDefinition) {
   }
 
   const lonLatBbox = layerDefinition?.LatLonBoundingBox;
+  const parsedLonLatExtent = normalizeExtentValue(lonLatBbox);
+  if (parsedLonLatExtent) {
+    return parsedLonLatExtent;
+  }
+
   if (lonLatBbox && typeof lonLatBbox === "object") {
     const parsedExtent = normalizeNumericExtent([
       lonLatBbox.minx,
@@ -70,7 +206,7 @@ export function extractLayerGeographicExtent(layerDefinition) {
     }
   }
 
-  return null;
+  return normalizeNumericExtent(fallbackExtent);
 }
 
 function getWorldExtentForProjection(projectionCode) {
@@ -249,7 +385,7 @@ export function fitViewToGeographicExtent(
 
   view.fit(normalizedProjectedExtent, {
     size: mapInstance.getSize(),
-    padding: options.padding || [48, 48, 48, 48],
+    padding: options.padding || [16, 16, 16, 16],
     duration: options.duration ?? 250,
     maxZoom: options.maxZoom ?? 8,
   });

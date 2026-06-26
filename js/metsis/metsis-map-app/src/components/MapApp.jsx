@@ -8,6 +8,7 @@ import GeoJSONLayer from "@components/GeoJSONLayer.jsx";
 import ProjectionSwitcher from "@components/ProjectionSwitcher.jsx";
 import LayerSwitcher from "@components/LayerSwitcher.jsx";
 import TooltipHover from "@components/TooltipHover";
+import WMSResourcesOverlayControl from "@components/WMSResourcesOverlayControl.jsx";
 
 const MapApp = ({ config }) => {
   // console.log('Projection Switcher Enabled:', config.features.projectionSwitcher);
@@ -75,6 +76,19 @@ const MapApp = ({ config }) => {
         />
       )}
 
+      {/* Add layer switcher if enabled */}
+      {config.features.layerSwitcher && <LayerSwitcher mapInstance={olMap} />}
+      {config.features.geojson && olMap && (
+        <WMSResourcesOverlayControl
+          mapInstance={olMap}
+          geojsonFeatures={geojsonResultData}
+          wmsConfig={{
+            preferredLayers: config.features.wmsPreferredLayers,
+            blacklistedLayers: config.features.wmsBlacklistedLayers,
+          }}
+        />
+      )}
+
       <MapContainer setMap={setMap} config={config} projection={projection}>
         {/* Add GeoJSON features if enabled*/}
         {config.features.geojson && olMap && (
@@ -124,11 +138,6 @@ const MapApp = ({ config }) => {
         onGeocode={config.events.onGeocode}
       /> */
         }}
-
-      {/* Add layer switcher if enabled */}
-      {config.features.layerSwitcher && <LayerSwitcher mapInstance={olMap} />}
-
-      {/* Add projection switcher if enabled */}
     </div>
   );
 };

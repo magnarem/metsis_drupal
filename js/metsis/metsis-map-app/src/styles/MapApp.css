@@ -30,3 +30,22 @@
   margin: 0;
   font-size: 0.9rem;
 }
+
+.metsis-wms-resource-controls {
+  margin-top: 0.75rem;
+}
+
+.metsis-wms-resource-toggle {
+  border: 1px solid #1d3557;
+  border-radius: 6px;
+  background: #f1f6fb;
+  color: #1d3557;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+.metsis-wms-resource-toggle:hover {
+  background: #ddeaf7;
+}

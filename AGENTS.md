@@ -899,6 +899,26 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-06-25 | TASK: Tightened WMS auto-fit zoom to reduce empty map margins around selected extent
+           | FILES: js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx
+           | NOTE: Increased fit maxZoom from 8 to 12 and reduced fit padding to 8px on each side so automatic extent fit zooms in more aggressively
+
+2026-06-25 | PROBLEM/SOLUTION: Updated WMS extent parser to match OpenLayers capabilities output shapes
+           | FILES: js/metsis/metsis-map-app/src/utils/mapProjection.js, js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx
+           | NOTE: Geographic extents now accept OpenLayers array/object forms for EX_GeographicBoundingBox, BoundingBox.extent, and LatLonBoundingBox.extent, with raw-field diagnostics logged when extraction still fails
+
+2026-06-25 | PROBLEM/SOLUTION: Fixed WMS geographic extent extraction by preferring EPSG:4326 BoundingBox values and inheriting parent layer extents
+           | FILES: js/metsis/metsis-map-app/src/utils/mapProjection.js, js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx
+           | NOTE: EPSG:4326 WMS 1.3 BoundingBox values are now converted from latitude/longitude axis order into geographic extents, CRS:84 is supported, and child layers fall back to parent geographic extents when they do not declare their own
+
+2026-06-25 | PROBLEM/SOLUTION: Added WMS extent-fit diagnostics and prevented ProjectionSwitcher from overriding programmatic WMS fit/projection updates
+           | FILES: js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx, js/metsis/metsis-map-app/src/components/ProjectionSwitcher.jsx
+           | NOTE: Added console logging for extracted layer extents, merged extent, fit target projection, and post-fit view state; ProjectionSwitcher now applies projection changes only for explicit user selections
+
+2026-06-25 | TASK: Added WMS map fit-to-extent behavior for single and multi-resource capabilities
+           | FILES: js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx, js/metsis/metsis-map-app/src/utils/mapProjection.js
+           | NOTE: Map now fits to selected layer extent when one resource is available, or to the minimal merged geographic extent when multiple WMS resources are listed
+
 2026-06-01 | PROBLEM/SOLUTION: Replaced direct dynamic imports of proj4 internal package files with a local wrapper module to avoid Vite dev-server MIME/CORS failures for custom projection loading
            | FILES: js/metsis/metsis-map-app/src/projections.js, js/metsis/metsis-map-app/src/utils/proj4Runtime.js
            | NOTE: Vite now resolves the minimal proj4 runtime through a local source module instead of browser-loading bare package-internal URLs like proj4/lib/projections/laea.js

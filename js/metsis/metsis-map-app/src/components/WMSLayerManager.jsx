@@ -5,37 +5,15 @@ import WMSCapabilities from "ol/format/WMSCapabilities.js";
 import {
   chooseBestProjectionForExtent,
   deriveCapabilitiesVersion,
-  extractLayerGeographicExtent,
   fitViewToGeographicExtent,
+  mergeGeographicExtents,
   switchMapViewProjection,
 } from "@utils/mapProjection";
-
-function collectNamedLayers(layer, layers = []) {
-  if (!layer || typeof layer !== "object") {
-    return layers;
-  }
-
-  if (typeof layer.Name === "string" && layer.Name.trim() !== "") {
-    const geographicExtent = extractLayerGeographicExtent(layer);
-    layers.push({
-      name: layer.Name,
-      title: layer.Title || layer.Name,
-      geographicExtent,
-      styles: Array.isArray(layer.Style)
-        ? layer.Style.map((style) => ({
-            name: style?.Name || "",
-            title: style?.Title || style?.Name || "",
-          })).filter((style) => style.name)
-        : [],
-    });
-  }
-
-  if (Array.isArray(layer.Layer)) {
-    layer.Layer.forEach((childLayer) => collectNamedLayers(childLayer, layers));
-  }
-
-  return layers;
-}
+import {
+  buildBlacklistedLayerSet,
+  collectNamedLayers,
+  selectInitialLayer,
+} from "@utils/wmsLayerUtils";
 
 function normalizeEndpoints(wmsConfig) {
   const configuredEndpoints = Array.isArray(wmsConfig?.endpoints)
@@ -64,27 +42,6 @@ function normalizeEndpoints(wmsConfig) {
   }));
 }
 
-function selectInitialLayer(filteredLayers, preferredLayers) {
-  if (!filteredLayers.length) {
-    return "";
-  }
-
-  const preferred = Array.isArray(preferredLayers)
-    ? preferredLayers.map((layer) => String(layer).trim().toLowerCase())
-    : [];
-  const byName = new Map(
-    filteredLayers.map((layer) => [layer.name.toLowerCase(), layer.name]),
-  );
-
-  for (const candidate of preferred) {
-    if (byName.has(candidate)) {
-      return byName.get(candidate);
-    }
-  }
-
-  return filteredLayers[0].name;
-}
-
 const WMSLayerManager = ({
   mapInstance,
   wmsConfig,
@@ -102,16 +59,10 @@ const WMSLayerManager = ({
   const lastFittedLayerRef = useRef("");
 
   const endpoints = useMemo(() => normalizeEndpoints(wmsConfig), [wmsConfig]);
-  const blacklistedLayersSet = useMemo(() => {
-    const source = Array.isArray(wmsConfig?.blacklistedLayers)
-      ? wmsConfig.blacklistedLayers
-      : [];
-    return new Set(
-      source
-        .map((layerName) => String(layerName).trim().toLowerCase())
-        .filter(Boolean),
-    );
-  }, [wmsConfig?.blacklistedLayers]);
+  const blacklistedLayersSet = useMemo(
+    () => buildBlacklistedLayerSet(wmsConfig?.blacklistedLayers),
+    [wmsConfig?.blacklistedLayers],
+  );
 
   useEffect(() => {
     if (!endpoints.length) {
@@ -171,6 +122,16 @@ const WMSLayerManager = ({
         const filteredLayers = namedLayers.filter(
           (layer) => !blacklistedLayersSet.has(layer.name.toLowerCase()),
         );
+
+        console.info("[METSIS/WMS] Capabilities parsed", {
+          endpointId: activeEndpoint.id,
+          endpointLabel: activeEndpoint.label,
+          namedLayerCount: namedLayers.length,
+          filteredLayerCount: filteredLayers.length,
+          layersWithExtent: filteredLayers.filter((layer) =>
+            Array.isArray(layer.geographicExtent),
+          ).length,
+        });
 
         setAvailableLayers(filteredLayers);
         const initialLayer = selectInitialLayer(
@@ -248,8 +209,31 @@ const WMSLayerManager = ({
     (layer) => layer.name === selectedLayer,
   );
 
+  const extentToFit = useMemo(() => {
+    const availableExtents = availableLayers
+      .map((layer) => layer.geographicExtent)
+      .filter(Array.isArray);
+
+    if (availableExtents.length > 1) {
+      const merged = mergeGeographicExtents(availableExtents);
+      console.info("[METSIS/WMS] Using merged extent across layers", {
+        availableExtents,
+        mergedExtent: merged,
+      });
+      return merged;
+    }
+
+    const singleExtent =
+      selectedLayerDefinition?.geographicExtent || availableExtents[0] || null;
+    console.info("[METSIS/WMS] Using single-layer extent", {
+      selectedLayer: selectedLayerDefinition?.name || selectedLayer || null,
+      extent: singleExtent,
+    });
+    return singleExtent;
+  }, [availableLayers, selectedLayerDefinition]);
+
   useEffect(() => {
-    if (!mapInstance || !selectedLayerDefinition?.geographicExtent) {
+    if (!mapInstance || !extentToFit) {
       return;
     }
 
@@ -259,7 +243,7 @@ const WMSLayerManager = ({
     const fallbackCode =
       currentProjection || mapInstance.getView()?.getProjection()?.getCode();
     const targetProjection = chooseBestProjectionForExtent(
-      selectedLayerDefinition.geographicExtent,
+      extentToFit,
       supportedCodes,
       {
         preferredCode: "EPSG:32661",
@@ -267,22 +251,49 @@ const WMSLayerManager = ({
       },
     );
 
+    console.info("[METSIS/WMS] Fit decision", {
+      selectedLayer: selectedLayer || "all",
+      extentToFit,
+      supportedCodes,
+      currentProjection,
+      fallbackCode,
+      targetProjection,
+    });
+
     if (!targetProjection) {
       return;
     }
 
-    const fitKey = `${selectedLayerDefinition.name}|${targetProjection}|${selectedLayerDefinition.geographicExtent.join(",")}`;
+    const fitKey = `${selectedLayer || "all"}|${targetProjection}|${extentToFit.join(",")}`;
     if (lastFittedLayerRef.current === fitKey) {
+      console.debug("[METSIS/WMS] Skipping duplicate fit", { fitKey });
       return;
     }
 
-    switchMapViewProjection(mapInstance, targetProjection);
-    fitViewToGeographicExtent(
+    const switchedProjection = switchMapViewProjection(
       mapInstance,
-      selectedLayerDefinition.geographicExtent,
       targetProjection,
-      { maxZoom: 8 },
     );
+    const didFit = fitViewToGeographicExtent(
+      mapInstance,
+      extentToFit,
+      targetProjection,
+      {
+        maxZoom: 12,
+        padding: [16, 16, 16, 16],
+      },
+    );
+
+    const view = mapInstance.getView();
+    console.info("[METSIS/WMS] Applied map fit", {
+      switchedProjection,
+      didFit,
+      projection: view?.getProjection()?.getCode(),
+      center: view?.getCenter?.(),
+      zoom: view?.getZoom?.(),
+      resolution: view?.getResolution?.(),
+      fitKey,
+    });
 
     if (typeof onProjectionChange === "function") {
       onProjectionChange(targetProjection);
@@ -291,7 +302,8 @@ const WMSLayerManager = ({
     lastFittedLayerRef.current = fitKey;
   }, [
     mapInstance,
-    selectedLayerDefinition,
+    selectedLayer,
+    extentToFit,
     supportedProjectionCodes,
     currentProjection,
     onProjectionChange,

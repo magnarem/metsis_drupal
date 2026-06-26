@@ -82,6 +82,7 @@ final class WmsController extends ControllerBase {
               'wmsUrl' => $wms_endpoints[0]['serviceUrl'] ?? NULL,
               'defaultWmsLayers' => [],
               'layerSwitcher' => TRUE,
+              'defaultProjection' => "EPSG:32661",
             ],
           ],
           'metsis_drupal' => [

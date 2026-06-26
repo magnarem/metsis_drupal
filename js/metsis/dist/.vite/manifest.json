@@ -346,22 +346,18 @@
     ]
   },
   "metsis-map-app/src/components/WMSLayerManager.jsx": {
-    "file": "assets/WMSLayerManager-CKSsqHpU.js",
+    "file": "assets/WMSLayerManager-BpipYIdG.js",
     "name": "WMSLayerManager",
     "src": "metsis-map-app/src/components/WMSLayerManager.jsx",
     "isDynamicEntry": true,
     "imports": [
       "metsis-map-app/src/index.jsx",
       "_Tile-beKRRYE9.js",
-      "_Object-DcRN1Tfk.js",
-      "_tilecoord-0vHFieYs.js",
-      "_proj-zpm_m-fU.js",
-      "_OSM-BsffQ9QZ.js",
       "_preact-CUB75Goc.js"
     ]
   },
   "metsis-map-app/src/index.jsx": {
-    "file": "assets/metsisMapApp-D4tQ3QoQ.js",
+    "file": "assets/metsisMapApp-Ds6Du-kJ.js",
     "name": "metsisMapApp",
     "src": "metsis-map-app/src/index.jsx",
     "isEntry": true,
@@ -371,6 +367,7 @@
       "_Tile-beKRRYE9.js",
       "_Object-DcRN1Tfk.js",
       "_Feature-C30AYpUs.js",
+      "_tilecoord-0vHFieYs.js",
       "_Map-Dk7onFtq.js",
       "_Attribution-BjSgKq_w.js",
       "_View-4jmXZq2T.js",
@@ -392,7 +389,7 @@
       "metsis-map-app/src/components/WMSLayerManager.jsx"
     ],
     "css": [
-      "assets/metsisMapApp-DSP1RIXI.css",
+      "assets/metsisMapApp-5erRynPY.css",
       "assets/olCss-c_1sG1-7.css"
     ]
   },

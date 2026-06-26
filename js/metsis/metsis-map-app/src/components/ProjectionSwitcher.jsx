@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { switchMapViewProjection } from "@utils/mapProjection";
 
 const ProjectionSwitcher = ({
@@ -9,28 +9,69 @@ const ProjectionSwitcher = ({
 }) => {
   const [selectedProjection, setSelectedProjection] =
     useState(defaultProjection);
+  const userTriggeredChangeRef = useRef(false);
 
   useEffect(() => {
     if (defaultProjection && defaultProjection !== selectedProjection) {
+      console.info(
+        "[METSIS/ProjectionSwitcher] Syncing projection from parent",
+        {
+          defaultProjection,
+        },
+      );
       setSelectedProjection(defaultProjection);
     }
-  }, [defaultProjection]);
+  }, [defaultProjection, selectedProjection]);
 
   // Update the map's projection whenever the selected projection changes
   useEffect(() => {
     if (!mapInstance) return;
 
-    console.log("Selected projection:", selectedProjection);
+    const currentProjectionCode = mapInstance
+      .getView()
+      ?.getProjection()
+      ?.getCode();
+
+    if (currentProjectionCode === selectedProjection) {
+      if (setProjection) {
+        setProjection(selectedProjection);
+      }
+      userTriggeredChangeRef.current = false;
+      return;
+    }
+
+    if (!userTriggeredChangeRef.current) {
+      console.info(
+        "[METSIS/ProjectionSwitcher] Ignoring non-user projection update",
+        {
+          selectedProjection,
+          currentProjectionCode,
+        },
+      );
+      return;
+    }
+
+    console.info(
+      "[METSIS/ProjectionSwitcher] Applying user-selected projection",
+      {
+        from: currentProjectionCode,
+        to: selectedProjection,
+      },
+    );
+
     switchMapViewProjection(mapInstance, selectedProjection);
 
     if (setProjection) {
       setProjection(selectedProjection); // Notify parent
     }
-  }, [selectedProjection, mapInstance]); // Dependency array ensures this runs when selectedProjection or mapInstance changes
+
+    userTriggeredChangeRef.current = false;
+  }, [selectedProjection, mapInstance, setProjection]);
 
   // Handle user selection of a new projection
   const handleProjectionChange = (event) => {
     event.preventDefault();
+    userTriggeredChangeRef.current = true;
     setSelectedProjection(event.target.value); // Update the selected projection state
   };
 
