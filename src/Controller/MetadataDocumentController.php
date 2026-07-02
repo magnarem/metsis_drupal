@@ -167,12 +167,14 @@ final class MetadataDocumentController extends ControllerBase {
    *   The raw abstract text from Solr.
    *
    * @return array
-   *   The rendered abstract HTML.
+   *   A processed_text render array for abstract content.
    */
   private function renderAbstract(string $abstract_text): array {
     if (empty($abstract_text)) {
       return [
-        '#markup' => '',
+        '#type' => 'processed_text',
+        '#text' => '',
+        '#format' => 'metsis_html',
       ];
     }
 
@@ -186,28 +188,14 @@ final class MetadataDocumentController extends ControllerBase {
     // Choose filter format based on detection.
     $format = $is_markdown ? 'metsis_markdown' : 'metsis_html';
 
-    try {
-      $rendered = check_markup($abstract_text, $format);
-      if ($is_markdown && !empty($rendered)) {
-        $this->getLogger('metsis_drupal')->debug('Abstract rendered as markdown');
-      }
-    }
-    catch (\Exception $e) {
-      // If markdown rendering fails, fall back to HTML format.
-      if ($is_markdown) {
-        $this->getLogger('metsis_drupal')->warning(
-          'Markdown rendering failed for abstract, falling back to metsis_html: @error',
-          ['@error' => $e->getMessage()]
-        );
-        $rendered = check_markup($abstract_text, 'metsis_html');
-      }
-      else {
-        throw $e;
-      }
+    if ($is_markdown) {
+      $this->getLogger('metsis_drupal')->debug('Abstract rendered as markdown');
     }
 
     return [
-      '#markup' => $rendered ?? '',
+      '#type' => 'processed_text',
+      '#text' => $abstract_text,
+      '#format' => $format,
     ];
   }
 

@@ -50,6 +50,8 @@ class MetsisThemeHooks {
           'title' => '',
           'metadata_identifier' => '',
           'wms_endpoints' => [],
+          'mount_id' => 'metsis-map-app',
+          'inline_mode' => FALSE,
         ],
         'template' => 'metsis-wms-document',
       ],

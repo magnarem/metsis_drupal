@@ -11,9 +11,7 @@ proj4.defs(
   "+proj=stere +lat_0=-90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +datum=WGS84 +units=m +no_defs +type=crs",
 );
 
-proj4.defs(
-  "EPSG:3574",
-  "+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +type=crs",
-);
+proj4.defs("EPSG:5041");
+proj4.defs("EPSG:5042");
 
 register(proj4);

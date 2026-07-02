@@ -39,6 +39,7 @@ metsis_default_row_layout:
     js/metsis-export-popover.js: {}
     js/metsis-abstract-toggle.js: {}
     js/metsis-bokeh-plot-behaviours.js: {}
+    js/metsis-wms-behaviours.js: {}
   dependencies:
     - core/drupal
     - core/once

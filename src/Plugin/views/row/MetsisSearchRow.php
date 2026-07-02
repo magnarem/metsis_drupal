@@ -266,7 +266,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $style = $this->options['style'] ?? 'default';
     $theme_hook = 'metsis_search_row_' . $style;
 
-    // Get the raw solr document results.
+    /** @var \Drupal\search_api\Plugin\views\ResultRow $row */
     $solr_doc = $row->_item->getExtraData('search_api_solr_document')->getFields();
 
     // Get the highlighted solr fields if available.
@@ -374,6 +374,11 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     // Add export options if metadata identifier present.
     if ($metadata_identifier !== '' && $row_id !== '') {
       $this->buildExportOptions($operations, $metadata_identifier, $row_id, $popover_id);
+    }
+
+    // Add WMS visualisation if the row contains WMS data.
+    if ($metadata_identifier !== '' && $row_id !== '') {
+      $this->buildWmsVisualisationTrigger($operations, $solr_doc, $row_id, $metadata_identifier);
     }
 
     // Add data access options if row id is available.
@@ -594,6 +599,97 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         ],
       ];
     }
+  }
+
+  /**
+   * Build WMS visualisation trigger and inline target.
+   *
+   * @param array $operations
+   *   The operations array to mutate.
+   * @param array $solr_doc
+   *   The Solr document.
+   * @param string $row_id
+   *   The row ID.
+   * @param string $metadata_identifier
+   *   The metadata identifier.
+   */
+  private function buildWmsVisualisationTrigger(array &$operations, array $solr_doc, string $row_id, string $metadata_identifier): void {
+    $rows = $this->extractDataAccessRows($solr_doc['data_access_json'] ?? []);
+    $has_wms = FALSE;
+
+    foreach ($rows as $entry) {
+      if (strtoupper((string) ($entry['type'] ?? '')) === 'OGC WMS' && $this->normalizeUri($entry['resource'] ?? '') !== '') {
+        $has_wms = TRUE;
+        break;
+      }
+    }
+
+    if (!$has_wms) {
+      return;
+    }
+
+    $anchor_suffix = $this->buildAnchorSuffix($row_id, $metadata_identifier);
+    $mount_id = 'metsis-wms-map-app-' . $anchor_suffix;
+    $target_id = 'metsis-wms-target-' . $anchor_suffix;
+    $spinner_id = 'metsis-wms-spinner-' . $anchor_suffix;
+    $wms_url = Url::fromRoute('metsis_drupal.wms_htmx', [
+      'id' => $metadata_identifier,
+      'mount_id' => $mount_id,
+    ]);
+
+    $button = [
+      '#type' => 'button',
+      '#value' => $this->t('Visualise WMS'),
+      '#attributes' => [
+        'type' => 'button',
+        'class' => ['metsis-wms-trigger', 'button--secondary'],
+        'aria-controls' => $target_id,
+        'aria-expanded' => 'false',
+      ],
+    ];
+
+    (new Htmx())
+      ->get($wms_url)
+      ->onlyMainContent()
+      ->target('#' . $target_id)
+      ->swap('innerHTML')
+      ->indicator('#' . $spinner_id)
+      ->applyTo($button);
+
+    $operations['controls']['wms_trigger'] = $button;
+
+    $operations['wms_container'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => 'metsis-wms-container-' . $anchor_suffix,
+        'class' => ['metsis-wms-container'],
+      ],
+      'spinner' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'id' => $spinner_id,
+          'class' => ['htmx-indicator', 'metsis-wms-spinner'],
+          'aria-hidden' => 'true',
+        ],
+        'icon' => [
+          '#type' => 'icon',
+          '#pack_id' => 'metsis_drupal_spinners',
+          '#icon_id' => 'oval',
+          '#settings' => [
+            'stroke' => 'currentColor',
+            'height' => '14',
+            'width' => '14',
+          ],
+        ],
+      ],
+      'target' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'id' => $target_id,
+          'class' => ['metsis-wms-target'],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -988,7 +1084,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       '#value' => '×',
       '#attributes' => [
         'type' => 'button',
-        'class' => ['metsis-plot-close'],
+        'class' => ['metsis-close-button', 'metsis-plot-close'],
         'aria-label' => (string) $this->t('Close plot'),
         'data-plot-trigger' => $plot_trigger_id,
       ],

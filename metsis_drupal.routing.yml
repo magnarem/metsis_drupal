@@ -98,3 +98,16 @@ metsis_drupal.wms:
     _controller: '\Drupal\metsis_drupal\Controller\WmsController'
   requirements:
     _permission: "access content"
+    id: "[A-Za-z0-9_.:-]+"
+
+metsis_drupal.wms_htmx:
+  path: "/metsis/wms/htmx/{id}/{mount_id}"
+  defaults:
+    _title: "Wms"
+    _controller: '\Drupal\metsis_drupal\Controller\WmsController::viewHtmx'
+  requirements:
+    _permission: "access content"
+    id: "[A-Za-z0-9_.:-]+"
+    mount_id: "[A-Za-z0-9_-]+"
+  options:
+    _htmx_route: true

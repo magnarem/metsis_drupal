@@ -35,8 +35,9 @@ const baseMapAppSettings = {
       "EPSG:4326": "WGS 84",
       "EPSG:3857": "Pseudo-Mercator",
       "EPSG:32661": "UPS North (WGS 84)",
-      "EPSG:3574": "North Pole LAEA Atlantic (WGS 84)",
       "EPSG:32761": "UPS South (WGS 84)",
+      "EPSG:5041": "WGS 84 / UPS North (E,N)",
+      "EPSG:5042": "WGS 84 / UPS South (E,N)",
     },
     defaultProjection: "EPSG:3857",
     defaultCenters: {
@@ -72,25 +73,33 @@ function getMountSelectors(settings) {
   return [DEFAULT_MOUNT_SELECTOR];
 }
 
-function buildMapAppSettings(settings) {
+function buildMapAppSettings(settings, selector) {
   const drupalConfig = settings?.mapApp ?? {};
+  const instanceConfig =
+    settings?.metsis_drupal?.map_app?.instances?.[selector] ?? {};
   const configuredProjection =
-    settings?.metsis_drupal?.map_app?.default_projection;
+    instanceConfig?.features?.defaultProjection ??
+    settings?.metsis_drupal?.map_app?.default_projection ??
+    drupalConfig?.features?.defaultProjection;
   const supportedProjections = {
     ...baseMapAppSettings.features.supportedProjections,
     ...(drupalConfig?.features?.supportedProjections ?? {}),
+    ...(instanceConfig?.features?.supportedProjections ?? {}),
   };
 
   const mergedSettings = {
     ...baseMapAppSettings,
     ...drupalConfig,
+    ...instanceConfig,
     mapOptions: {
       ...baseMapAppSettings.mapOptions,
       ...(drupalConfig.mapOptions ?? {}),
+      ...(instanceConfig.mapOptions ?? {}),
     },
     features: {
       ...baseMapAppSettings.features,
       ...(drupalConfig.features ?? {}),
+      ...(instanceConfig.features ?? {}),
       supportedProjections,
     },
   };
@@ -122,9 +131,9 @@ function selectorToOnceKey(selector) {
     Drupal.behaviors.metsisMapApp = {
       attach: function (context, settings) {
         const selectors = getMountSelectors(settings);
-        const mapAppSettings = buildMapAppSettings(settings);
 
         selectors.forEach((selector) => {
+          const mapAppSettings = buildMapAppSettings(settings, selector);
           once(
             `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
             selector,

@@ -189,7 +189,7 @@ const WMSResourcesOverlayControl = ({
             url: resource.url,
             params,
           }),
-          opacity: 0.65,
+          opacity: 1,
           zIndex: 30,
         });
 

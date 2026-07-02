@@ -91,7 +91,8 @@
             "php-http/discovery": true,
             "tbachert/spi": true,
             "wikimedia/composer-merge-plugin": true,
-            "phpdocumentor/shim": true
+            "phpdocumentor/shim": true,
+            "symfony/runtime": true
         }
     }
 }

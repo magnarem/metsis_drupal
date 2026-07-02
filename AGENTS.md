@@ -640,6 +640,7 @@ echo "memory_limit = 512M" >> .ddev/php/php.ini && ddev restart
 PROJECT-SPECIFIC SECTIONS BELOW
 Add sections specific to your project here
 ===========================================
+
 -->
 
 # <!--
@@ -898,6 +899,14 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 
 ```
 [Add entries here - newest first]
+
+2026-07-02 | TASK: Replaced deprecated check_markup() usage with processed_text render arrays for Drupal 11.4 compatibility
+           | FILES: src/Controller/MetadataDocumentController.php, src/Service/ResultRowRenderer.php
+           | NOTE: Abstract rendering now returns #type=processed_text arrays, markdown detection retained, and validation passed with phpunit (84 tests) + targeted phpstan (no errors)
+
+2026-07-02 | TASK: Added inline WMS visualisation button with HTMX fragment mount per result row
+           | FILES: src/Plugin/views/row/MetsisSearchRow.php, src/Controller/WmsController.php, metsis_drupal.routing.yml, js/metsis/metsis-map-app/src/index.jsx, src/Hook/MetsisThemeHooks.php, templates/metsis-wms-document.html.twig
+           | NOTE: Visualise WMS now loads a row-scoped HTMX fragment into a unique map app mount id, while preserving the existing full-page WMS route and avoiding config collisions with the main result map
 
 2026-06-25 | TASK: Tightened WMS auto-fit zoom to reduce empty map margins around selected extent
            | FILES: js/metsis/metsis-map-app/src/components/WMSLayerManager.jsx

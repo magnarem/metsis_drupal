@@ -101,12 +101,14 @@ final class ResultRowRenderer {
    *   The raw abstract text from Solr.
    *
    * @return array
-   *   Render array with '#markup' key containing the rendered HTML.
+   *   Processed text render array for the abstract field.
    */
   private function renderAbstractField(string $abstract_text): array {
     if (empty($abstract_text)) {
       return [
-        '#markup' => '',
+        '#type' => 'processed_text',
+        '#text' => '',
+        '#format' => 'metsis_html',
       ];
     }
 
@@ -119,31 +121,15 @@ final class ResultRowRenderer {
     // Choose filter format based on detection.
     $format = $is_markdown ? 'metsis_markdown' : 'metsis_html';
 
-    try {
-      $rendered = check_markup($abstract_text, $format);
-    }
-    catch (\Exception $e) {
-      // If markdown rendering fails, fall back to HTML format.
-      if ($is_markdown) {
-        $this->getLogger()->warning(
-          'Markdown rendering failed for abstract, falling back to metsis_html: @error',
-          ['@error' => $e->getMessage()]
-        );
-        $rendered = check_markup($abstract_text, 'metsis_html');
-      }
-      else {
-        throw $e;
-      }
-    }
-
-    // After markdown rendering, linkify any bare URLs that were not written
-    // as markdown links and therefore not wrapped in <a> tags.
+    // Linkify bare URLs before text filtering for markdown-enabled records.
     if ($is_markdown) {
-      $rendered = $this->metsisHelper->linkify((string) $rendered);
+      $abstract_text = $this->metsisHelper->linkify($abstract_text);
     }
 
     return [
-      '#markup' => $rendered ?? '',
+      '#type' => 'processed_text',
+      '#text' => $abstract_text,
+      '#format' => $format,
     ];
   }
 

@@ -234,31 +234,60 @@
   width: 100%;
 }
 
+/* Generic close button style matching metadata dialog close button */
+.metsis-close-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.metsis-close-button:hover,
+.metsis-close-button:focus-visible {
+  background: #e4eaf2;
+}
+
+/* Backward compatibility: plot close button is now styled with generic class */
 .metsis-plot-close {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  border: 1px solid #b10000;
-  border-radius: 999px;
-  background: #fff;
-  color: #b10000;
-  font-size: 1rem;
-  line-height: 1;
-  font-weight: 700;
-  cursor: pointer;
   z-index: 2;
-}
-
-.metsis-plot-close:hover,
-.metsis-plot-close:focus-visible {
-  background: #b10000;
-  color: #fff;
 }
 
 .metsis-plot-close.hidden {
   display: none;
+}
+
+/* WMS container spans full width of result row */
+.metsis-wms-container {
+  width: 100%;
+  position: relative;
+}
+
+/* Inline WMS shell keeps actions above the map mount without overlap. */
+.metsis-wms-inline-shell {
+  width: 100%;
+}
+
+.metsis-wms-inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+/* WMS map mount spans the full result-row width. */
+.metsis-wms-map {
+  width: 100%;
+  min-height: 400px;
+  position: relative;
 }
 
 /* style highlighted text */

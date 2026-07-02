@@ -35,14 +35,14 @@ The MapApp component is the parent component that dynamically includes child com
 
 #### Reusable components
 
-| Component Name     | Responsibility                                                                                        |
+| Component Name | Responsibility |
 | ------------------ | ----------------------------------------------------------------------------------------------------- | --- |
-| MapContainer       | Wraps the OpenLayers map and handles map state.                                                       |     |
-| BoundingBoxDrawer  | Allows users to draw a bounding box and triggers Search API queries.                                  |
-| GeoJSONLayer       | Displays GeoJSON features on the map.                                                                 |
-| WMSLayerManager    | Handles rendering of WMS layers for features with wms url.                                            |
-| GeocoderControl    | Provides a search bar for location-based filtering.                                                   |
-| LayerSwitcher      | Manages layer visibility, order, legends, and layer metadata.                                         |
+| MapContainer | Wraps the OpenLayers map and handles map state. | |
+| BoundingBoxDrawer | Allows users to draw a bounding box and triggers Search API queries. |
+| GeoJSONLayer | Displays GeoJSON features on the map. |
+| WMSLayerManager | Handles rendering of WMS layers for features with wms url. |
+| GeocoderControl | Provides a search bar for location-based filtering. |
+| LayerSwitcher | Manages layer visibility, order, legends, and layer metadata. |
 | ProjectionSwitcher | The ProjectionSwitcher component allows users to dynamically change the projection of the map's view. |
 
 ### Examples

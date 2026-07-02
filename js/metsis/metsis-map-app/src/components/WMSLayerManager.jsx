@@ -58,6 +58,13 @@ const WMSLayerManager = ({
   const [capabilitiesError, setCapabilitiesError] = useState("");
   const lastFittedLayerRef = useRef("");
 
+  // Track whether this is the first initialization
+  const isInitializingRef = useRef(true);
+  // Track the last user-selected layer (to preserve across projection changes)
+  const userSelectedLayerRef = useRef("");
+  // Track the last user-selected projection (to preserve across layer changes)
+  const userSelectedProjectionRef = useRef("");
+
   const endpoints = useMemo(() => normalizeEndpoints(wmsConfig), [wmsConfig]);
   const blacklistedLayersSet = useMemo(
     () => buildBlacklistedLayerSet(wmsConfig?.blacklistedLayers),
@@ -84,6 +91,7 @@ const WMSLayerManager = ({
     [endpoints, activeEndpointId],
   );
 
+  // Load capabilities when active endpoint changes.
   useEffect(() => {
     if (!activeEndpoint) {
       setAvailableLayers([]);
@@ -134,14 +142,39 @@ const WMSLayerManager = ({
         });
 
         setAvailableLayers(filteredLayers);
-        const initialLayer = selectInitialLayer(
-          filteredLayers,
-          wmsConfig?.preferredLayers,
-        );
-        setSelectedLayer(initialLayer);
+
+        // Only auto-select a layer if we're in initialization or the user hasn't selected one yet.
+        if (isInitializingRef.current || !userSelectedLayerRef.current) {
+          const initialLayer = selectInitialLayer(
+            filteredLayers,
+            wmsConfig?.preferredLayers,
+          );
+          setSelectedLayer(initialLayer);
+          userSelectedLayerRef.current = "";
+        } else {
+          // Check if the user's previously selected layer still exists in the new layers.
+          const userLayerExists = filteredLayers.some(
+            (layer) => layer.name === userSelectedLayerRef.current,
+          );
+          if (userLayerExists) {
+            setSelectedLayer(userSelectedLayerRef.current);
+          } else {
+            // If not, fall back to initial selection.
+            const initialLayer = selectInitialLayer(
+              filteredLayers,
+              wmsConfig?.preferredLayers,
+            );
+            setSelectedLayer(initialLayer);
+            userSelectedLayerRef.current = "";
+          }
+        }
+
+        if (isInitializingRef.current) {
+          isInitializingRef.current = false;
+        }
 
         const initialLayerDefinition = filteredLayers.find(
-          (layer) => layer.name === initialLayer,
+          (layer) => layer.name === selectedLayer,
         );
         setSelectedStyle(initialLayerDefinition?.styles?.[0]?.name || "");
       } catch (error) {
@@ -161,7 +194,12 @@ const WMSLayerManager = ({
     return () => {
       controller.abort();
     };
-  }, [activeEndpoint, blacklistedLayersSet, wmsConfig?.preferredLayers]);
+  }, [
+    activeEndpoint,
+    blacklistedLayersSet,
+    wmsConfig?.preferredLayers,
+    selectedLayer,
+  ]);
 
   useEffect(() => {
     const selectedLayerDefinition = availableLayers.find(
@@ -242,14 +280,16 @@ const WMSLayerManager = ({
       : [];
     const fallbackCode =
       currentProjection || mapInstance.getView()?.getProjection()?.getCode();
-    const targetProjection = chooseBestProjectionForExtent(
-      extentToFit,
-      supportedCodes,
-      {
-        preferredCode: "EPSG:32661",
-        fallbackCode,
-      },
-    );
+
+    // Only auto-switch projection on initialization, not on layer changes.
+    const shouldSwitchProjection = isInitializingRef.current;
+
+    const targetProjection = shouldSwitchProjection
+      ? chooseBestProjectionForExtent(extentToFit, supportedCodes, {
+          preferredCode: "EPSG:32661",
+          fallbackCode,
+        })
+      : null;
 
     console.info("[METSIS/WMS] Fit decision", {
       selectedLayer: selectedLayer || "all",
@@ -258,45 +298,70 @@ const WMSLayerManager = ({
       currentProjection,
       fallbackCode,
       targetProjection,
+      shouldSwitchProjection,
     });
 
-    if (!targetProjection) {
+    if (!targetProjection && shouldSwitchProjection) {
       return;
     }
 
-    const fitKey = `${selectedLayer || "all"}|${targetProjection}|${extentToFit.join(",")}`;
+    const fitProjection = targetProjection || fallbackCode;
+    const fitKey = `${selectedLayer || "all"}|${fitProjection}|${extentToFit.join(",")}`;
     if (lastFittedLayerRef.current === fitKey) {
       console.debug("[METSIS/WMS] Skipping duplicate fit", { fitKey });
       return;
     }
 
-    const switchedProjection = switchMapViewProjection(
-      mapInstance,
-      targetProjection,
-    );
-    const didFit = fitViewToGeographicExtent(
-      mapInstance,
-      extentToFit,
-      targetProjection,
-      {
-        maxZoom: 12,
-        padding: [16, 16, 16, 16],
-      },
-    );
+    if (shouldSwitchProjection && targetProjection) {
+      const switchedProjection = switchMapViewProjection(
+        mapInstance,
+        targetProjection,
+      );
+      const didFit = fitViewToGeographicExtent(
+        mapInstance,
+        extentToFit,
+        targetProjection,
+        {
+          maxZoom: 12,
+          padding: [16, 16, 16, 16],
+        },
+      );
 
-    const view = mapInstance.getView();
-    console.info("[METSIS/WMS] Applied map fit", {
-      switchedProjection,
-      didFit,
-      projection: view?.getProjection()?.getCode(),
-      center: view?.getCenter?.(),
-      zoom: view?.getZoom?.(),
-      resolution: view?.getResolution?.(),
-      fitKey,
-    });
+      const view = mapInstance.getView();
+      console.info("[METSIS/WMS] Applied map fit", {
+        switchedProjection,
+        didFit,
+        projection: view?.getProjection()?.getCode(),
+        center: view?.getCenter?.(),
+        zoom: view?.getZoom?.(),
+        resolution: view?.getResolution?.(),
+        fitKey,
+      });
 
-    if (typeof onProjectionChange === "function") {
-      onProjectionChange(targetProjection);
+      if (typeof onProjectionChange === "function") {
+        onProjectionChange(targetProjection);
+        userSelectedProjectionRef.current = targetProjection;
+      }
+    } else {
+      const didFit = fitViewToGeographicExtent(
+        mapInstance,
+        extentToFit,
+        fallbackCode,
+        {
+          maxZoom: 12,
+          padding: [16, 16, 16, 16],
+        },
+      );
+
+      const view = mapInstance.getView();
+      console.info("[METSIS/WMS] Applied map fit (preserving projection)", {
+        didFit,
+        projection: view?.getProjection()?.getCode(),
+        center: view?.getCenter?.(),
+        zoom: view?.getZoom?.(),
+        resolution: view?.getResolution?.(),
+        fitKey,
+      });
     }
 
     lastFittedLayerRef.current = fitKey;
@@ -308,6 +373,13 @@ const WMSLayerManager = ({
     currentProjection,
     onProjectionChange,
   ]);
+
+  // Handler for when user explicitly selects a layer.
+  const handleLayerChange = (event) => {
+    const newLayer = event.target.value;
+    userSelectedLayerRef.current = newLayer;
+    setSelectedLayer(newLayer);
+  };
 
   if (!endpoints.length) {
     return null;
@@ -342,10 +414,7 @@ const WMSLayerManager = ({
         <>
           <label>
             Layer
-            <select
-              value={selectedLayer}
-              onChange={(event) => setSelectedLayer(event.target.value)}
-            >
+            <select value={selectedLayer} onChange={handleLayerChange}>
               {availableLayers.map((layer) => (
                 <option key={layer.name} value={layer.name}>
                   {layer.title}

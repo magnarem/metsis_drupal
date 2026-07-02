@@ -49,55 +49,30 @@ final class WmsController extends ControllerBase {
       throw new BadRequestHttpException('Invalid metadata identifier.');
     }
 
-    $document = $this->loadDocument($id);
-    if ($document === NULL) {
-      throw new NotFoundHttpException('Metadata document not found.');
+    return $this->buildDocumentRenderArray($id, 'metsis-map-app', TRUE);
+  }
+
+  /**
+   * Render the inline WMS fragment for HTMX row usage.
+   *
+   * @param string $id
+   *   Solr id.
+   * @param string $mount_id
+   *   Unique mount container id.
+   *
+   * @return array
+   *   Render array for HTMX replacement.
+   */
+  public function viewHtmx(string $id, string $mount_id): array {
+    if (!MetsisSolrUtilities::isValidIdentifier($id)) {
+      throw new BadRequestHttpException('Invalid metadata identifier.');
     }
 
-    $config = $this->config('metsis_drupal.settings');
-    $preferred_layers = $this->normalizeLayerList($config->get('preferred_wms_layers'));
-    $blacklisted_layers = $this->normalizeLayerList($config->get('blacklisted_wms_layers'));
+    if (!preg_match('/^[A-Za-z0-9_-]+$/', $mount_id)) {
+      throw new BadRequestHttpException('Invalid WMS mount identifier.');
+    }
 
-    $wms_endpoints = $this->buildWmsEndpoints($document['data_access_json'] ?? []);
-    $title = (string) ($document['title'] ?? $document['metadata_identifier'] ?? $id);
-
-    return [
-      '#theme' => 'metsis_wms_document',
-      '#id' => $id,
-      '#title' => $title,
-      '#metadata_identifier' => (string) ($document['metadata_identifier'] ?? $id),
-      '#wms_endpoints' => $wms_endpoints,
-      '#attached' => [
-        'library' => [
-          'metsis_drupal/metsis_metadata_document',
-          'metsis_drupal/metsis_map',
-        ],
-        'drupalSettings' => [
-          'mapApp' => [
-            'features' => [
-              'wms' => !empty($wms_endpoints),
-              'wmsEndpoints' => $wms_endpoints,
-              'wmsPreferredLayers' => $preferred_layers,
-              'wmsBlacklistedLayers' => $blacklisted_layers,
-              'wmsUrl' => $wms_endpoints[0]['serviceUrl'] ?? NULL,
-              'defaultWmsLayers' => [],
-              'layerSwitcher' => TRUE,
-              'defaultProjection' => "EPSG:32661",
-            ],
-          ],
-          'metsis_drupal' => [
-            'map_app' => [
-              'mount_selectors' => ['#metsis-map-app'],
-              'default_projection' => $config->get('map_default_projection') ?? 'EPSG:3857',
-            ],
-          ],
-        ],
-      ],
-      '#cache' => [
-        'contexts' => ['url.path'],
-        'max-age' => 300,
-      ],
-    ];
+    return $this->buildDocumentRenderArray($id, $mount_id, FALSE);
   }
 
   /**
@@ -116,6 +91,106 @@ final class WmsController extends ControllerBase {
       'title',
       'data_access_json:[json]',
     ]);
+  }
+
+  /**
+   * Build the WMS render array for the full page or HTMX fragment.
+   *
+   * @param string $id
+   *   Solr id.
+   * @param string $mount_id
+   *   DOM id for the map mount point.
+   * @param bool $include_global_map_app
+   *   Whether to attach the legacy global mapApp config.
+   *
+   * @return array
+   *   Render array.
+   */
+  private function buildDocumentRenderArray(string $id, string $mount_id, bool $include_global_map_app): array {
+    $document = $this->loadDocument($id);
+    if ($document === NULL) {
+      throw new NotFoundHttpException('Metadata document not found.');
+    }
+
+    $config = $this->config('metsis_drupal.settings');
+    $preferred_layers = $this->normalizeLayerList($config->get('preferred_wms_layers'));
+    $blacklisted_layers = $this->normalizeLayerList($config->get('blacklisted_wms_layers'));
+    $wms_endpoints = $this->buildWmsEndpoints($document['data_access_json'] ?? []);
+    $title = (string) ($document['title'] ?? $document['metadata_identifier'] ?? $id);
+    $mount_selector = '#' . $mount_id;
+
+    $drupal_settings = [
+      'metsis_drupal' => [
+        'map_app' => [
+          'mount_selectors' => [$mount_selector],
+          'instances' => [
+            $mount_selector => [
+              'features' => [
+                'geojson' => FALSE,
+                'boundingBox' => FALSE,
+                'wms' => !empty($wms_endpoints),
+                'wmsEndpoints' => $wms_endpoints,
+                'wmsPreferredLayers' => $preferred_layers,
+                'wmsBlacklistedLayers' => $blacklisted_layers,
+                'wmsUrl' => $wms_endpoints[0]['serviceUrl'] ?? NULL,
+                'defaultWmsLayers' => [],
+                'geocoder' => FALSE,
+                'layerSwitcher' => TRUE,
+                'projectionSwitcher' => TRUE,
+                'supportedProjections' => [
+                  'EPSG:4326' => 'WGS 84',
+                  'EPSG:3857' => 'Pseudo-Mercator',
+                  'EPSG:32661' => 'UPS North (WGS 84)',
+                  'EPSG:32761' => 'UPS South (WGS 84)',
+                  'EPSG:5041' => 'WGS 84 / UPS North (E,N)',
+                  'EPSG:5042' => 'WGS 84 / UPS South (E,N)',
+                ],
+                'defaultProjection' => (string) ($config->get('map_default_projection') ?? 'EPSG:3857'),
+              ],
+            ],
+          ],
+          'default_projection' => $config->get('map_default_projection') ?? 'EPSG:3857',
+        ],
+      ],
+    ];
+
+    if ($include_global_map_app) {
+      $drupal_settings['mapApp'] = [
+        'features' => [
+          'wms' => !empty($wms_endpoints),
+          'wmsEndpoints' => $wms_endpoints,
+          'wmsPreferredLayers' => $preferred_layers,
+          'wmsBlacklistedLayers' => $blacklisted_layers,
+          'wmsUrl' => $wms_endpoints[0]['serviceUrl'] ?? NULL,
+          'defaultWmsLayers' => [],
+          'layerSwitcher' => TRUE,
+
+        ],
+      ];
+    }
+
+    $build = [
+      '#theme' => 'metsis_wms_document',
+      '#id' => $id,
+      '#title' => $title,
+      '#metadata_identifier' => (string) ($document['metadata_identifier'] ?? $id),
+      '#wms_endpoints' => $wms_endpoints,
+      '#mount_id' => $mount_id,
+      '#inline_mode' => !$include_global_map_app,
+      '#attached' => [
+        'library' => [
+          'metsis_drupal/metsis_metadata_document',
+          'metsis_drupal/metsis_map',
+        ],
+        'drupalSettings' => $drupal_settings,
+      ],
+      '#cache' => [
+        'contexts' => ['url.path'],
+        'max-age' => 300,
+      ],
+    ];
+
+    return $build;
   }
 
   /**
