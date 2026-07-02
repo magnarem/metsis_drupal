@@ -554,7 +554,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $download_url = Url::fromRoute(
         'metsis_drupal.metadata_export_download',
         ['id' => $metadata_identifier, 'type' => $type_key],
-        ['absolute' => TRUE]
+        ['absolute' => FALSE]
       );
 
       $htmx_url = Url::fromRoute(
@@ -581,7 +581,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       (new Htmx())
         ->get($htmx_url)
         ->swap('none')
-        ->indicator('#metsis-export-spinner')
+        // ->indicator('#metsis-export-spinner')
         ->onlyMainContent()
         ->redirectHeader($download_url)
         ->applyTo($export_button);

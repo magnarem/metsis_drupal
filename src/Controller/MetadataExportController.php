@@ -99,7 +99,7 @@ final class MetadataExportController extends ControllerBase {
     $download_url = Url::fromRoute(
       'metsis_drupal.metadata_export_download',
       ['id' => $id, 'type' => $type],
-      ['absolute' => TRUE]
+      ['absolute' => FALSE]
     );
 
     $build['link'] = [
