@@ -48,6 +48,7 @@ const WMSLayerManager = ({
   currentProjection,
   supportedProjectionCodes = [],
   onProjectionChange,
+  onWmsLayerChange,
 }) => {
   const [activeEndpointId, setActiveEndpointId] = useState("");
   const [availableLayers, setAvailableLayers] = useState([]);
@@ -57,6 +58,7 @@ const WMSLayerManager = ({
   const [isLoading, setIsLoading] = useState(false);
   const [capabilitiesError, setCapabilitiesError] = useState("");
   const lastFittedLayerRef = useRef("");
+  const wmsLayerRef = useRef(null);
 
   // Track whether this is the first initialization
   const isInitializingRef = useRef(true);
@@ -172,11 +174,6 @@ const WMSLayerManager = ({
         if (isInitializingRef.current) {
           isInitializingRef.current = false;
         }
-
-        const initialLayerDefinition = filteredLayers.find(
-          (layer) => layer.name === selectedLayer,
-        );
-        setSelectedStyle(initialLayerDefinition?.styles?.[0]?.name || "");
       } catch (error) {
         if (error?.name !== "AbortError") {
           setCapabilitiesError(
@@ -198,7 +195,6 @@ const WMSLayerManager = ({
     activeEndpoint,
     blacklistedLayersSet,
     wmsConfig?.preferredLayers,
-    selectedLayer,
   ]);
 
   useEffect(() => {
@@ -237,6 +233,17 @@ const WMSLayerManager = ({
     });
 
     mapInstance.addLayer(layer);
+    wmsLayerRef.current = layer;
+
+    // Notify parent of WMS layer change for legend display.
+    // hasLegend is forwarded so the parent can skip rendering LegendPanel
+    // for endpoints that don't advertise a LegendURL in their capabilities.
+    if (typeof onWmsLayerChange === "function") {
+      const hasLegend =
+        availableLayers.find((l) => l.name === selectedLayer)?.hasLegend ??
+        false;
+      onWmsLayerChange(layer, selectedLayer, selectedStyle, hasLegend);
+    }
 
     return () => {
       mapInstance.removeLayer(layer);
@@ -381,6 +388,16 @@ const WMSLayerManager = ({
     setSelectedLayer(newLayer);
   };
 
+  // Notify parent when layer or style selection changes (for legend display)
+  useEffect(() => {
+    if (typeof onWmsLayerChange === "function" && wmsLayerRef.current) {
+      const hasLegend =
+        availableLayers.find((l) => l.name === selectedLayer)?.hasLegend ??
+        false;
+      onWmsLayerChange(wmsLayerRef.current, selectedLayer, selectedStyle, hasLegend);
+    }
+  }, [selectedLayer, selectedStyle]);
+
   if (!endpoints.length) {
     return null;
   }
@@ -412,16 +429,31 @@ const WMSLayerManager = ({
 
       {!isLoading && !capabilitiesError && availableLayers.length > 0 && (
         <>
+          {selectedLayerDefinition && (
+            <div className="wms-layer-info">
+              {selectedLayerDefinition.title && (
+                <div className="wms-layer-title">
+                  {selectedLayerDefinition.title}
+                </div>
+              )}
+              {selectedLayerDefinition.abstract && (
+                <div className="wms-layer-abstract">
+                  {selectedLayerDefinition.abstract}
+                </div>
+              )}
+            </div>
+          )}
           <label>
             Layer
             <select value={selectedLayer} onChange={handleLayerChange}>
               {availableLayers.map((layer) => (
                 <option key={layer.name} value={layer.name}>
-                  {layer.title}
+                  {layer.name || layer.title}
                 </option>
               ))}
             </select>
           </label>
+
 
           {selectedLayerDefinition?.styles?.length > 0 && (
             <label>

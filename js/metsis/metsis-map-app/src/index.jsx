@@ -118,6 +118,55 @@ function selectorToOnceKey(selector) {
   return selector.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
+// ---------------------------------------------------------------------------
+// Explicit mount API
+// ---------------------------------------------------------------------------
+// Called from hx-on:htmx:AfterSettle on the WMS trigger button so the map
+// app initializes (and re-initializes) reliably in HTMX-swapped content.
+// Bypasses Drupal.behaviors / once() entirely for HTMX usage.
+window.MetsisMapApp = {
+  /**
+   * Mount (or re-mount) MapApp on a specific DOM element.
+   *
+   * Reads instance config from the element's data-metsis-map-config JSON
+   * attribute. Falls back to an empty config (base defaults only) when the
+   * attribute is absent.
+   *
+   * @param {string} selector - CSS selector for the mount element.
+   */
+  mount(selector) {
+    const elem = document.querySelector(selector);
+    if (!elem) {
+      console.warn("[METSIS MapApp] mount(): no element for selector", selector);
+      return;
+    }
+
+    let instanceConfig = {};
+    const rawConfig = elem.dataset?.metsisMapConfig;
+    if (rawConfig) {
+      try {
+        instanceConfig = JSON.parse(rawConfig);
+      } catch (err) {
+        console.warn("[METSIS MapApp] mount(): failed to parse data-metsis-map-config", err);
+      }
+    }
+
+    // Wrap instanceConfig in the shape buildMapAppSettings expects.
+    const settings = {
+      metsis_drupal: {
+        map_app: {
+          mount_selectors: [selector],
+          instances: { [selector]: instanceConfig },
+        },
+      },
+    };
+
+    const config = buildMapAppSettings(settings, selector);
+    console.info("[METSIS MapApp] mount()", selector, config);
+    render(<MapApp config={config} />, elem);
+  },
+};
+
 /**
  * Drupal behavior for the MapApp.
  *
@@ -126,8 +175,11 @@ function selectorToOnceKey(selector) {
  * @prop {Function} attach
  *   Attaches the map to the map container.
  */
-(
-  function ($, Drupal, once) {
+if (
+  typeof window.Drupal !== "undefined" &&
+  typeof window.once !== "undefined"
+) {
+  (function ($, Drupal, once) {
     Drupal.behaviors.metsisMapApp = {
       attach: function (context, settings) {
         const selectors = getMountSelectors(settings);
@@ -148,5 +200,34 @@ function selectorToOnceKey(selector) {
         });
       },
     };
+  })(window.jQuery, window.Drupal, window.once);
+} else if (import.meta.env.MODE === "development") {
+  // Dev-mode fallback: Drupal and once are absent (plain Vite dev server).
+  // Mount directly on the default selector so the app renders in isolation.
+  console.info(
+    "[METSIS MapApp] Drupal behaviour system not detected — using dev-mode direct mount.",
+  );
+
+  const devMount = () => {
+    const selectors = getMountSelectors({});
+    selectors.forEach((selector) => {
+      const elem = document.querySelector(selector);
+      if (!elem) {
+        console.warn(
+          `[METSIS MapApp] Dev mount: no element found for selector "${selector}". ` +
+            `Add <div id="metsis-map-app"></div> to your dev HTML page.`,
+        );
+        return;
+      }
+      const devSettings = buildMapAppSettings({}, selector);
+      console.log("[METSIS MapApp] Dev-mode render into", selector, devSettings);
+      render(<MapApp config={devSettings} />, elem);
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", devMount);
+  } else {
+    devMount();
   }
-)(window.jQuery, window.Drupal, window.once);
+}

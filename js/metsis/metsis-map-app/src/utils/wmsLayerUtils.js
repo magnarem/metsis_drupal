@@ -8,16 +8,25 @@ export function collectNamedLayers(layer, layers = [], inheritedExtent = null) {
   const geographicExtent = extractLayerGeographicExtent(layer, inheritedExtent);
 
   if (typeof layer.Name === "string" && layer.Name.trim() !== "") {
+    const styles = Array.isArray(layer.Style)
+      ? layer.Style.map((style) => ({
+          name: style?.Name || "",
+          title: style?.Title || style?.Name || "",
+          // LegendURL declared by the server in capabilities — null when absent.
+          legendUrl:
+            style?.LegendURL?.[0]?.OnlineResource?.["xlink:href"] ||
+            null,
+        })).filter((style) => style.name)
+      : [];
+
     layers.push({
       name: layer.Name,
       title: layer.Title || layer.Name,
+      abstract: layer.Abstract || null,
       geographicExtent,
-      styles: Array.isArray(layer.Style)
-        ? layer.Style.map((style) => ({
-            name: style?.Name || "",
-            title: style?.Title || style?.Name || "",
-          })).filter((style) => style.name)
-        : [],
+      styles,
+      // True only when at least one style advertises a LegendURL in capabilities.
+      hasLegend: styles.some((style) => !!style.legendUrl),
     });
   }
 

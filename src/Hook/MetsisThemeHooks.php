@@ -52,6 +52,7 @@ class MetsisThemeHooks {
           'wms_endpoints' => [],
           'mount_id' => 'metsis-map-app',
           'inline_mode' => FALSE,
+          'app_config' => NULL,
         ],
         'template' => 'metsis-wms-document',
       ],

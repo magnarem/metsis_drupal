@@ -20,10 +20,10 @@
         <div class="metsis-wms-inline-actions">
           <button type="button" class="metsis-close-button" data-metsis-wms-close aria-label="Close WMS visualization">&times;</button>
         </div>
-        <div id="{{ mount_id|default('metsis-map-app') }}" class="metsis-wms-map"></div>
+        <div id="{{ mount_id|default('metsis-map-app') }}" class="metsis-wms-map"{% if app_config %} data-metsis-map-config="{{ app_config|json_encode }}"{% endif %}></div>
       </div>
     {% else %}
-      <div id="{{ mount_id|default('metsis-map-app') }}" class="metsis-wms-map"></div>
+      <div id="{{ mount_id|default('metsis-map-app') }}" class="metsis-wms-map"{% if app_config %} data-metsis-map-config="{{ app_config|json_encode }}"{% endif %}></div>
     {% endif %}
   </section>
 

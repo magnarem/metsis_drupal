@@ -1,0 +1,112 @@
+/* Legend panel styling for WMS visualizations */
+
+.metsis-legend-panel {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 200px;
+}
+
+.metsis-legend-header {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5;
+}
+
+.metsis-legend-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.metsis-legend-content {
+  padding: 0.75rem;
+  overflow-y: auto;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metsis-legend-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.metsis-legend-loading {
+  padding: 1rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.metsis-legend-error {
+  padding: 1rem;
+  text-align: center;
+  color: #d32f2f;
+  font-size: 0.9rem;
+  background: #ffebee;
+  border-radius: 4px;
+}
+
+/* Responsive layout: legend container alongside map */
+.metsis-wms-map-and-legend {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.metsis-wms-map-wrapper {
+  flex: 1;
+  min-width: 0; /* Prevent flex from expanding past content */
+}
+
+.metsis-wms-legend-wrapper {
+  flex: 0 0 auto;
+  min-width: 250px;
+  max-width: 300px;
+}
+
+/* Mobile: stack legend below map */
+@media (max-width: 768px) {
+  .metsis-wms-map-and-legend {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .metsis-wms-legend-wrapper {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .metsis-legend-content {
+    max-height: 300px;
+  }
+}
+
+/* Very small screens: reduce padding and sizes */
+@media (max-width: 480px) {
+  .metsis-legend-panel {
+    border-radius: 2px;
+  }
+
+  .metsis-legend-header {
+    padding: 0.5rem;
+  }
+
+  .metsis-legend-title {
+    font-size: 0.85rem;
+  }
+
+  .metsis-legend-content {
+    padding: 0.5rem;
+    max-height: 250px;
+  }
+}

@@ -654,6 +654,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ->target('#' . $target_id)
       ->swap('innerHTML')
       ->indicator('#' . $spinner_id)
+      ->on('htmx:AfterSettle', "window.MetsisMapApp && window.MetsisMapApp.mount('#" . $mount_id . "');")
       ->applyTo($button);
 
     $operations['controls']['wms_trigger'] = $button;
@@ -674,11 +675,11 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         'icon' => [
           '#type' => 'icon',
           '#pack_id' => 'metsis_drupal_spinners',
-          '#icon_id' => 'oval',
+          '#icon_id' => 'puff',
           '#settings' => [
-            'stroke' => 'currentColor',
-            'height' => '14',
-            'width' => '14',
+            'stroke' => '#0074D9',
+            'height' => '48',
+            'width' => '48',
           ],
         ],
       ],
@@ -1105,8 +1106,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       '#icon_id' => 'puff',
       '#settings' => [
         'stroke' => '#0074D9',
-        'height' => '72',
-        'width' => '72',
+        'height' => '48',
+        'width' => '48',
       ],
     ];
 

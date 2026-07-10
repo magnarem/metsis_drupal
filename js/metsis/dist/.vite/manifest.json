@@ -266,8 +266,8 @@
     "file": "assets/obj-CzgZoove.js",
     "name": "obj"
   },
-  "_preact-Cp_eth4C.js": {
-    "file": "assets/preact-Cp_eth4C.js",
+  "_preact-CSK6-Yr8.js": {
+    "file": "assets/preact-CSK6-Yr8.js",
     "name": "preact"
   },
   "_preload-helper-DYl5dUZ5.js": {
@@ -334,35 +334,35 @@
     ]
   },
   "metsis-map-app/src/components/BoundingBoxDrawer.jsx": {
-    "file": "assets/BoundingBoxDrawer-tuCs6BX0.js",
+    "file": "assets/BoundingBoxDrawer-CVcSbMuj.js",
     "name": "BoundingBoxDrawer",
     "src": "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
     "isDynamicEntry": true,
     "imports": [
-      "_preact-Cp_eth4C.js",
+      "_preact-CSK6-Yr8.js",
       "_Vector-Cg05vLXf.js",
       "_Vector-BkKhpkCV.js",
       "node_modules/ol/interaction/Draw.js"
     ]
   },
   "metsis-map-app/src/components/WMSLayerManager.jsx": {
-    "file": "assets/WMSLayerManager-OZ4DEGKU.js",
+    "file": "assets/WMSLayerManager-QKxgVTJD.js",
     "name": "WMSLayerManager",
     "src": "metsis-map-app/src/components/WMSLayerManager.jsx",
     "isDynamicEntry": true,
     "imports": [
-      "_preact-Cp_eth4C.js",
+      "_preact-CSK6-Yr8.js",
       "_Tile-beKRRYE9.js",
       "metsis-map-app/src/index.jsx"
     ]
   },
   "metsis-map-app/src/index.jsx": {
-    "file": "assets/metsisMapApp-CD9_sTkH.js",
+    "file": "assets/metsisMapApp-0K1H4skj.js",
     "name": "metsisMapApp",
     "src": "metsis-map-app/src/index.jsx",
     "isEntry": true,
     "imports": [
-      "_preact-Cp_eth4C.js",
+      "_preact-CSK6-Yr8.js",
       "_Object-DcRN1Tfk.js",
       "_obj-CzgZoove.js",
       "_dom-CIPOO0EY.js",
@@ -389,7 +389,7 @@
       "metsis-map-app/src/components/WMSLayerManager.jsx"
     ],
     "css": [
-      "assets/metsisMapApp-5erRynPY.css",
+      "assets/metsisMapApp-pZOIEDWK.css",
       "assets/olCss-c_1sG1-7.css"
     ]
   },

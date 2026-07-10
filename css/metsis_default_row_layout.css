@@ -230,6 +230,20 @@
   display: none;
 }
 
+.metsis-wms-spinner {
+  /* Use display:none so the hidden state takes no vertical space.
+     Overrides HTMX's default opacity:0 technique for htmx-indicator elements. */
+  display: none;
+  opacity: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.metsis-wms-spinner.htmx-request {
+  display: flex;
+}
+
 .metsis-plot-target {
   width: 100%;
 }

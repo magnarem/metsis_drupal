@@ -177,6 +177,7 @@ final class WmsController extends ControllerBase {
       '#wms_endpoints' => $wms_endpoints,
       '#mount_id' => $mount_id,
       '#inline_mode' => !$include_global_map_app,
+      '#app_config' => $drupal_settings['metsis_drupal']['map_app']['instances'][$mount_selector],
       '#attached' => [
         'library' => [
           'metsis_drupal/metsis_metadata_document',
