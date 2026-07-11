@@ -20,7 +20,6 @@ import "./projections";
 // Some basic logging to confirm the app is running and in which mode.
 console.log("Metsis Map App running in " + import.meta.env.MODE + " mode.");
 
-
 const DEFAULT_MOUNT_SELECTOR = "#metsis-map-app";
 
 // Initial configuration
@@ -153,27 +152,29 @@ export function initMapApp(elem, config) {
  * @prop {Drupal~behaviorAttach} attach
  *   Attaches the map to the map container.
  */
-(function (Drupal, once) {
-  Drupal.behaviors.metsisMapApp = {
-    attach: function (context, settings) {
-      const selectors = getMountSelectors(settings);
+(
+  function (Drupal, once) {
+    Drupal.behaviors.metsisMapApp = {
+      attach: function (context, settings) {
+        const selectors = getMountSelectors(settings);
 
-      selectors.forEach((selector) => {
-        const mapAppSettings = buildMapAppSettings(settings, selector);
+        selectors.forEach((selector) => {
+          const mapAppSettings = buildMapAppSettings(settings, selector);
 
-        once(
-          `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
-          selector,
-          context,
-        ).forEach((elem) => {
-          console.log(
-            "METSIS MapApp Behaviour...initialize map app",
+          once(
+            `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
             selector,
-            elem,
-          );
-          initMapApp(elem, mapAppSettings);
+            context,
+          ).forEach((elem) => {
+            console.log(
+              "METSIS MapApp Behaviour...initialize map app",
+              selector,
+              elem,
+            );
+            initMapApp(elem, mapAppSettings);
+          });
         });
-      });
-    },
-  };
-})(Drupal, once);
+      },
+    };
+  }
+)(Drupal, once);
