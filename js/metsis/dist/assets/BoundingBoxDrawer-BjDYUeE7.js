@@ -1,0 +1,2 @@
+import{a as e}from"./preact-CSK6-Yr8.js";import{t}from"./Vector-CvEd8OqJ.js";import{c as n,t as r}from"./Vector-DZb5m2x5.js";import i,{createBox as a}from"./Draw-wXCLZaJU.js";var o=({mapInstance:o,onBboxDrawn:s})=>(e(()=>{if(!o)return;let e=new r({strategy:n}),c=new t({source:e});o.addLayer(c);let l=new i({source:e,type:`Circle`,geometryFunction:a()});return o.addInteraction(l),l.on(`drawend`,e=>{s(e.feature.getGeometry().getExtent())}),()=>{o.removeInteraction(l),o.removeLayer(c)}},[o]),null);export{o as default};
+//# sourceMappingURL=BoundingBoxDrawer-BjDYUeE7.js.map

@@ -14,8 +14,7 @@ export function collectNamedLayers(layer, layers = [], inheritedExtent = null) {
           title: style?.Title || style?.Name || "",
           // LegendURL declared by the server in capabilities — null when absent.
           legendUrl:
-            style?.LegendURL?.[0]?.OnlineResource?.["xlink:href"] ||
-            null,
+            style?.LegendURL?.[0]?.OnlineResource?.["xlink:href"] || null,
         })).filter((style) => style.name)
       : [];
 

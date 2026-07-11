@@ -9,7 +9,12 @@ import "../styles/LegendPanel.css";
  * resolution-independent in this context and re-fetching on every zoom
  * would produce unnecessary network requests.
  */
-const LegendPanel = ({ mapInstance, wmsLayer, selectedLayer, selectedStyle }) => {
+const LegendPanel = ({
+  mapInstance,
+  wmsLayer,
+  selectedLayer,
+  selectedStyle,
+}) => {
   const [legendUrl, setLegendUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,17 +35,18 @@ const LegendPanel = ({ mapInstance, wmsLayer, selectedLayer, selectedStyle }) =>
         const wmsSource = wmsLayer.getSource();
 
         if (!wmsSource || typeof wmsSource.getLegendUrl !== "function") {
-          console.debug("[METSIS/WMS] Legend: No WMS source or getLegendUrl method");
+          console.debug(
+            "[METSIS/WMS] Legend: No WMS source or getLegendUrl method",
+          );
           setLegendUrl(null);
           setIsLoading(false);
           return;
         }
         let legendParams = selectedStyle ? { STYLE: selectedStyle } : undefined;
-        if (selectedStyle.includes('boxfill/')) {
-          const palette = selectedStyle.split('boxfill/').pop();
+        if (selectedStyle.includes("boxfill/")) {
+          const palette = selectedStyle.split("boxfill/").pop();
           legendParams = selectedStyle ? { PALETTE: palette } : undefined;
-        }
-        else {
+        } else {
           legendParams = selectedStyle ? { STYLE: selectedStyle } : undefined;
         }
 
@@ -52,7 +58,7 @@ const LegendPanel = ({ mapInstance, wmsLayer, selectedLayer, selectedStyle }) =>
         } else {
           console.info("[METSIS/WMS] Legend URL updated", {
             selectedLayer,
-            selectedStyle: selectedStyle || '',
+            selectedStyle: selectedStyle || "",
             resolution,
             url: url.substring(0, 100) + "...",
           });

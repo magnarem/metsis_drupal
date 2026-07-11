@@ -191,11 +191,7 @@ const WMSLayerManager = ({
     return () => {
       controller.abort();
     };
-  }, [
-    activeEndpoint,
-    blacklistedLayersSet,
-    wmsConfig?.preferredLayers,
-  ]);
+  }, [activeEndpoint, blacklistedLayersSet, wmsConfig?.preferredLayers]);
 
   useEffect(() => {
     const selectedLayerDefinition = availableLayers.find(
@@ -394,7 +390,12 @@ const WMSLayerManager = ({
       const hasLegend =
         availableLayers.find((l) => l.name === selectedLayer)?.hasLegend ??
         false;
-      onWmsLayerChange(wmsLayerRef.current, selectedLayer, selectedStyle, hasLegend);
+      onWmsLayerChange(
+        wmsLayerRef.current,
+        selectedLayer,
+        selectedStyle,
+        hasLegend,
+      );
     }
   }, [selectedLayer, selectedStyle]);
 
@@ -453,7 +454,6 @@ const WMSLayerManager = ({
               ))}
             </select>
           </label>
-
 
           {selectedLayerDefinition?.styles?.length > 0 && (
             <label>

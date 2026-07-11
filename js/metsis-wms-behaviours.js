@@ -37,5 +37,4 @@
     event.preventDefault();
     Drupal.metsis.rowWms.closeWms(closeButton);
   });
-
 })(Drupal);

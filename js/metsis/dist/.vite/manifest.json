@@ -1,225 +1,224 @@
 {
-  "_Attribution-BjSgKq_w.js": {
-    "file": "assets/Attribution-BjSgKq_w.js",
+  "_Attribution-D39Dj_fY.js": {
+    "file": "assets/Attribution-D39Dj_fY.js",
     "name": "Attribution",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
       "_css-DRC2w6h2.js"
     ]
   },
-  "_BaseVector-D-eIy7Sn.js": {
-    "file": "assets/BaseVector-D-eIy7Sn.js",
+  "_BaseVector-DTw4uaRX.js": {
+    "file": "assets/BaseVector-DTw4uaRX.js",
     "name": "BaseVector",
     "imports": [
-      "_Object-DcRN1Tfk.js",
-      "_obj-CzgZoove.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
       "_asserts-Ci2dTZ72.js",
       "_css-DRC2w6h2.js",
-      "_Event-DKAxxl5l.js",
+      "_Event-CVBVN5fs.js",
       "_rbush-CaohfFwn.js",
-      "_Image-DZRIREsR.js"
+      "_Image-DCdrmHEs.js"
     ]
   },
-  "_Collection-Dy7Iw503.js": {
-    "file": "assets/Collection-Dy7Iw503.js",
+  "_Collection-B-nO0Q7v.js": {
+    "file": "assets/Collection-B-nO0Q7v.js",
     "name": "Collection",
     "imports": [
-      "_Object-DcRN1Tfk.js"
+      "_Object-KObvlmXb.js"
     ]
   },
-  "_Event-DKAxxl5l.js": {
-    "file": "assets/Event-DKAxxl5l.js",
+  "_Event-CVBVN5fs.js": {
+    "file": "assets/Event-CVBVN5fs.js",
     "name": "Event",
     "imports": [
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
       "_asserts-Ci2dTZ72.js",
-      "_View-4jmXZq2T.js",
-      "_proj-zpm_m-fU.js"
+      "_View-kHCfoCFc.js",
+      "_proj-BTFlkeyX.js"
     ]
   },
-  "_Feature-C30AYpUs.js": {
-    "file": "assets/Feature-C30AYpUs.js",
+  "_Feature-TnNfZwLy.js": {
+    "file": "assets/Feature-TnNfZwLy.js",
     "name": "Feature",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_asserts-Ci2dTZ72.js"
     ]
   },
-  "_GeometryCollection-CC7PZNYx.js": {
-    "file": "assets/GeometryCollection-CC7PZNYx.js",
+  "_GeometryCollection-CRttM0vr.js": {
+    "file": "assets/GeometryCollection-CRttM0vr.js",
     "name": "GeometryCollection",
     "imports": [
-      "_Object-DcRN1Tfk.js",
-      "_proj-zpm_m-fU.js",
-      "_Polygon-BYsohQeL.js"
+      "_Object-KObvlmXb.js",
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Polygon-D4AnKUYS.js",
+      "_Vector-CvEd8OqJ.js",
+      "_Vector-DZb5m2x5.js"
     ]
   },
-  "_Image-DZRIREsR.js": {
-    "file": "assets/Image-DZRIREsR.js",
+  "_Image-DCdrmHEs.js": {
+    "file": "assets/Image-DCdrmHEs.js",
     "name": "Image",
     "imports": [
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js"
     ]
   },
-  "_Layer-_2GWuuoz.js": {
-    "file": "assets/Layer-_2GWuuoz.js",
+  "_Layer-BaqBV8C6.js": {
+    "file": "assets/Layer-BaqBV8C6.js",
     "name": "Layer",
     "imports": [
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
-      "_proj-zpm_m-fU.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Event-DKAxxl5l.js",
-      "_Image-DZRIREsR.js"
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Event-CVBVN5fs.js"
     ]
   },
-  "_Map-Bm_zeUVR.js": {
-    "file": "assets/Map-Bm_zeUVR.js",
+  "_Map-JMXfwO7s.js": {
+    "file": "assets/Map-JMXfwO7s.js",
     "name": "Map",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Collection-Dy7Iw503.js",
-      "_Object-DcRN1Tfk.js",
-      "_obj-CzgZoove.js",
-      "_Pointer-CZc-Rvl4.js",
+      "_Collection-B-nO0Q7v.js",
+      "_Object-KObvlmXb.js",
+      "_Pointer-BSC-sq3o.js",
       "_dom-CIPOO0EY.js",
-      "_Attribution-BjSgKq_w.js",
+      "_Attribution-D39Dj_fY.js",
       "_TileState-tX7xXwrc.js",
       "_asserts-Ci2dTZ72.js",
-      "_View-4jmXZq2T.js",
-      "_proj-zpm_m-fU.js",
+      "_View-kHCfoCFc.js",
+      "_proj-BTFlkeyX.js",
       "_easing-BirBLo4L.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Polygon-BYsohQeL.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Polygon-D4AnKUYS.js",
       "_css-DRC2w6h2.js",
-      "_defaults-C93AZFyi.js",
-      "_Event-DKAxxl5l.js",
-      "_Image-DZRIREsR.js",
-      "_BaseVector-D-eIy7Sn.js"
+      "_defaults-DvkOnEE7.js",
+      "_Event-CVBVN5fs.js",
+      "_Image-DCdrmHEs.js",
+      "_BaseVector-DTw4uaRX.js"
     ]
   },
-  "_OSM-BsffQ9QZ.js": {
-    "file": "assets/OSM-BsffQ9QZ.js",
+  "_OSM-D3lQ1R8e.js": {
+    "file": "assets/OSM-D3lQ1R8e.js",
     "name": "OSM",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
-      "_dom-CIPOO0EY.js",
-      "_TileState-tX7xXwrc.js",
-      "_asserts-Ci2dTZ72.js",
-      "_proj-zpm_m-fU.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Image-DZRIREsR.js",
-      "_tilecoord-0vHFieYs.js",
-      "_Source-BLhW9dQt.js"
+      "_TileImage-B9mqSDpC.js"
     ]
   },
-  "_Object-DcRN1Tfk.js": {
-    "file": "assets/Object-DcRN1Tfk.js",
-    "name": "Object",
-    "imports": [
-      "_obj-CzgZoove.js"
-    ]
+  "_Object-KObvlmXb.js": {
+    "file": "assets/Object-KObvlmXb.js",
+    "name": "Object"
   },
-  "_Pointer-CZc-Rvl4.js": {
-    "file": "assets/Pointer-CZc-Rvl4.js",
+  "_Pointer-BSC-sq3o.js": {
+    "file": "assets/Pointer-BSC-sq3o.js",
     "name": "Pointer",
     "imports": [
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
       "_easing-BirBLo4L.js"
     ]
   },
-  "_Polygon-BYsohQeL.js": {
-    "file": "assets/Polygon-BYsohQeL.js",
+  "_Polygon-D4AnKUYS.js": {
+    "file": "assets/Polygon-D4AnKUYS.js",
     "name": "Polygon",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
-      "_proj-zpm_m-fU.js",
-      "_intersectsextent-C3nCR1Tf.js"
+      "_Object-KObvlmXb.js",
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js"
     ]
   },
-  "_Source-BLhW9dQt.js": {
-    "file": "assets/Source-BLhW9dQt.js",
+  "_Source-DtP32c0L.js": {
+    "file": "assets/Source-DtP32c0L.js",
     "name": "Source",
     "imports": [
-      "_Object-DcRN1Tfk.js",
-      "_proj-zpm_m-fU.js"
+      "_Object-KObvlmXb.js",
+      "_proj-BTFlkeyX.js"
     ]
   },
-  "_Tile-beKRRYE9.js": {
-    "file": "assets/Tile-beKRRYE9.js",
+  "_Tile-0JKsnaqf.js": {
+    "file": "assets/Tile-0JKsnaqf.js",
     "name": "Tile",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_TileState-tX7xXwrc.js",
       "_asserts-Ci2dTZ72.js",
-      "_proj-zpm_m-fU.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Event-DKAxxl5l.js",
-      "_Image-DZRIREsR.js",
-      "_tilecoord-0vHFieYs.js",
-      "_Layer-_2GWuuoz.js"
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Event-CVBVN5fs.js",
+      "_Image-DCdrmHEs.js",
+      "_tilecoord-BRdHvmvU.js",
+      "_Layer-BaqBV8C6.js"
+    ]
+  },
+  "_TileImage-B9mqSDpC.js": {
+    "file": "assets/TileImage-B9mqSDpC.js",
+    "name": "TileImage",
+    "imports": [
+      "_Object-KObvlmXb.js",
+      "_dom-CIPOO0EY.js",
+      "_TileState-tX7xXwrc.js",
+      "_asserts-Ci2dTZ72.js",
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Image-DCdrmHEs.js",
+      "_tilecoord-BRdHvmvU.js",
+      "_Source-DtP32c0L.js"
     ]
   },
   "_TileState-tX7xXwrc.js": {
     "file": "assets/TileState-tX7xXwrc.js",
     "name": "TileState"
   },
-  "_Vector-BkKhpkCV.js": {
-    "file": "assets/Vector-BkKhpkCV.js",
+  "_Vector-CvEd8OqJ.js": {
+    "file": "assets/Vector-CvEd8OqJ.js",
     "name": "Vector",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Collection-Dy7Iw503.js",
-      "_Object-DcRN1Tfk.js",
-      "_obj-CzgZoove.js",
-      "_asserts-Ci2dTZ72.js",
-      "_proj-zpm_m-fU.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Polygon-BYsohQeL.js",
-      "_rbush-CaohfFwn.js",
-      "_Source-BLhW9dQt.js",
-      "_length-BGvuF8Ew.js"
-    ]
-  },
-  "_Vector-Cg05vLXf.js": {
-    "file": "assets/Vector-Cg05vLXf.js",
-    "name": "Vector",
-    "imports": [
-      "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
-      "_obj-CzgZoove.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
-      "_View-4jmXZq2T.js",
-      "_proj-zpm_m-fU.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Polygon-BYsohQeL.js",
-      "_Event-DKAxxl5l.js",
-      "_Image-DZRIREsR.js",
-      "_BaseVector-D-eIy7Sn.js",
-      "_Layer-_2GWuuoz.js",
-      "_length-BGvuF8Ew.js"
+      "_View-kHCfoCFc.js",
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Polygon-D4AnKUYS.js",
+      "_Event-CVBVN5fs.js",
+      "_BaseVector-DTw4uaRX.js",
+      "_Layer-BaqBV8C6.js"
     ]
   },
-  "_View-4jmXZq2T.js": {
-    "file": "assets/View-4jmXZq2T.js",
+  "_Vector-DZb5m2x5.js": {
+    "file": "assets/Vector-DZb5m2x5.js",
+    "name": "Vector",
+    "imports": [
+      "_rolldown-runtime-DK3Fl9T5.js",
+      "_Collection-B-nO0Q7v.js",
+      "_Object-KObvlmXb.js",
+      "_asserts-Ci2dTZ72.js",
+      "_proj-BTFlkeyX.js",
+      "_intersectsextent-GN1Urj54.js",
+      "_Polygon-D4AnKUYS.js",
+      "_rbush-CaohfFwn.js",
+      "_Source-DtP32c0L.js"
+    ]
+  },
+  "_View-kHCfoCFc.js": {
+    "file": "assets/View-kHCfoCFc.js",
     "name": "View",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_asserts-Ci2dTZ72.js",
-      "_proj-zpm_m-fU.js",
+      "_proj-BTFlkeyX.js",
       "_easing-BirBLo4L.js",
-      "_Polygon-BYsohQeL.js"
+      "_Polygon-D4AnKUYS.js"
     ]
   },
   "_asserts-Ci2dTZ72.js": {
@@ -230,14 +229,14 @@
     "file": "assets/css-DRC2w6h2.js",
     "name": "css"
   },
-  "_defaults-C93AZFyi.js": {
-    "file": "assets/defaults-C93AZFyi.js",
+  "_defaults-DvkOnEE7.js": {
+    "file": "assets/defaults-DvkOnEE7.js",
     "name": "defaults",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js",
-      "_Collection-Dy7Iw503.js",
-      "_Object-DcRN1Tfk.js",
-      "_Attribution-BjSgKq_w.js",
+      "_Collection-B-nO0Q7v.js",
+      "_Object-KObvlmXb.js",
+      "_Attribution-D39Dj_fY.js",
       "_easing-BirBLo4L.js",
       "_css-DRC2w6h2.js"
     ]
@@ -250,39 +249,31 @@
     "file": "assets/easing-BirBLo4L.js",
     "name": "easing"
   },
-  "_intersectsextent-C3nCR1Tf.js": {
-    "file": "assets/intersectsextent-C3nCR1Tf.js",
+  "_intersectsextent-GN1Urj54.js": {
+    "file": "assets/intersectsextent-GN1Urj54.js",
     "name": "intersectsextent",
     "imports": [
       "_asserts-Ci2dTZ72.js",
-      "_proj-zpm_m-fU.js"
+      "_proj-BTFlkeyX.js"
     ]
-  },
-  "_length-BGvuF8Ew.js": {
-    "file": "assets/length-BGvuF8Ew.js",
-    "name": "length"
-  },
-  "_obj-CzgZoove.js": {
-    "file": "assets/obj-CzgZoove.js",
-    "name": "obj"
   },
   "_preact-CSK6-Yr8.js": {
     "file": "assets/preact-CSK6-Yr8.js",
     "name": "preact"
   },
-  "_preload-helper-DYl5dUZ5.js": {
-    "file": "assets/preload-helper-DYl5dUZ5.js",
+  "_preload-helper-HclGiUj8.js": {
+    "file": "assets/preload-helper-HclGiUj8.js",
     "name": "preload-helper"
   },
-  "_proj-zpm_m-fU.js": {
-    "file": "assets/proj-zpm_m-fU.js",
+  "_proj-BTFlkeyX.js": {
+    "file": "assets/proj-BTFlkeyX.js",
     "name": "proj",
     "imports": [
       "_rolldown-runtime-DK3Fl9T5.js"
     ]
   },
-  "_proj4-Bz7IMdHl.js": {
-    "file": "assets/proj4-Bz7IMdHl.js",
+  "_proj4-g6uwh4_J.js": {
+    "file": "assets/proj4-g6uwh4_J.js",
     "name": "proj4"
   },
   "_rbush-CaohfFwn.js": {
@@ -293,40 +284,51 @@
     "file": "assets/rolldown-runtime-DK3Fl9T5.js",
     "name": "rolldown-runtime"
   },
-  "_tilecoord-0vHFieYs.js": {
-    "file": "assets/tilecoord-0vHFieYs.js",
+  "_tilecoord-BRdHvmvU.js": {
+    "file": "assets/tilecoord-BRdHvmvU.js",
     "name": "tilecoord",
     "imports": [
-      "_Object-DcRN1Tfk.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
       "_TileState-tX7xXwrc.js",
-      "_proj-zpm_m-fU.js",
+      "_proj-BTFlkeyX.js",
       "_easing-BirBLo4L.js",
-      "_intersectsextent-C3nCR1Tf.js",
-      "_Image-DZRIREsR.js"
+      "_intersectsextent-GN1Urj54.js",
+      "_Image-DCdrmHEs.js"
+    ]
+  },
+  "_wmsLayerUtils-Dc8z7boL.js": {
+    "file": "assets/wmsLayerUtils-Dc8z7boL.js",
+    "name": "wmsLayerUtils",
+    "imports": [
+      "_Object-KObvlmXb.js",
+      "_View-kHCfoCFc.js",
+      "_proj-BTFlkeyX.js",
+      "_tilecoord-BRdHvmvU.js",
+      "_TileImage-B9mqSDpC.js"
     ]
   },
   "bbox-map-filter/src/main.js": {
-    "file": "assets/bboxMapFilter-BZZaCXiD.js",
+    "file": "assets/bboxMapFilter-CIkz_7Yk.js",
     "name": "bboxMapFilter",
     "src": "bbox-map-filter/src/main.js",
     "isEntry": true,
     "imports": [
-      "_preload-helper-DYl5dUZ5.js"
+      "_preload-helper-HclGiUj8.js"
     ],
     "dynamicImports": [
-      "_Map-Bm_zeUVR.js",
-      "_View-4jmXZq2T.js",
-      "_Feature-C30AYpUs.js",
-      "_Polygon-BYsohQeL.js",
+      "_Map-JMXfwO7s.js",
+      "_View-kHCfoCFc.js",
+      "_Feature-TnNfZwLy.js",
+      "_Polygon-D4AnKUYS.js",
       "node_modules/ol/interaction/Draw.js",
-      "_defaults-C93AZFyi.js",
-      "_Tile-beKRRYE9.js",
-      "_OSM-BsffQ9QZ.js",
-      "_Vector-Cg05vLXf.js",
-      "_Vector-BkKhpkCV.js",
-      "_proj-zpm_m-fU.js",
-      "_Attribution-BjSgKq_w.js"
+      "_defaults-DvkOnEE7.js",
+      "_Tile-0JKsnaqf.js",
+      "_OSM-D3lQ1R8e.js",
+      "_Vector-CvEd8OqJ.js",
+      "_Vector-DZb5m2x5.js",
+      "_proj-BTFlkeyX.js",
+      "_Attribution-D39Dj_fY.js"
     ],
     "css": [
       "assets/bboxMapFilter-LOH7IlDV.css",
@@ -334,55 +336,54 @@
     ]
   },
   "metsis-map-app/src/components/BoundingBoxDrawer.jsx": {
-    "file": "assets/BoundingBoxDrawer-CVcSbMuj.js",
+    "file": "assets/BoundingBoxDrawer-BjDYUeE7.js",
     "name": "BoundingBoxDrawer",
     "src": "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_preact-CSK6-Yr8.js",
-      "_Vector-Cg05vLXf.js",
-      "_Vector-BkKhpkCV.js",
+      "_Vector-CvEd8OqJ.js",
+      "_Vector-DZb5m2x5.js",
       "node_modules/ol/interaction/Draw.js"
     ]
   },
   "metsis-map-app/src/components/WMSLayerManager.jsx": {
-    "file": "assets/WMSLayerManager-QKxgVTJD.js",
+    "file": "assets/WMSLayerManager-CM7He3Jz.js",
     "name": "WMSLayerManager",
     "src": "metsis-map-app/src/components/WMSLayerManager.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_preact-CSK6-Yr8.js",
-      "_Tile-beKRRYE9.js",
-      "metsis-map-app/src/index.jsx"
+      "_wmsLayerUtils-Dc8z7boL.js",
+      "_Tile-0JKsnaqf.js"
     ]
   },
   "metsis-map-app/src/index.jsx": {
-    "file": "assets/metsisMapApp-0K1H4skj.js",
+    "file": "assets/metsisMapApp-BqMLCGeI.js",
     "name": "metsisMapApp",
     "src": "metsis-map-app/src/index.jsx",
     "isEntry": true,
     "imports": [
       "_preact-CSK6-Yr8.js",
-      "_Object-DcRN1Tfk.js",
-      "_obj-CzgZoove.js",
+      "_Object-KObvlmXb.js",
       "_dom-CIPOO0EY.js",
-      "_Map-Bm_zeUVR.js",
-      "_Attribution-BjSgKq_w.js",
-      "_View-4jmXZq2T.js",
-      "_proj-zpm_m-fU.js",
-      "_Polygon-BYsohQeL.js",
+      "_Map-JMXfwO7s.js",
+      "_Attribution-D39Dj_fY.js",
+      "_View-kHCfoCFc.js",
+      "_proj-BTFlkeyX.js",
+      "_wmsLayerUtils-Dc8z7boL.js",
+      "_Polygon-D4AnKUYS.js",
       "_css-DRC2w6h2.js",
-      "_defaults-C93AZFyi.js",
-      "_BaseVector-D-eIy7Sn.js",
-      "_tilecoord-0vHFieYs.js",
-      "_Tile-beKRRYE9.js",
-      "_OSM-BsffQ9QZ.js",
-      "_Vector-Cg05vLXf.js",
-      "_Vector-BkKhpkCV.js",
-      "_Feature-C30AYpUs.js",
-      "_GeometryCollection-CC7PZNYx.js",
-      "_preload-helper-DYl5dUZ5.js",
-      "_proj4-Bz7IMdHl.js"
+      "_defaults-DvkOnEE7.js",
+      "_BaseVector-DTw4uaRX.js",
+      "_Tile-0JKsnaqf.js",
+      "_OSM-D3lQ1R8e.js",
+      "_Vector-CvEd8OqJ.js",
+      "_Vector-DZb5m2x5.js",
+      "_Feature-TnNfZwLy.js",
+      "_GeometryCollection-CRttM0vr.js",
+      "_preload-helper-HclGiUj8.js",
+      "_proj4-g6uwh4_J.js"
     ],
     "dynamicImports": [
       "metsis-map-app/src/components/BoundingBoxDrawer.jsx",
@@ -394,20 +395,20 @@
     ]
   },
   "node_modules/ol/interaction/Draw.js": {
-    "file": "assets/Draw-CuNdbh6g.js",
+    "file": "assets/Draw-wXCLZaJU.js",
     "name": "Draw",
     "src": "node_modules/ol/interaction/Draw.js",
     "isDynamicEntry": true,
     "imports": [
-      "_Object-DcRN1Tfk.js",
-      "_Pointer-CZc-Rvl4.js",
-      "_proj-zpm_m-fU.js",
-      "_Polygon-BYsohQeL.js",
-      "_BaseVector-D-eIy7Sn.js",
-      "_Vector-Cg05vLXf.js",
-      "_Vector-BkKhpkCV.js",
-      "_Feature-C30AYpUs.js",
-      "_GeometryCollection-CC7PZNYx.js"
+      "_Object-KObvlmXb.js",
+      "_Pointer-BSC-sq3o.js",
+      "_proj-BTFlkeyX.js",
+      "_Polygon-D4AnKUYS.js",
+      "_BaseVector-DTw4uaRX.js",
+      "_Vector-CvEd8OqJ.js",
+      "_Vector-DZb5m2x5.js",
+      "_Feature-TnNfZwLy.js",
+      "_GeometryCollection-CRttM0vr.js"
     ]
   },
   "node_modules/ol/ol.css": {

@@ -23,7 +23,8 @@ const MapApp = ({ config }) => {
   const [wmsLayer, setWmsLayer] = useState(null); // State to hold the WMS layer for legend display
   const [selectedWmsLayer, setSelectedWmsLayer] = useState(""); // Track selected layer name
   const [selectedWmsStyle, setSelectedWmsStyle] = useState(""); // Track selected style name
-  const [selectedWmsLayerHasLegend, setSelectedWmsLayerHasLegend] = useState(false);
+  const [selectedWmsLayerHasLegend, setSelectedWmsLayerHasLegend] =
+    useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,7 +68,12 @@ const MapApp = ({ config }) => {
   const WMSLayerManager = wmsLayerManagerModule?.component || null;
 
   // Handle WMS layer changes (for legend display)
-  const handleWmsLayerChange = (layer, selectedLayer = "", selectedStyle = "", hasLegend = false) => {
+  const handleWmsLayerChange = (
+    layer,
+    selectedLayer = "",
+    selectedStyle = "",
+    hasLegend = false,
+  ) => {
     setWmsLayer(layer);
     setSelectedWmsLayer(selectedLayer);
     setSelectedWmsStyle(selectedStyle);
@@ -143,16 +149,19 @@ const MapApp = ({ config }) => {
         </div>
 
         {/* Legend panel — only rendered when the selected layer advertises a LegendURL in its WMS capabilities */}
-        {config.features.wms && wmsLayer && olMap && selectedWmsLayerHasLegend && (
-          <div className="metsis-wms-legend-wrapper">
-            <LegendPanel
-              mapInstance={olMap}
-              wmsLayer={wmsLayer}
-              selectedLayer={selectedWmsLayer}
-              selectedStyle={selectedWmsStyle}
-            />
-          </div>
-        )}
+        {config.features.wms &&
+          wmsLayer &&
+          olMap &&
+          selectedWmsLayerHasLegend && (
+            <div className="metsis-wms-legend-wrapper">
+              <LegendPanel
+                mapInstance={olMap}
+                wmsLayer={wmsLayer}
+                selectedLayer={selectedWmsLayer}
+                selectedStyle={selectedWmsStyle}
+              />
+            </div>
+          )}
       </div>
 
       {/* Enable bounding box drawing if enabled */}
