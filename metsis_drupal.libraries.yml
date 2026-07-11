@@ -9,6 +9,7 @@ metsis_map:
   dependencies:
     - core/drupal
     - core/drupalSettings
+    - core/once
 
 bbox_map_filter:
   vite:
@@ -21,7 +22,6 @@ bbox_map_filter:
   dependencies:
     - core/drupal
     - core/drupalSettings
-    - core/jquery
     - core/once
 
 metsis_search_layout:

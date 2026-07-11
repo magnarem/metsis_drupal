@@ -376,11 +376,6 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $this->buildExportOptions($operations, $metadata_identifier, $row_id, $popover_id);
     }
 
-    // Add WMS visualisation if the row contains WMS data.
-    if ($metadata_identifier !== '' && $row_id !== '') {
-      $this->buildWmsVisualisationTrigger($operations, $solr_doc, $row_id, $metadata_identifier);
-    }
-
     // Add data access options if row id is available.
     if ($row_id !== '') {
       $this->buildDataAccessOptions($operations, $solr_doc, $row_id);
@@ -388,6 +383,11 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
 
     // Add plot trigger if applicable.
     $this->buildPlotTrigger($operations, $solr_doc, $row_id);
+
+    // Add WMS visualisation if the row contains WMS data.
+    if ($metadata_identifier !== '' && $row_id !== '') {
+      $this->buildWmsVisualisationTrigger($operations, $solr_doc, $row_id, $metadata_identifier);
+    }
 
     return $operations;
   }

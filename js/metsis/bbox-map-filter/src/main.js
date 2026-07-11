@@ -341,7 +341,8 @@ function drawBoundingBoxFromInputs(Polygon, Feature) {
  * @prop {Drupal~behaviorAttach} attach
  *   Attaches the map to the map container.
  */
-(function (Drupal, once) {
+(
+  function (Drupal, once) {
     Drupal.behaviors.BboxFilter = {
       attach: function (context) {
         once(

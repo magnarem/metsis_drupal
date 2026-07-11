@@ -177,29 +177,34 @@ Drupal.MetsisMapApp = {
  * @prop {Drupal~behaviorAttach} attach
  *   Attaches the map to the map container.
  */
-(function (Drupal, once) {
-  Drupal.behaviors.metsisMapApp = {
-    attach: function (context, settings) {
-      console.log("METSIS MapApp Behavior");
-      const selectors = getMountSelectors(settings);
-      console.log("METSIS MapApp Behavior...mounting map app on selectors", selectors);
+(
+  function (Drupal, once) {
+    Drupal.behaviors.metsisMapApp = {
+      attach: function (context, settings) {
+        console.log("METSIS MapApp Behavior");
+        const selectors = getMountSelectors(settings);
+        console.log(
+          "METSIS MapApp Behavior...mounting map app on selectors",
+          selectors,
+        );
 
-      selectors.forEach((selector) => {
-        const mapAppSettings = buildMapAppSettings(settings, selector);
+        selectors.forEach((selector) => {
+          const mapAppSettings = buildMapAppSettings(settings, selector);
 
-        once(
-          `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
-          selector,
-          context,
-        ).forEach((elem) => {
-          console.log(
-            "METSIS MapApp Behaviour...initialize map app",
+          once(
+            `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
             selector,
-            elem,
-          );
-          render(<MapApp config={mapAppSettings} />, elem);
+            context,
+          ).forEach((elem) => {
+            console.log(
+              "METSIS MapApp Behaviour...initialize map app",
+              selector,
+              elem,
+            );
+            render(<MapApp config={mapAppSettings} />, elem);
+          });
         });
-      });
-    },
-  };
-})(Drupal, once);
+      },
+    };
+  }
+)(Drupal, once);
