@@ -1,15 +1,25 @@
+/**
+ * @file
+ * Metsis Map App entry point.
+ *
+ * Minimal entry point that imports the mount module (plain JS) for Big Pipe
+ * compatibility, along with styles and projections.
+ */
+
 // Add debugging if we are in development mode
 if (import.meta.env.MODE === "development") {
   import("preact/debug");
 }
 
+import MapApp from "@components/MapApp.jsx";
 import { render } from "preact";
-import MapApp from "@components/MapApp";
+
 import "@styles/main.css";
 import "./projections";
 
 // Some basic logging to confirm the app is running and in which mode.
 console.log("Metsis Map App running in " + import.meta.env.MODE + " mode.");
+
 
 const DEFAULT_MOUNT_SELECTOR = "#metsis-map-app";
 
@@ -119,36 +129,51 @@ function selectorToOnceKey(selector) {
 }
 
 /**
+ * Initialize the MapApp component on a DOM element.
+ *
+ * Deferred JSX rendering — safe to call from Drupal behavior even when
+ * Big Pipe is enabled. Preact is ready by the time this is invoked.
+ *
+ * @param {Element} elem - The mount element.
+ * @param {Object} config - The resolved map app configuration.
+ */
+export function initMapApp(elem, config) {
+  console.log("[METSIS MapApp] initializing map app", elem, config);
+  render(<MapApp config={config} />, elem);
+}
+
+/**
  * Drupal behavior for the MapApp.
+ *
+ * Uses plain JavaScript (no JSX) at the module scope to avoid
+ * Big Pipe + JSX transpilation race conditions.
  *
  * @type {Drupal~behavior}
  *
  * @prop {Drupal~behaviorAttach} attach
  *   Attaches the map to the map container.
  */
-(
-  function (Drupal, once) {
-    Drupal.behaviors.metsisMapApp = {
-      attach: function (context, settings) {
-        const selectors = getMountSelectors(settings);
+(function (Drupal, once) {
+  Drupal.behaviors.metsisMapApp = {
+    attach: function (context, settings) {
+      const selectors = getMountSelectors(settings);
 
-        selectors.forEach((selector) => {
-          const mapAppSettings = buildMapAppSettings(settings, selector);
+      selectors.forEach((selector) => {
+        const mapAppSettings = buildMapAppSettings(settings, selector);
 
-          once(
-            `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
+        once(
+          `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
+          selector,
+          context,
+        ).forEach((elem) => {
+          console.log(
+            "METSIS MapApp Behaviour...initialize map app",
             selector,
-            context,
-          ).forEach((elem) => {
-            console.log(
-              "METSIS MapApp Behaviour...initialize map app",
-              selector,
-              elem,
-            );
-            render(<MapApp config={mapAppSettings} />, elem);
-          });
+            elem,
+          );
+          initMapApp(elem, mapAppSettings);
         });
-      },
-    };
-  }
-)(Drupal, once);
+      });
+    },
+  };
+})(Drupal, once);

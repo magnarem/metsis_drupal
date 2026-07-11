@@ -246,6 +246,12 @@
 
 .metsis-plot-target {
   width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* contain: content; */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 /* Generic close button style matching metadata dialog close button */
