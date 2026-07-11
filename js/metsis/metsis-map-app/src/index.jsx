@@ -118,57 +118,6 @@ function selectorToOnceKey(selector) {
   return selector.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
-// ---------------------------------------------------------------------------
-// Explicit mount API — called from hx-on:htmx:AfterSwap on the WMS trigger
-// so the map initializes (and re-initializes) reliably in HTMX-swapped content.
-// ---------------------------------------------------------------------------
-Drupal.MetsisMapApp = {
-  /**
-   * Mount (or re-mount) MapApp on a specific DOM element.
-   *
-   * Reads per-instance config from the element's data-metsis-map-config JSON
-   * attribute. Falls back to base defaults when the attribute is absent.
-   *
-   * @param {string} selector - CSS selector for the mount element.
-   */
-  mount(selector) {
-    const elem = document.querySelector(selector);
-    if (!elem) {
-      console.warn(
-        "[METSIS MapApp] mount(): no element for selector",
-        selector,
-      );
-      return;
-    }
-
-    let instanceConfig = {};
-    const rawConfig = elem.dataset?.metsisMapConfig;
-    if (rawConfig) {
-      try {
-        instanceConfig = JSON.parse(rawConfig);
-      } catch (err) {
-        console.warn(
-          "[METSIS MapApp] mount(): failed to parse data-metsis-map-config",
-          err,
-        );
-      }
-    }
-
-    const settings = {
-      metsis_drupal: {
-        map_app: {
-          mount_selectors: [selector],
-          instances: { [selector]: instanceConfig },
-        },
-      },
-    };
-
-    const config = buildMapAppSettings(settings, selector);
-    console.info("[METSIS MapApp] mount()", selector, config);
-    render(<MapApp config={config} />, elem);
-  },
-};
-
 /**
  * Drupal behavior for the MapApp.
  *
@@ -181,12 +130,7 @@ Drupal.MetsisMapApp = {
   function (Drupal, once) {
     Drupal.behaviors.metsisMapApp = {
       attach: function (context, settings) {
-        console.log("METSIS MapApp Behavior");
         const selectors = getMountSelectors(settings);
-        console.log(
-          "METSIS MapApp Behavior...mounting map app on selectors",
-          selectors,
-        );
 
         selectors.forEach((selector) => {
           const mapAppSettings = buildMapAppSettings(settings, selector);

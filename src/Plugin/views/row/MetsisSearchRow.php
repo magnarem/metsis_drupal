@@ -654,7 +654,6 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ->target('#' . $target_id)
       ->swap('innerHTML')
       ->indicator('#' . $spinner_id)
-      ->on('htmx:AfterSettle', "window.MetsisMapApp && window.MetsisMapApp.mount('#" . $mount_id . "');")
       ->applyTo($button);
 
     $operations['controls']['wms_trigger'] = $button;
