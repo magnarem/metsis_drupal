@@ -4,8 +4,7 @@ metsis_map:
     viteRoot: "/modules/custom/metsis_drupal/js/metsis"
     version: 1.x
   js:
-    js/metsis/metsis-map-app/src/index.jsx:
-      { attributes: { type: module }, defer: true, preprocess: false }
+    js/metsis/metsis-map-app/src/index.jsx: { attributes: { type: module } }
   dependencies:
     - core/drupal
     - core/drupalSettings
@@ -17,8 +16,7 @@ bbox_map_filter:
     viteRoot: "/modules/custom/metsis_drupal/js/metsis"
     version: 1.x
   js:
-    js/metsis/bbox-map-filter/src/main.js:
-      { attributes: { type: module }, defer: true, preprocess: false }
+    js/metsis/bbox-map-filter/src/main.js: { attributes: { type: module } }
   dependencies:
     - core/drupal
     - core/drupalSettings

@@ -31,11 +31,12 @@ selected_collections:
   SIOSIN: SIOSIN
   TONE: TONE
   YOPP: YOPP
-map_default_projection: 'EPSG:32661'
+map_default_projection: 'EPSG:3857'
 map_default_zoom: 7
 map_default_center_lat: 59.2
 map_default_center_lon: 13.4
-preferred_wms_layers: {  }
+preferred_wms_layers:
+  - true_color_vegetation
 blacklisted_wms_layers:
   - MS
   - lat

@@ -42,12 +42,14 @@ const LegendPanel = ({
           setIsLoading(false);
           return;
         }
-        let legendParams = selectedStyle ? { STYLE: selectedStyle } : undefined;
-        if (selectedStyle.includes("boxfill/")) {
-          const palette = selectedStyle.split("boxfill/").pop();
-          legendParams = selectedStyle ? { PALETTE: palette } : undefined;
+        const styleName =
+          typeof selectedStyle === "string" ? selectedStyle : "";
+        let legendParams = styleName ? { STYLE: styleName } : undefined;
+        if (styleName.includes("boxfill/")) {
+          const palette = styleName.split("boxfill/").pop();
+          legendParams = styleName ? { PALETTE: palette } : undefined;
         } else {
-          legendParams = selectedStyle ? { STYLE: selectedStyle } : undefined;
+          legendParams = styleName ? { STYLE: styleName } : undefined;
         }
 
         const url = wmsSource.getLegendUrl(resolution, legendParams);

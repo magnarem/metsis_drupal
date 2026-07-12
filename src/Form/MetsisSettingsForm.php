@@ -252,6 +252,8 @@ class MetsisSettingsForm extends ConfigFormBase {
         'EPSG:3857' => $this->t('Pseudo-Mercator (EPSG:3857)'),
         'EPSG:32661' => $this->t('UPS North – WGS 84 (EPSG:32661)'),
         'EPSG:32761' => $this->t('UPS South – WGS 84 (EPSG:32761)'),
+        'EPSG:5041' => $this->t('WGS 84 / UPS North (E,N)'),
+        'EPSG:5042' => $this->t('WGS 84 / UPS South (E,N)'),
       ],
       '#default_value' => $config->get('map_default_projection') ?? 'EPSG:3857',
     ];

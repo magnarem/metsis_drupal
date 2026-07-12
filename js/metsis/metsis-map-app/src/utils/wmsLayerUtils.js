@@ -1,5 +1,37 @@
 import { extractLayerGeographicExtent } from "@utils/mapProjection";
 
+function readLegendHref(legendUrl) {
+  if (!legendUrl) {
+    return null;
+  }
+
+  const entry = Array.isArray(legendUrl) ? legendUrl[0] : legendUrl;
+  if (!entry || typeof entry !== "object") {
+    return null;
+  }
+
+  const onlineResource = entry.OnlineResource;
+  if (typeof onlineResource === "string" && onlineResource.trim() !== "") {
+    return onlineResource;
+  }
+
+  if (onlineResource && typeof onlineResource === "object") {
+    const href =
+      onlineResource["xlink:href"] ||
+      onlineResource.href ||
+      onlineResource.Href ||
+      onlineResource.url;
+    if (typeof href === "string" && href.trim() !== "") {
+      return href;
+    }
+  }
+
+  const fallbackHref = entry["xlink:href"] || entry.href || entry.url;
+  return typeof fallbackHref === "string" && fallbackHref.trim() !== ""
+    ? fallbackHref
+    : null;
+}
+
 export function collectNamedLayers(layer, layers = [], inheritedExtent = null) {
   if (!layer || typeof layer !== "object") {
     return layers;
@@ -13,10 +45,17 @@ export function collectNamedLayers(layer, layers = [], inheritedExtent = null) {
           name: style?.Name || "",
           title: style?.Title || style?.Name || "",
           // LegendURL declared by the server in capabilities — null when absent.
-          legendUrl:
-            style?.LegendURL?.[0]?.OnlineResource?.["xlink:href"] || null,
-        })).filter((style) => style.name)
-      : [];
+          legendUrl: readLegendHref(style?.LegendURL),
+        }))
+      : layer?.Style && typeof layer.Style === "object"
+        ? [
+            {
+              name: layer.Style?.Name || "",
+              title: layer.Style?.Title || layer.Style?.Name || "",
+              legendUrl: readLegendHref(layer.Style?.LegendURL),
+            },
+          ]
+        : [];
 
     layers.push({
       name: layer.Name,

@@ -23,7 +23,7 @@ const MapContainer = ({ setMap, config, projection, children }) => {
     if (!mapRef.current || !projection) return;
 
     // Create OpenLayers map
-    console.log("Initializing OpenLayers map...", mapRef.current.id);
+    console.log("Initializing OpenLayers map...");
     console.log("Projection: ", projection);
     const scaleControl = new ScaleLine({
       units: "metric",
@@ -40,7 +40,10 @@ const MapContainer = ({ setMap, config, projection, children }) => {
       target: mapRef.current,
       layers: [
         new TileLayer({
-          source: new OSM(),
+          source: new OSM({
+            crossOrigin: "anonymous",
+            referrerPolicy: "strict-origin-when-cross-origin",
+          }),
         }),
       ],
       view: new View({

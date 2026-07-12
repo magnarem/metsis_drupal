@@ -23,8 +23,6 @@ const MapApp = ({ config }) => {
   const [wmsLayer, setWmsLayer] = useState(null); // State to hold the WMS layer for legend display
   const [selectedWmsLayer, setSelectedWmsLayer] = useState(""); // Track selected layer name
   const [selectedWmsStyle, setSelectedWmsStyle] = useState(""); // Track selected style name
-  const [selectedWmsLayerHasLegend, setSelectedWmsLayerHasLegend] =
-    useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -72,12 +70,10 @@ const MapApp = ({ config }) => {
     layer,
     selectedLayer = "",
     selectedStyle = "",
-    hasLegend = false,
   ) => {
     setWmsLayer(layer);
     setSelectedWmsLayer(selectedLayer);
     setSelectedWmsStyle(selectedStyle);
-    setSelectedWmsLayerHasLegend(hasLegend);
   };
 
   // Stable references so WMSLayerManager fit/projection effects don't rerun on every render.
@@ -148,20 +144,17 @@ const MapApp = ({ config }) => {
           </MapContainer>
         </div>
 
-        {/* Legend panel — only rendered when the selected layer advertises a LegendURL in its WMS capabilities */}
-        {config.features.wms &&
-          wmsLayer &&
-          olMap &&
-          selectedWmsLayerHasLegend && (
-            <div className="metsis-wms-legend-wrapper">
-              <LegendPanel
-                mapInstance={olMap}
-                wmsLayer={wmsLayer}
-                selectedLayer={selectedWmsLayer}
-                selectedStyle={selectedWmsStyle}
-              />
-            </div>
-          )}
+        {/* Legend panel mount; LegendPanel itself decides whether a legend URL is available */}
+        {config.features.wms && wmsLayer && olMap && (
+          <div className="metsis-wms-legend-wrapper">
+            <LegendPanel
+              mapInstance={olMap}
+              wmsLayer={wmsLayer}
+              selectedLayer={selectedWmsLayer}
+              selectedStyle={selectedWmsStyle}
+            />
+          </div>
+        )}
       </div>
 
       {/* Enable bounding box drawing if enabled */}
