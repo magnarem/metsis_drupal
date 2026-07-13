@@ -14,6 +14,9 @@ import {
   collectNamedLayers,
   selectInitialLayer,
 } from "@utils/wmsLayerUtils";
+import { buildInitialDimParams } from "@utils/wmsDimensions";
+import WMSDimensionControls from "@components/WMSDimensionControls.jsx";
+import WmsSpinner from "@components/WmsSpinner.jsx";
 
 function normalizeEndpoints(wmsConfig) {
   const configuredEndpoints = Array.isArray(wmsConfig?.endpoints)
@@ -59,6 +62,10 @@ const WMSLayerManager = ({
   const [capabilitiesError, setCapabilitiesError] = useState("");
   const lastFittedLayerRef = useRef("");
   const wmsLayerRef = useRef(null);
+  // Kept in sync with availableLayers state so effects can read it without
+  // taking a dep on availableLayers (which would cause spurious layer recreation).
+  const availableLayersRef = useRef([]);
+  const [dimensionParams, setDimensionParams] = useState({});
 
   // Track whether this is the first initialization
   const isInitializingRef = useRef(true);
@@ -193,6 +200,21 @@ const WMSLayerManager = ({
     };
   }, [activeEndpoint, blacklistedLayersSet, wmsConfig?.preferredLayers]);
 
+  // Keep availableLayersRef up-to-date — declared before the layer-creation
+  // effect so the ref is always populated when that effect reads it.
+  useEffect(() => {
+    availableLayersRef.current = availableLayers;
+  }, [availableLayers]);
+
+  // Reset dimension params when the selected layer changes so the controls
+  // start from the server-advertised defaults for the new layer.
+  useEffect(() => {
+    const dims =
+      availableLayersRef.current.find((l) => l.name === selectedLayer)
+        ?.dimensions ?? [];
+    setDimensionParams(buildInitialDimParams(dims));
+  }, [selectedLayer]);
+
   useEffect(() => {
     const selectedLayerDefinition = availableLayers.find(
       (layer) => layer.name === selectedLayer,
@@ -211,10 +233,16 @@ const WMSLayerManager = ({
       return;
     }
 
+    // Include initial dimension values (TIME, ELEVATION, DIM_*) so the very
+    // first tile request goes to the server with the correct dimension params.
+    const dims =
+      availableLayersRef.current.find((l) => l.name === selectedLayer)
+        ?.dimensions ?? [];
     const params = {
       LAYERS: selectedLayer,
       TILED: true,
       VERSION: wmsVersion,
+      ...buildInitialDimParams(dims),
     };
     if (selectedStyle) {
       params.STYLES = selectedStyle;
@@ -245,6 +273,14 @@ const WMSLayerManager = ({
       mapInstance.removeLayer(layer);
     };
   }, [mapInstance, activeEndpoint, selectedLayer, selectedStyle, wmsVersion]);
+
+  // Apply dimension param changes (TIME, ELEVATION, DIM_*) to the active WMS
+  // source without recreating the layer — OL handles a partial updateParams call.
+  useEffect(() => {
+    if (wmsLayerRef.current && Object.keys(dimensionParams).length > 0) {
+      wmsLayerRef.current.getSource()?.updateParams(dimensionParams);
+    }
+  }, [dimensionParams]);
 
   const selectedLayerDefinition = availableLayers.find(
     (layer) => layer.name === selectedLayer,
@@ -421,7 +457,7 @@ const WMSLayerManager = ({
         </label>
       )}
 
-      {isLoading && <p>Loading WMS capabilities...</p>}
+      {isLoading && <WmsSpinner />}
       {capabilitiesError && <p>{capabilitiesError}</p>}
 
       {!isLoading && !capabilitiesError && availableLayers.length === 0 && (
@@ -469,6 +505,14 @@ const WMSLayerManager = ({
                 ))}
               </select>
             </label>
+          )}
+
+          {selectedLayerDefinition?.dimensions?.length > 0 && (
+            <WMSDimensionControls
+              dimensions={selectedLayerDefinition.dimensions}
+              layerKey={selectedLayer}
+              onDimensionParamsChange={setDimensionParams}
+            />
           )}
         </>
       )}

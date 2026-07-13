@@ -1,4 +1,44 @@
 import { extractLayerGeographicExtent } from "@utils/mapProjection";
+import { parseDimensionValues } from "@utils/wmsDimensions";
+
+/**
+ * Extract and normalise dimension definitions from a raw OL-parsed WMS capabilities layer.
+ * Handles TIME (ISO 8601), ELEVATION/DEPTH/HEIGHT, and any custom DIM_* dimension.
+ *
+ * @param {object} rawLayer  layer object from OL WMSCapabilities.read()
+ * @returns {Array<{name, canonicalName, units, unitSymbol, defaultValue, values}>}
+ */
+export function collectLayerDimensions(rawLayer) {
+  if (!rawLayer?.Dimension) return [];
+
+  const dimArray = Array.isArray(rawLayer.Dimension)
+    ? rawLayer.Dimension
+    : [rawLayer.Dimension];
+
+  return dimArray
+    .filter((dim) => dim?.name)
+    .map((dim) => {
+      const rawName = String(dim.name);
+      // Canonical name: lowercase, DIM_ prefix stripped (per OGC WMS 1.3.0 §C.4)
+      const canonicalName = rawName.toLowerCase().replace(/^dim_/, "");
+      const values =
+        typeof dim.values === "string" && dim.values.trim()
+          ? parseDimensionValues(dim.values)
+          : [];
+      // Honour the server-advertised default; fall back to the first value.
+      const defaultValue = dim.default || values[0] || "";
+
+      return {
+        name: rawName,
+        canonicalName,
+        units: dim.units || "",
+        unitSymbol: dim.unitSymbol || "",
+        defaultValue,
+        values,
+      };
+    })
+    .filter((dim) => dim.values.length > 0);
+}
 
 function readLegendHref(legendUrl) {
   if (!legendUrl) {
@@ -65,6 +105,7 @@ export function collectNamedLayers(layer, layers = [], inheritedExtent = null) {
       styles,
       // True only when at least one style advertises a LegendURL in capabilities.
       hasLegend: styles.some((style) => !!style.legendUrl),
+      dimensions: collectLayerDimensions(layer),
     });
   }
 
