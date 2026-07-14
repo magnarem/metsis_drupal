@@ -28,13 +28,13 @@ export function parseDurationMs(isoString) {
   );
 
   const ms =
-    (y  ?? 0) * 365.25 * 86_400_000 +
-    (mo ?? 0) *  30.44 * 86_400_000 +
-    (w  ?? 0) *      7 * 86_400_000 +
-    (d  ?? 0) *          86_400_000 +
-    (h  ?? 0) *           3_600_000 +
-    (mi ?? 0) *              60_000 +
-    (s  ?? 0) *               1_000;
+    (y ?? 0) * 365.25 * 86_400_000 +
+    (mo ?? 0) * 30.44 * 86_400_000 +
+    (w ?? 0) * 7 * 86_400_000 +
+    (d ?? 0) * 86_400_000 +
+    (h ?? 0) * 3_600_000 +
+    (mi ?? 0) * 60_000 +
+    (s ?? 0) * 1_000;
 
   return ms > 0 ? ms : null;
 }
@@ -140,7 +140,11 @@ export function wmsParamKey(canonicalName) {
  * @param {string} [unitSymbol] optional, falls back to units string
  * @returns {string}
  */
-export function formatDimensionDisplayValue(value, units = "", unitSymbol = "") {
+export function formatDimensionDisplayValue(
+  value,
+  units = "",
+  unitSymbol = "",
+) {
   if (!value) return "";
 
   const looksLikeTime =
@@ -176,8 +180,9 @@ export function buildInitialDimParams(dims) {
   const params = {};
   for (const dim of dims) {
     if (!dim.values.length) continue;
-    const defaultIdx =
-      dim.defaultValue ? dim.values.indexOf(dim.defaultValue) : -1;
+    const defaultIdx = dim.defaultValue
+      ? dim.values.indexOf(dim.defaultValue)
+      : -1;
     const idx = defaultIdx >= 0 ? defaultIdx : 0;
     params[wmsParamKey(dim.canonicalName)] = dim.values[idx];
   }

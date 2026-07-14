@@ -10,6 +10,10 @@ let bboxFilterSource;
 let bboxFilterVectorLayer;
 let olModulesPromise;
 
+const MAP_PROJECTION = "EPSG:3857";
+const WEB_MERCATOR_MIN_X = -20037508.342789244;
+const WEB_MERCATOR_MAX_X = 20037508.342789244;
+
 function getBboxInputs(root = document) {
   const minX = root.querySelector('input[name="bbox[minX]"]');
   const maxX = root.querySelector('input[name="bbox[maxX]"]');
@@ -66,6 +70,7 @@ function loadOlModules() {
         VectorSource: vectorSourceModule.default,
         toLonLat: projModule.toLonLat,
         fromLonLat: projModule.fromLonLat,
+        transformExtent: projModule.transformExtent,
         Attribution: attributionModule.default,
       }),
     );
@@ -90,6 +95,7 @@ async function initializeMap() {
     VectorSource,
     toLonLat,
     fromLonLat,
+    transformExtent,
     Attribution,
   } = await loadOlModules();
 
@@ -108,7 +114,10 @@ async function initializeMap() {
 
   // Add osm baseLayer
   const baseLayer = new TileLayer({
-    source: new OSM(),
+    source: new OSM({
+      crossOrigin: "anonymous",
+      referrerPolicy: "strict-origin-when-cross-origin",
+    }),
   });
 
   // Add a vector source for holding the bbox draw filter
@@ -130,12 +139,14 @@ async function initializeMap() {
     target: "bbox-map-filter-container",
     layers: [baseLayer, bboxFilterVectorLayer],
     view: new View({
-      center: fromLonLat([0, 51.5]),
-      projection: "EPSG:4326",
+      center: fromLonLat([0, 0], MAP_PROJECTION),
+      projection: MAP_PROJECTION,
       zoom: 0,
     }),
     controls: defaultControls().extend(attribution),
   });
+
+  const mapProjectionCode = map.getView().getProjection().getCode();
 
   const features = bboxFilterSource.getFeatures();
   if (features.length) {
@@ -144,7 +155,7 @@ async function initializeMap() {
 
   // Add pointermove event to display coordinates
   map.on("pointermove", function (evt) {
-    const coords = toLonLat(evt.coordinate, "EPSG:4326");
+    const coords = toLonLat(evt.coordinate, mapProjectionCode);
     const lat = coords[1].toFixed(6);
     const lon = coords[0].toFixed(6);
     const locTxt = "lon: " + lon + " lat: " + lat;
@@ -157,14 +168,30 @@ async function initializeMap() {
   });
 
   // Add the draw interaction
-  addBboxDrawFilterInteraction(Draw, createBox, form, bboxInputs);
+  addBboxDrawFilterInteraction(
+    Draw,
+    createBox,
+    form,
+    bboxInputs,
+    mapProjectionCode,
+    toLonLat,
+    transformExtent,
+  );
 
   // Draw existing bbox if present in input fields
-  drawBoundingBoxFromInputs(Polygon, Feature);
+  drawBoundingBoxFromInputs(Polygon, Feature, mapProjectionCode, fromLonLat);
 }
 
 // Add draw interaction to the map
-function addBboxDrawFilterInteraction(Draw, createBox, form, bboxInputs) {
+function addBboxDrawFilterInteraction(
+  Draw,
+  createBox,
+  form,
+  bboxInputs,
+  mapProjectionCode,
+  toLonLat,
+  transformExtent,
+) {
   // const bboxGeometryFunction = createRegularPolygon(4);
   const bboxGeometryFunction = createBox();
 
@@ -189,39 +216,18 @@ function addBboxDrawFilterInteraction(Draw, createBox, form, bboxInputs) {
     const polygon = event.feature.getGeometry();
     console.log("Drawn polygon coordinates:", polygon.getCoordinates());
 
-    console.log("Polygon get Extent:", polygon.getExtent());
-    console.log(
-      "Polygon Extent transformed:",
-      polygon.transform("EPSG:4326", "EPSG:4326").getExtent(),
-    );
-    //Get the extent of the polygon
+    // Get extent in map projection and convert to EPSG:4326 for Solr filters.
     const extent = polygon.getExtent();
-    let minX = extent[0];
-    const minY = extent[1];
-    let maxX = extent[2];
-    const maxY = extent[3];
-    // Test if crosses dateline, if so normalize lon values
-    let crossesDateline;
-    if (minX < -180 || minX > 180) {
-      crossesDateline = true;
-      console.log(
-        "minX: ",
-        minX,
-        " Crosses dateline. Normalizing...: ",
-        crossesDateline,
-      );
-      minX = normalizeLon(minX);
-    }
-    if (maxX < -180 || maxX > 180) {
-      crossesDateline = true;
-      console.log(
-        "maxX: ",
-        maxX,
-        " Crosses dateline. Normalizing...: ",
-        crossesDateline,
-      );
-      maxX = normalizeLon(maxX);
-    }
+    const bboxValues = serializeExtentToBboxValues(
+      extent,
+      mapProjectionCode,
+      toLonLat,
+      transformExtent,
+    );
+    const minX = bboxValues.minX;
+    const minY = bboxValues.minY;
+    const maxX = bboxValues.maxX;
+    const maxY = bboxValues.maxY;
 
     console.log("BBox values: ENVELOPE(", minX, maxX, maxY, minY, ")");
 
@@ -270,8 +276,65 @@ function normalizeLon(lon) {
   return ((((lon + 180.0) % 360.0) + 360) % 360) - 180;
 }
 
+function clampLat(lat) {
+  return Math.max(-90, Math.min(90, lat));
+}
+
+function serializeExtentToBboxValues(
+  extent,
+  mapProjectionCode,
+  toLonLat,
+  transformExtent,
+) {
+  const extent4326 = transformExtent(extent, mapProjectionCode, "EPSG:4326");
+  const minY = clampLat(Math.min(extent4326[1], extent4326[3]));
+  const maxY = clampLat(Math.max(extent4326[1], extent4326[3]));
+
+  const lowerLeft = toLonLat([extent[0], extent[1]], mapProjectionCode);
+  const upperLeft = toLonLat([extent[0], extent[3]], mapProjectionCode);
+  const lowerRight = toLonLat([extent[2], extent[1]], mapProjectionCode);
+  const upperRight = toLonLat([extent[2], extent[3]], mapProjectionCode);
+
+  const leftLonRaw = (lowerLeft[0] + upperLeft[0]) / 2;
+  const rightLonRaw = (lowerRight[0] + upperRight[0]) / 2;
+  const leftLon = normalizeLon(leftLonRaw);
+  const rightLon = normalizeLon(rightLonRaw);
+
+  let crossesDateline =
+    leftLonRaw < -180 ||
+    leftLonRaw > 180 ||
+    rightLonRaw < -180 ||
+    rightLonRaw > 180;
+
+  if (
+    mapProjectionCode === MAP_PROJECTION &&
+    (extent[0] < WEB_MERCATOR_MIN_X || extent[2] > WEB_MERCATOR_MAX_X)
+  ) {
+    crossesDateline = true;
+  }
+
+  if (leftLon > rightLon) {
+    crossesDateline = true;
+  }
+
+  const minX = crossesDateline ? leftLon : Math.min(leftLon, rightLon);
+  const maxX = crossesDateline ? rightLon : Math.max(leftLon, rightLon);
+
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+  };
+}
+
 // Function to draw the bounding box from input values
-function drawBoundingBoxFromInputs(Polygon, Feature) {
+function drawBoundingBoxFromInputs(
+  Polygon,
+  Feature,
+  mapProjectionCode,
+  fromLonLat,
+) {
   const bboxInputs = getBboxInputs(document);
   const minXInput = bboxInputs[0] ?? null;
   const maxXInput = bboxInputs[1] ?? null;
@@ -316,6 +379,12 @@ function drawBoundingBoxFromInputs(Polygon, Feature) {
       [maxX, minY],
       [minX, minY],
     ];
+
+    if (mapProjectionCode !== "EPSG:4326") {
+      coordinates = coordinates.map((coordinate) =>
+        fromLonLat(coordinate, mapProjectionCode),
+      );
+    }
     // console.log("Normal coordinates: ", coordinates);
 
     // Draw the polygon on the map

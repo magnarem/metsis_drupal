@@ -78,7 +78,9 @@
 }
 
 @keyframes wms-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── WMS dimension controls ───────────────────────────────────────────────── */

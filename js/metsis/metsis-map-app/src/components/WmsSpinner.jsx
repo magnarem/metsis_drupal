@@ -3,7 +3,11 @@
  * Pure CSS animation — no image assets or external dependencies.
  */
 const WmsSpinner = () => (
-  <span className="wms-spinner" role="status" aria-label="Loading WMS capabilities">
+  <span
+    className="wms-spinner"
+    role="status"
+    aria-label="Loading WMS capabilities"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"

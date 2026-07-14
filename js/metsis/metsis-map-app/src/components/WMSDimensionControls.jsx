@@ -9,11 +9,16 @@ import { formatDimensionDisplayValue, wmsParamKey } from "@utils/wmsDimensions";
 function getDimensionLabel(dim) {
   const symbol = dim.unitSymbol ? ` (${dim.unitSymbol})` : "";
   switch (dim.canonicalName) {
-    case "time":      return "Time";
-    case "elevation": return `Elevation${symbol}`;
-    case "depth":     return `Depth${symbol}`;
-    case "height":    return `Height${symbol}`;
-    default:          return `${dim.name || dim.canonicalName}${symbol}`;
+    case "time":
+      return "Time";
+    case "elevation":
+      return `Elevation${symbol}`;
+    case "depth":
+      return `Depth${symbol}`;
+    case "height":
+      return `Height${symbol}`;
+    default:
+      return `${dim.name || dim.canonicalName}${symbol}`;
   }
 }
 
@@ -91,7 +96,11 @@ const DimensionRow = ({ dim, currentIndex, onIndexChange }) => {
  *   onDimensionParamsChange — callback(params) where params is a WMS param object,
  *                             e.g. { TIME: "2020-01-01T00:00:00.000Z", ELEVATION: "0" }
  */
-const WMSDimensionControls = ({ dimensions, layerKey, onDimensionParamsChange }) => {
+const WMSDimensionControls = ({
+  dimensions,
+  layerKey,
+  onDimensionParamsChange,
+}) => {
   // Map of canonicalName → current value index
   const [indices, setIndices] = useState({});
 
@@ -117,14 +126,14 @@ const WMSDimensionControls = ({ dimensions, layerKey, onDimensionParamsChange })
 
     const init = {};
     for (const dim of dimensions) {
-      const defaultIdx =
-        dim.defaultValue ? dim.values.indexOf(dim.defaultValue) : -1;
+      const defaultIdx = dim.defaultValue
+        ? dim.values.indexOf(dim.defaultValue)
+        : -1;
       init[dim.canonicalName] = defaultIdx >= 0 ? defaultIdx : 0;
     }
     setIndices(init);
     onDimensionParamsChange?.(buildParams(init));
-  }, [layerKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, [layerKey]);
   if (!dimensions?.length) return null;
 
   const handleIndexChange = (canonicalName, newIndex) => {
