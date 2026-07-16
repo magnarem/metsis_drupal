@@ -14,6 +14,19 @@ const MAP_PROJECTION = "EPSG:3857";
 const WEB_MERCATOR_MIN_X = -20037508.342789244;
 const WEB_MERCATOR_MAX_X = 20037508.342789244;
 
+function ensureAttributionContainer(mapContainer) {
+  const existing = document.getElementById("bbox-map-filter-attribution");
+  if (existing) {
+    return existing;
+  }
+
+  const container = document.createElement("div");
+  container.id = "bbox-map-filter-attribution";
+  mapContainer.insertAdjacentElement("afterend", container);
+
+  return container;
+}
+
 function getBboxInputs(root = document) {
   const minX = root.querySelector('input[name="bbox[minX]"]');
   const maxX = root.querySelector('input[name="bbox[maxX]"]');
@@ -36,7 +49,7 @@ function loadOlModules() {
       import("ol/geom/Polygon.js"),
       import("ol/interaction/Draw.js"),
       import("ol/control/defaults.js"),
-      import("ol/layer/Tile.js"),
+      import("ol/layer/WebGLTile.js"),
       import("ol/source/OSM.js"),
       import("ol/layer/Vector.js"),
       import("ol/source/Vector.js"),
@@ -105,6 +118,7 @@ async function initializeMap() {
   if (!mapContainer) {
     return;
   }
+  const attributionContainer = ensureAttributionContainer(mapContainer);
 
   const form = mapContainer.closest("form");
   const fieldset = mapContainer.closest("fieldset");
@@ -130,20 +144,22 @@ async function initializeMap() {
 
   // Attribution control, collapsed by default
   const attribution = new Attribution({
+    target: attributionContainer,
+    //className: "bbox-map-filter-attribution",
     collapsible: true,
     collapsed: true,
   });
 
   // Initialize the map
   map = new Map({
-    target: "bbox-map-filter-container",
+    target: mapContainer,
     layers: [baseLayer, bboxFilterVectorLayer],
     view: new View({
-      center: fromLonLat([0, 0], MAP_PROJECTION),
+      center: fromLonLat([0, 51.5], MAP_PROJECTION),
       projection: MAP_PROJECTION,
       zoom: 0,
     }),
-    controls: defaultControls().extend(attribution),
+    controls: defaultControls({ attribution: false }).extend([attribution]),
   });
 
   const mapProjectionCode = map.getView().getProjection().getCode();

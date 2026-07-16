@@ -3,7 +3,7 @@ import "ol/ol.css";
 import "../styles/MapContainer.css";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
-import TileLayer from "ol/layer/Tile.js";
+import TileLayer from "ol/layer/WebGLTile.js";
 import OSM from "ol/source/OSM.js";
 import ScaleLine from "ol/control/ScaleLine.js";
 import { defaults as defaultControls } from "ol/control/defaults.js";

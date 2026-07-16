@@ -389,5 +389,39 @@ button.metsis-search-clear-button[hidden] {
   max-width: 100%;
   min-width: 360px;
   height: 250px;
-  margin-bottom: 2em;
+  margin-bottom: 0.35rem;
+}
+
+#bbox-map-filter-attribution {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: #4b5563;
+  min-height: 1.2rem;
+  position: relative;
+}
+
+#bbox-map-filter-attribution .ol-control,
+#bbox-map-filter-attribution .ol-attribution {
+  position: static;
+  inset: auto;
+  margin: 0;
+}
+
+#bbox-map-filter-attribution .ol-attribution {
+  max-width: 100%;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  padding-bottom: 0.5rem;
+}
+
+#bbox-map-filter-attribution .ol-attribution ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+#bbox-map-filter-attribution .ol-button {
+  margin: 0;
+  padding: 0;
+  display: hidden;
 }

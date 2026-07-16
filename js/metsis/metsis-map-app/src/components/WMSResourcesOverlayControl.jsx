@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import TileLayer from "ol/layer/Tile.js";
+import TileLayer from "ol/layer/WebGLTile.js";
 import TileWMS from "ol/source/TileWMS.js";
 import WMSCapabilities from "ol/format/WMSCapabilities.js";
 import {

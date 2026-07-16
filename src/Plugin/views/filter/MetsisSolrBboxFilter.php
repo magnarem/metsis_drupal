@@ -151,16 +151,27 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
       '#title' => $this->t('Select bounding box on map'),
       '#tree' => FALSE,
       '#attributes' => [
+        'class' => ['bbox-map-filter-wrapper'],
+      ],
+    ];
+    $form[$wrapper]['bbox_map_filter']['map'] = [
+      '#type' => 'container',
+      '#tree' => FALSE,
+      '#attributes' => [
         'id' => 'bbox-map-filter-container',
         'class' => ['bbox-map-filter-container'],
       ],
     ];
-    $form[$wrapper]['bbox_map_filter']['coords'] = [
+    $form[$wrapper]['bbox_map_filter']['map']['coords'] = [
       '#type' => 'markup',
       '#markup' => '<div id="coords">
         <span class="coords">Create filter...</span>
-        <i class="bbox-remove fa fa-remove"></i>
         </div>',
+    ];
+
+    $form[$wrapper]['bbox_map_filter']['attribution'] = [
+      '#type' => 'markup',
+      '#markup' => '<div id="bbox-map-filter-attribution" class="bbox-map-filter-attribution"></div>',
     ];
 
     if (!$user_input_enabled) {
