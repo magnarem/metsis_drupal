@@ -1,0 +1,17 @@
+dynamic_landing_pages.landing_page:
+  path: "/dataset/{id}"
+  defaults:
+    _controller: '\Drupal\dynamic_landing_pages\Controller\DynamicLandingPagesController::getLandingPage'
+    _title: "Dataset"
+  requirements:
+    _custom_access: '\Drupal\dynamic_landing_pages\Controller\DynamicLandingPagesController::access'
+    _permission: "access content"
+    id: '[A-Za-z0-9_.\-]+'
+
+dynamic_landing_pages.settings_form:
+  path: "/admin/config/metsis/dynamic-landing-pages"
+  defaults:
+    _form: '\Drupal\dynamic_landing_pages\Form\DynamicLandingPagesSettingsForm'
+    _title: "Dynamic Landing Pages Settings"
+  requirements:
+    _permission: "administer site configuration"

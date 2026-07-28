@@ -1,0 +1,8 @@
+dynamic_landing_pages.settings:
+  type: config_object
+  label: "Dynamic Landing Pages settings"
+  mapping:
+    naming_authority:
+      type: string
+      label: "Naming authority"
+      description: "The naming authority prefix prepended to the UUID to form the Solr document identifier (e.g. no.met.adc)."

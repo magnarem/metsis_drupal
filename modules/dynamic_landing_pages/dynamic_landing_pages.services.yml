@@ -1,0 +1,9 @@
+services:
+  # Dedicated cache bin for rendered dataset landing pages.
+  # Invalidated per-dataset when the Solr timestamp or metadata update date changes.
+  cache.dynamic_landing_pages:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    factory: ["@cache_factory", "get"]
+    tags:
+      - { name: cache.bin }
+    arguments: ["dynamic_landing_pages"]

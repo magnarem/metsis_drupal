@@ -32,7 +32,7 @@
         "ext-json": "*",
         "ext-simplexml": "*",
         "sweetrdf/easyrdf": "^1",
-        "drupal/search_api": "^1.39",
+        "drupal/search_api": "^1.41",
         "drupal/search_api_solr": "^4.3",
         "drupal/search_api_solr_nlp": "^1.1",
         "drupal/facets": "^3.0",

@@ -1,0 +1,7 @@
+name: "METSIS Dynamic Landing Pages"
+type: module
+description: "Dynamic landing pages for ADC/METSIS datasets"
+package: METNO
+core_version_requirement: ^10 || ^11
+dependencies:
+  - metsis_drupal:metsis_drupal

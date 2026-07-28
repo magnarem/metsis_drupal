@@ -1,0 +1,6 @@
+dynamic_landing_pages.settings_menu_link:
+  title: "Dynamic Landing Pages"
+  description: "Configure the naming authority for dynamic dataset landing pages."
+  route_name: dynamic_landing_pages.settings_form
+  parent: metsis_drupal.admin_metno
+  weight: 10

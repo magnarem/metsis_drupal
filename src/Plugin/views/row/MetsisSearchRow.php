@@ -52,7 +52,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    *
    * @var array<string, array{label: string, description: string}>|null
    */
-  private ?array $exportOptionsCache = NULL;
+  protected ?array $exportOptionsCache = NULL;
 
   /**
    * Construct the plugin with DI.
