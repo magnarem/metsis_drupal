@@ -387,6 +387,18 @@ final class DynamicLandingPagesController extends ControllerBase {
       ];
     }
 
+    // Meta description (for search engines).
+    if ($description !== '') {
+      $tags[] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'meta',
+          '#attributes' => ['name' => 'description', 'content' => $description],
+        ],
+        'dynamic_landing_pages_meta_description',
+      ];
+    }
+
     // JSON-LD (schema.org/Dataset) — always last.
     $tags[] = $this->buildJsonLd($doc, $canonical_url, $keywords);
 
