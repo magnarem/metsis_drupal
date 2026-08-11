@@ -98,6 +98,20 @@ class MetsisThemeHooks {
         ],
         'template' => 'metsis-search-row-detailed',
       ],
+      'metsis_search_row_nbs' => [
+        'variables' => [
+          'row' => NULL,
+          'view' => NULL,
+          'options' => NULL,
+          'project' => NULL,
+          'solr_doc' => NULL,
+          'fields' => NULL,
+          'excerpt' => NULL,
+          'highlighted' => NULL,
+          'operations' => [],
+        ],
+        'template' => 'metsis-search-row-nbs',
+      ],
       'metsis_search_row_custom' => [
         'variables' => [
           'row' => NULL,

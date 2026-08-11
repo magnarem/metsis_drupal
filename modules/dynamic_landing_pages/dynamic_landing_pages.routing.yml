@@ -9,7 +9,7 @@ dynamic_landing_pages.landing_page:
     id: '[A-Za-z0-9_.\-]+'
 
 dynamic_landing_pages.settings_form:
-  path: "/admin/config/metsis/dynamic-landing-pages"
+  path: "/admin/config/metno/dynamic-landing-pages"
   defaults:
     _form: '\Drupal\dynamic_landing_pages\Form\DynamicLandingPagesSettingsForm'
     _title: "Dynamic Landing Pages Settings"

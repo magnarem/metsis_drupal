@@ -131,6 +131,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         'default' => $this->t('Default'),
         'compact' => $this->t('Compact'),
         'detailed' => $this->t('Detailed'),
+        'nbs' => $this->t('NBS Sentinel Products'),
         'custom' => $this->t('Custom'),
       ],
       '#default_value' => $this->options['style'],

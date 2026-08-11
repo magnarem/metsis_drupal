@@ -43,6 +43,14 @@ metsis_default_row_layout:
     - core/once
     - metsis_drupal/metsis_vocab_popover
 
+metsis_nbs_row_classes:
+  version: 1.x
+  css:
+    component:
+      css/metsis_nbs_row_classes.css: {}
+  dependencies:
+    - metsis_drupal/metsis_default_row_layout
+
 metsis_search_ajax:
   version: 1.x
   js:

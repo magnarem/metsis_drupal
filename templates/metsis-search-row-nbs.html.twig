@@ -1,0 +1,163 @@
+{#
+/**
+ * @file
+ * Default view template to display all the fields in a row.
+ *
+ * Available variables:
+ * - view: The view in use.
+ * - row: The raw result from the query, with all data it fetched.
+ * - options: The options array passed to the row plugin.
+ * - solr_doc: The Solr document fields for the current result.
+ * - fields: An array of preprared/processed field values.
+ * - excerpt: An array of highlighted/excerpted field snippets.
+ * - highlighted: An array of highlighted field values.
+ *
+ * @see MetsisSearchRow views row plugin.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('metsis_drupal/metsis_nbs_row_classes') }}
+{# {{ dump(highlighted) }} #}
+{{ dump(solr_doc) }}
+{% set icon_alignment = 'right' %}
+<article id="{{ fields.id }}" class="metsis-search-row">
+	<div id="metadata-identifier" class="hidden" hidden>{{ fields.metadata_identifier }}</div>
+	<div class="metsis-search-title">
+		{% if fields.landing_page is not empty %}
+			<a href="{{ fields.landing_page }}" target="_blank" rel="noopener" title="Go to dataset landing page (opens in a new window)" aria-label="Go to dataset landing page">{{ fields.title }}
+				<span class="sr-only">(opens in a new window)</span>
+			</a>
+		{% else %}
+			{{ fields.title }}
+		{% endif %}
+	</div>
+	{% if solr_doc is defined and solr_doc is not empty %}
+		{% set solr_meta_fields = [
+			{
+				'label': 'Last metadata update',
+				'singular_label': null,
+				'field': 'last_metadata_updated_date',
+				'render_field': 'last_metadata_update'
+			},
+			{
+				'label': 'Institutions',
+				'singular_label': 'Institution',
+				'field': 'personnel_organisation',
+				'render_field': null
+			},
+		] %}
+		<div class="metsis-solr-meta" aria-label="Additional dataset metadata">
+			{% for item in solr_meta_fields %}
+				{% set highlighted_value = highlighted[item.field] ?? null %}
+				{% set preferred_field = item.render_field ?? null %}
+				{% set preferred_value = preferred_field is not empty ? (fields[preferred_field] ?? null) : null %}
+				{% set raw_value = preferred_value is not empty ? preferred_value : (highlighted_value is not empty ? highlighted_value : (solr_doc[item.field] ?? null)) %}
+				{% if raw_value is not empty %}
+					{% set output_label = item.label %}
+					{% set original_value = solr_doc[item.field] ?? null %}
+					{% if item.singular_label is not empty and original_value is iterable and original_value|length == 1 %}
+						{% set output_label = item.singular_label %}
+					{% endif %}
+					{% set is_highlighted = highlighted_value is not empty %}
+					{% set rendered_value = raw_value is iterable ? raw_value|join(', ') : raw_value %}
+					<div class="metsis-solr-meta-item">
+						<span class="metsis-solr-meta-label">{{ output_label }}:</span>
+						<span class="metsis-solr-meta-value">{{ is_highlighted ? rendered_value|raw : rendered_value }}</span>
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+	{% endif %}
+
+	<div class="metsis-search-main">
+		{% if fields.thumbnail is defined and fields.thumbnail is not empty %}
+			<div class="metsis-map-figure">
+				{{ fields.thumbnail }}
+			</div>
+		{% elseif fields.leaflet_map is defined and fields.leaflet_map is not empty %}
+			<div class="metsis-map-figure">
+				{{ fields.leaflet_map }}
+			</div>
+		{% endif %}
+		<div class="metsis-search-content">
+			{% if excerpt is defined and excerpt is not empty %}
+				{{ excerpt }}
+			{% endif %}
+      {# Temporal extent component #}
+      {{ fields.temporal_extent }}
+
+			{# Render badges #}
+			{% set badge_fields = [
+        {field: 'platform_instrument_product_type', class: 'nbs-rounded-bg-pink'},
+        {field: 'platform_name', class: 'nbs-rounded-bg-blue'},
+        {field: 'platform_instrument_name', class: 'nbs-rounded-bg-grey'},
+        {field: 'platform_orbit_direction', class: 'nbs-rounded-bg-grey'}
+      ] %}
+
+			<div class="sentinel-info">
+				{% for badge in badge_fields %}
+					{% if solr_doc[badge.field] is defined and solr_doc[badge.field] is not empty %}
+						{% set values = solr_doc[badge.field] is iterable ? solr_doc[badge.field] : [solr_doc[badge.field]] %}
+
+						{% for value in values %}
+							{% if value is not empty %}
+								<span class="{{ badge.class }}">{{ value }}</span>
+							{% endif %}
+						{% endfor %}
+					{% endif %}
+				{% endfor %}
+			</div>
+
+
+			{# Render abstract if available #}
+			{% if fields.abstract is defined and fields.abstract is not empty %}
+				<div class="metsis-abstract-wrapper">
+					<div id="abstract-{{ fields.id }}" class="metsis-search-quote">
+						{{ fields.abstract }}
+					</div>
+					<button type="button" class="metsis-abstract-toggle" aria-expanded="false" aria-controls="abstract-{{ fields.id }}" aria-label="{{ 'Expand abstract'|t }}">
+						<span class="metsis-abstract-toggle-icon" aria-hidden="true">{{ icon('metsis_drupal', 'down-arrow', {'size': '36'}) }}</span>
+						<span class="sr-only metsis-abstract-toggle-text">{{ 'Expand abstract'|t }}</span>
+					</button>
+				</div>
+			{% endif %}
+
+
+		</div>
+		<div class="metsis-icon-wrapper metsis-icon-wrapper--align-{{ icon_alignment }}">
+			{% if fields.doi_icon %}
+				{{ fields.doi_icon }}
+			{% endif %}
+
+			{% if fields.parent is defined and fields.parent is not empty %}
+				<div class="metsis-collection-image">
+					{% include 'metsis_drupal:collection' with {
+						icon_alt_text: 'Collection',
+            color: '#0053a6',
+            width: 88,
+
+					} only %}
+				</div>
+			{% endif %}
+
+			{% if fields.license_icon is defined and fields.license_icon is not empty %}
+				<div class="metsis-license-icon-slot">
+					{{ fields.license_icon }}
+				</div>
+			{% endif %}
+		</div>
+	</div>
+	{% if fields.license_text is defined and fields.license_text is not empty %}
+		<div class="metsis-row-license-text-wrapper">
+			<strong>License:</strong>
+			<em>{{ fields.license_text }}</em>
+		</div>
+	{% endif %}
+
+	{% if operations is defined and operations is not empty %}
+		<div class="metsis-row-operations-wrapper">
+			{{ operations }}
+		</div>
+	{% endif %}
+</article>
