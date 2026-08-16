@@ -1,0 +1,7 @@
+dynamic_landing_page:
+  version: 1.x
+  css:
+    component:
+      css/dynamic_landing_pages.css: {}
+  dependencies:
+    - metsis_drupal/metsis_metadata_document

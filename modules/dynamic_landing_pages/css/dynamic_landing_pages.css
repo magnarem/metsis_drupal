@@ -1,0 +1,39 @@
+.metsis-metadata--landing-page .dynamic-landing-page__overview {
+  margin-block: 1rem 1.5rem;
+}
+
+.metsis-metadata--landing-page .dynamic-landing-page__overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 42%);
+  gap: 1rem;
+  align-items: start;
+}
+
+.metsis-metadata--landing-page .dynamic-landing-page__overview-core,
+.metsis-metadata--landing-page .dynamic-landing-page__overview-map {
+  border: 1px solid var(--color--gray-20, #d8dce0);
+  border-radius: 0.35rem;
+  padding: 0.85rem;
+  background: var(--color--white, #fff);
+}
+
+.metsis-metadata--landing-page .dynamic-landing-page__overview-map {
+  min-height: 280px;
+}
+
+.metsis-metadata--landing-page
+  .dynamic-landing-page__overview-map
+  .leaflet-container {
+  min-height: 260px;
+}
+
+.metsis-metadata--landing-page .dynamic-landing-page__overview-map-title {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 68rem) {
+  .metsis-metadata--landing-page .dynamic-landing-page__overview-grid {
+    grid-template-columns: 1fr;
+  }
+}

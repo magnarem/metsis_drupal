@@ -900,6 +900,18 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-08-13 | TASK: Integrated personnel_card into dynamic landing pages and added dedicated two-column Core metadata + map overview layout
+           | FILES: modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig, modules/dynamic_landing_pages/src/Controller/DynamicLandingPagesController.php, modules/dynamic_landing_pages/dynamic_landing_pages.libraries.yml, modules/dynamic_landing_pages/css/dynamic_landing_pages.css
+           | NOTE: dynamic_landing_pages now ships its own library/CSS, renders personnel entries via metsis_drupal personnel_card SDC, and moves geometry map beside Core metadata in a landing-page-specific responsive grid
+
+2026-08-13 | TASK: Reverted personnel_card usage in metadata document popup and restored legacy personnel field rendering
+           | FILES: templates/metsis-metadata-document.html.twig
+           | NOTE: Kept components/personnel_card in metsis_drupal for dynamic_landing_pages use; rollback removes embed-only scope issue that caused personnel details to disappear and left only the type icon
+
+2026-08-13 | TASK: Added new personnel_card SDC with type-based Icon API mapping and integrated it into metadata personnel rendering
+           | FILES: components/personnel_card/personnel_card.component.yml, components/personnel_card/personnel_card.twig, components/personnel_card/personnel_card.css, components/personnel_card/README.md, templates/metsis-metadata-document.html.twig
+           | NOTE: Personnel entries now render one card per entry using an embedded SDC slot; icon selection is handled in Twig (Person -> person, Organisation -> organization, fallback -> organization) while preserving existing ORCID/ROR/email metadata_person_link behavior
+
 2026-07-02 | TASK: Replaced deprecated check_markup() usage with processed_text render arrays for Drupal 11.4 compatibility
            | FILES: src/Controller/MetadataDocumentController.php, src/Service/ResultRowRenderer.php
            | NOTE: Abstract rendering now returns #type=processed_text arrays, markdown detection retained, and validation passed with phpunit (84 tests) + targeted phpstan (no errors)

@@ -8,12 +8,14 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\metsis_drupal\Service\LeafletMapRenderer;
 use Drupal\metsis_drupal\Service\MetadataDocumentNormalizer;
 use Drupal\metsis_drupal\Service\SolrDocumentLoader;
 use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -70,6 +72,8 @@ final class DynamicLandingPagesController extends ControllerBase {
   /**
    * Renders the dataset landing page.
    *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
    * @param string $id
    *   The UUID / local identifier (without naming authority prefix).
    *
@@ -79,7 +83,13 @@ final class DynamicLandingPagesController extends ControllerBase {
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    *   When no Solr document matches the constructed identifier.
    */
-  public function getLandingPage(string $id): array {
+  public function getLandingPage(Request $request, string $id): array {
+
+    // Dynamically clear the route title default to suppress the block markup.
+    if ($route = $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT)) {
+      $route->setDefault('_title', '');
+    }
+
     $full_id   = $this->buildFullId($id);
     $cache_key = 'dataset:' . $full_id;
     $solr_id   = MetsisSolrUtilities::toSolrId($full_id);
@@ -128,8 +138,8 @@ final class DynamicLandingPagesController extends ControllerBase {
       'solr_timestamp'   => (string) ($doc['timestamp'] ?? ''),
       'solr_last_update' => (string) ($doc['last_metadata_updated_date'] ?? ''),
       'raw_solr_doc'     => $doc,
+      'export_form'      => $this->formBuilder()->getForm('Drupal\metsis_drupal\Form\MetadataExportForm', $solr_id),
     ];
-
     // Cache permanently; invalidate via per-dataset cache tag.
     $this->cache->set(
       $cache_key,
@@ -202,8 +212,15 @@ final class DynamicLandingPagesController extends ControllerBase {
       '#sections'         => $data['sections'],
       '#metadata_updates' => $data['metadata_updates'],
       '#raw_solr_doc'      => $data['raw_solr_doc'],
+      '#export_form'      => [
+        '#type' => 'container',
+        '#children' => $data['export_form'],
+      ],
       '#attached'         => [
-        'library'   => ['metsis_drupal/metsis_metadata_document'],
+        'library'   => [
+          'metsis_drupal/metsis_metadata_document',
+          'dynamic_landing_pages/dynamic_landing_page',
+        ],
         'html_head' => $this->buildHeadMeta($data['doc_meta'], $canonical_url),
       ],
       '#cache'            => ['max-age' => 0],

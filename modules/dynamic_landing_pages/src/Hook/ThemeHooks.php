@@ -26,6 +26,7 @@ class ThemeHooks {
           'sections'         => [],
           'metadata_updates' => [],
           'raw_solr_doc'      => [],
+          'export_form'      => NULL,
         ],
         'template' => 'dynamic-landing-page',
       ],

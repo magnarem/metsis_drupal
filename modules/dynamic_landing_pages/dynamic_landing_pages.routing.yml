@@ -2,7 +2,7 @@ dynamic_landing_pages.landing_page:
   path: "/dataset/{id}"
   defaults:
     _controller: '\Drupal\dynamic_landing_pages\Controller\DynamicLandingPagesController::getLandingPage'
-    _title: "Dataset"
+    _title: Dataset
   requirements:
     _custom_access: '\Drupal\dynamic_landing_pages\Controller\DynamicLandingPagesController::access'
     _permission: "access content"
