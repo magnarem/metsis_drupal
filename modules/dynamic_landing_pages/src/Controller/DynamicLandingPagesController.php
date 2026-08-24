@@ -110,7 +110,7 @@ final class DynamicLandingPagesController extends ControllerBase {
         $current_ts === $cached->data['solr_timestamp'] &&
         $current_lmu === $cached->data['solr_last_update']
       ) {
-        return $this->buildRenderArray($cached->data, $id);
+        return $this->buildRenderArray($cached->data, $id, $solr_id);
       }
       // One or both timestamps changed — invalidate and rebuild.
       $this->cache->delete($cache_key);
@@ -138,7 +138,7 @@ final class DynamicLandingPagesController extends ControllerBase {
       'solr_timestamp'   => (string) ($doc['timestamp'] ?? ''),
       'solr_last_update' => (string) ($doc['last_metadata_updated_date'] ?? ''),
       'raw_solr_doc'     => $doc,
-      'export_form'      => $this->formBuilder()->getForm('Drupal\metsis_drupal\Form\MetadataExportForm', $solr_id),
+      'export_form'      => NULL,
     ];
     // Cache permanently; invalidate via per-dataset cache tag.
     $this->cache->set(
@@ -148,7 +148,7 @@ final class DynamicLandingPagesController extends ControllerBase {
       ['dynamic_landing_pages:dataset:' . $full_id],
     );
 
-    return $this->buildRenderArray($data, $id);
+    return $this->buildRenderArray($data, $id, $solr_id);
   }
 
   /**
@@ -191,11 +191,13 @@ final class DynamicLandingPagesController extends ControllerBase {
    *   Normalized data as stored in the cache bin.
    * @param string $id
    *   The local identifier (used to generate the canonical URL).
+   * @param string $solr_id
+   *   The full Solr document ID (used for the export form).
    *
    * @return array
    *   Render array for the landing page.
    */
-  private function buildRenderArray(array $data, string $id): array {
+  private function buildRenderArray(array $data, string $id, string $solr_id): array {
     $canonical_url = Url::fromRoute('dynamic_landing_pages.landing_page', ['id' => $id])
       ->setAbsolute()
       ->toString();
@@ -214,7 +216,7 @@ final class DynamicLandingPagesController extends ControllerBase {
       '#raw_solr_doc'      => $data['raw_solr_doc'],
       '#export_form'      => [
         '#type' => 'container',
-        '#children' => $data['export_form'],
+        '#children' => $this->formBuilder()->getForm('Drupal\metsis_drupal\Form\MetadataExportForm', $solr_id),
       ],
       '#attached'         => [
         'library'   => [

@@ -32,6 +32,21 @@
   font-size: 1rem;
 }
 
+.metsis-metadata--landing-page .dynamic-landing-page__temporal-title {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  border-top: 1px solid var(--color--gray-20, #d8dce0);
+}
+
+.metsis-metadata--landing-page .dynamic-landing-page__temporal-title > svg {
+  margin-left: 0.2rem;
+  vertical-align: middle;
+}
+
+.metsis-metadata--landing-page .dynamic-landing-page__temporal-dates {
+  margin-left: 1rem;
+}
+
 @media (max-width: 68rem) {
   .metsis-metadata--landing-page .dynamic-landing-page__overview-grid {
     grid-template-columns: 1fr;

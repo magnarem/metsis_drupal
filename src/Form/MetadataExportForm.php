@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\metsis_drupal\Form;
 
+use Drupal\Core\Url;
 use Drupal\Core\Htmx\Htmx;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormBase;
@@ -74,11 +75,7 @@ final class MetadataExportForm extends FormBase {
    *   Form render array.
    */
   public function buildForm(array $form, FormStateInterface $form_state, string $id = ''): array {
-    $this->getLogger('export_form')->debug('Building export form for id: @id', ['@id' => $id]);
 
-    $req = json_encode($form_state->getValues());
-
-    $this->getLogger('export_form')->debug("buildForm @id and @req", ['@id' => $id, '@req' => $req]);
     // Return a message if no ID is provided.
     if ($id === '') {
       $form['export'] = [
@@ -105,8 +102,13 @@ final class MetadataExportForm extends FormBase {
     }
     $solr_id = (string) ($form_state->get('solr_id') ?? '');
 
+    // Get the current route to determine if we are on a landing page and adjust the form action accordingly.
+    $route = Url::fromRouteMatch($this->getRouteMatch());
+    if ($route->getRouteName() === 'dynamic_landing_pages.landing_page') {
+      $form['#action'] = Url::fromRoute('metsis_drupal.metadata_export_form', ['id' => $solr_id])->toString();
+    }
+
     if (!$form_state->has('mmd') && $solr_id !== '') {
-      $this->getLogger('export_form')->debug('Fetching MMD');
       $mmd = $this->metadataExportService->getMmd($solr_id);
       if ($mmd === NULL || $mmd === '') {
         $form['export'] = [
@@ -138,7 +140,6 @@ final class MetadataExportForm extends FormBase {
     // Cache options and default_export in form-state storage
     // to avoid recalculating on rebuild.
     if (!$form_state->has('export_options')) {
-      $this->getLogger('export_form')->debug('Loading export type descriptions from config');
       $options = $this->metadataExportService->getEnabledExportOptions();
       if ($options === []) {
         $form['export']['message'] = [
@@ -180,6 +181,8 @@ final class MetadataExportForm extends FormBase {
     $form['export']['list'] = [
       '#type' => 'select',
       '#options' => $options,
+      '#title' => $this->t('Select export format'),
+      '#description' => $this->t('Select the format in which you want to export the metadata.'),
       '#default_value' => $default_export,
     ];
 

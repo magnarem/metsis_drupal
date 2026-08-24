@@ -125,18 +125,30 @@
 						<h3 class="dynamic-landing-page__overview-map-title">Spatial Coverage</h3>
 						{{ overview_geometry_map }}
 <div class="dynamic-landing-page__overview-map-temporal">
-<h3 class="dynamic-landing-page__overview-map-title">Temporal Coverage</h3>
 
 {% if raw_solr_doc['temporal_extent_start_date'] %}
 
-		<label>Start Date:</label>
+<h3 class="dynamic-landing-page__temporal-title">
+Temporal Coverage
+{{ icon('metsis_drupal', icon_id|default('date-time'), {size: 20}) }}
+
+
+
+</h3>
+
+
+
+<div class="dynamic-landing-page__temporal-dates">
+
+
+		<label><strong>Start Date:</strong></label>
 			{{ raw_solr_doc['temporal_extent_start_date'][0] }}</p>
 	{% endif %}
 	{% if raw_solr_doc['temporal_extent_end_date'] %}
-		<label>End Date:</label>
+		<label><strong>End Date:</strong></label>
 			{{ raw_solr_doc['temporal_extent_end_date'][0] }}</p>
 	{% endif %}
-
+</div>
 </div>
 
           </div>
