@@ -1,0 +1,37 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+name: personnel_card
+status: stable
+group: metsis
+description: Renders a personnel card with type-based icon and slotted content.
+props:
+  type: object
+  required:
+    - personnel_type
+  properties:
+    personnel_type:
+      type: string
+      title: Personnel type
+      description: Personnel type value used for selecting the icon.
+      examples:
+        - Person
+        - Organisation
+    icon_pack:
+      type: string
+      title: Icon pack ID
+      description: Icon pack to use for the personnel icon.
+      default: metsis_drupal
+      examples:
+        - metsis_drupal
+    icon_size:
+      type: integer
+      title: Icon size
+      description: Icon size in pixels.
+      default: 20
+      examples:
+        - 16
+        - 20
+        - 24
+slots:
+  content:
+    title: Content
+    description: Personnel details rendered inside the card body.

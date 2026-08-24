@@ -1,0 +1,21 @@
+{% set type_value = personnel_type|default('')|trim %}
+{% set normalized_type = type_value|lower %}
+{% set pack = icon_pack|default('metsis_drupal') %}
+{% set size = icon_size|default(20) %}
+
+{% if normalized_type == 'person' %}
+  {% set type_icon = 'person' %}
+{% elseif normalized_type == 'organisation' %}
+  {% set type_icon = 'organization' %}
+{% else %}
+  {% set type_icon = 'organization' %}
+{% endif %}
+
+<article {{ attributes.addClass('personnel-card') }}>
+  <div class="personnel-card__icon" aria-hidden="true">
+    {{ icon(pack, type_icon, {size: size}) }}
+  </div>
+  <div class="personnel-card__content">
+    {% block content %}{% endblock %}
+  </div>
+</article>

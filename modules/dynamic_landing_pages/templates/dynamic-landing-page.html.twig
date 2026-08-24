@@ -122,11 +122,25 @@
 						</dl>
 					</div>
 					<div class="dynamic-landing-page__overview-map">
-						<h3 class="dynamic-landing-page__overview-map-title">Map</h3>
+						<h3 class="dynamic-landing-page__overview-map-title">Spatial Coverage</h3>
 						{{ overview_geometry_map }}
-					</div>
+<div class="dynamic-landing-page__overview-map-temporal">
+<h3 class="dynamic-landing-page__overview-map-title">Temporal Coverage</h3>
 
-				</div>
+{% if raw_solr_doc['temporal_extent_start_date'] %}
+
+		<label>Start Date:</label>
+			{{ raw_solr_doc['temporal_extent_start_date'][0] }}</p>
+	{% endif %}
+	{% if raw_solr_doc['temporal_extent_end_date'] %}
+		<label>End Date:</label>
+			{{ raw_solr_doc['temporal_extent_end_date'][0] }}</p>
+	{% endif %}
+
+</div>
+
+          </div>
+
 			</section>
 		{% else %}
 			<section class="metsis-metadata__summary" aria-label="Summary">

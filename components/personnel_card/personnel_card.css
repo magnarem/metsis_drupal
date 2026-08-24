@@ -1,0 +1,35 @@
+[data-component-id="metsis_drupal:personnel_card"].personnel-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  border: 1px solid var(--color--gray-20, #d8dce0);
+  border-radius: 0.35rem;
+  padding: 0.85rem;
+  background: var(--color--white, #fff);
+}
+
+[data-component-id="metsis_drupal:personnel_card"] .personnel-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color--gray-90, #232429);
+  line-height: 1;
+}
+
+[data-component-id="metsis_drupal:personnel_card"] .personnel-card__content {
+  min-width: 0;
+}
+
+[data-component-id="metsis_drupal:personnel_card"]
+  .personnel-card__content
+  .metsis-metadata__personnel-inline-value {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 42rem) {
+  [data-component-id="metsis_drupal:personnel_card"].personnel-card {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+}
