@@ -734,7 +734,15 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ];
 
       if ($normalized_type === 'http') {
-        $label = $this->t('Direct HTTP Download');
+        if (str_starts_with($resource, 'https://nbstds') && str_ends_with($resource, '.zip')) {
+          $label = $this->t('Direct HTTP Download (SAFE)');
+        }
+        elseif (str_starts_with($resource, 'https://nbstds') && str_ends_with($resource, '.nc')) {
+          $label = $this->t('Direct HTTP Download (NetCDF)');
+        }
+        else {
+          $label = $this->t('Direct HTTP Download');
+        }
         $target_blank = FALSE;
         $attributes['download'] = TRUE;
       }

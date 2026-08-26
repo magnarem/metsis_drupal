@@ -102,7 +102,8 @@ final class MetadataExportForm extends FormBase {
     }
     $solr_id = (string) ($form_state->get('solr_id') ?? '');
 
-    // Get the current route to determine if we are on a landing page and adjust the form action accordingly.
+    // Get the current route to determine if we are on a landing page
+    // and adjust the form action accordingly.
     $route = Url::fromRouteMatch($this->getRouteMatch());
     if ($route->getRouteName() === 'dynamic_landing_pages.landing_page') {
       $form['#action'] = Url::fromRoute('metsis_drupal.metadata_export_form', ['id' => $solr_id])->toString();
