@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\views\ViewExecutable;
 use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 
 /**
@@ -126,7 +127,7 @@ class MetsisThemeHooks {
         ],
         'template' => 'metsis-search-row-custom',
       ],
-      'views_view__metsis_search__results' => [
+      'views_view__metsis_search_results' => [
         'template' => 'views-view--metsis-search--results',
         'base hook' => 'views view',
       ],
@@ -382,6 +383,44 @@ class MetsisThemeHooks {
     ];
 
     return $mapping[$facet_id] ?? NULL;
+  }
+
+  /**
+   * Handle dynamic theme hook suggestions for metsis search results views.
+   *
+   * Add a shared suggestion for any view based on the metsis Search API index
+   * that carries the "metsis" query tag, regardless of the view's machine name.
+   *
+   * Implements hook_theme_suggestions_views_view_alter().
+   */
+  #[Hook('theme_suggestions_views_view_alter')]
+  public function themeSuggestionsViewsViewAlter(array &$suggestions, array $variables): void {
+    $view = $variables['view'] ?? NULL;
+    if (!$view instanceof ViewExecutable || !$this->isMetsisTaggedView($view)) {
+      return;
+    }
+
+    $suggestions[] = 'views_view__metsis_search_results';
+    // Optionally keep per-display granularity while still being dynamic:
+    $suggestions[] = 'views_view__metsis_search_results__' . $view->current_display;
+    $suggestions[] = 'views_view__metsis_' . $view->id() . '__' . $view->current_display;
+  }
+
+  /**
+   * Handle the "metsis" query tag.
+   *
+   * Determine whether a view is built on the metsis Search API index and
+   * uses the "metsis" query tag, independent of its machine name.
+   */
+  private function isMetsisTaggedView(ViewExecutable $view): bool {
+    if ($view->storage->get('base_table') !== 'search_api_index_metsis') {
+      return FALSE;
+    }
+
+    $query_options = $view->getDisplay()->getOption('query')['options'] ?? [];
+    $tags = $query_options['query_tags'] ?? [];
+
+    return in_array('metsis', $tags, TRUE);
   }
 
 }

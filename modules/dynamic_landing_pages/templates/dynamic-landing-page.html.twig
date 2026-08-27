@@ -124,6 +124,28 @@
 					<div class="dynamic-landing-page__overview-map">
 						<h3 class="dynamic-landing-page__overview-map-title">Spatial Coverage</h3>
 						{{ overview_geometry_map }}
+          {% if raw_solr_doc['geographic_extent_rectangle_north'] %}
+            <label>
+              <strong>North:</strong>
+            </label>
+            {{ raw_solr_doc['geographic_extent_rectangle_north'] }}
+          {% endif %}
+{% if raw_solr_doc['geographic_extent_rectangle_east'] %}
+	<label>
+		<strong>East:</strong>
+	</label>
+	{{ raw_solr_doc['geographic_extent_rectangle_east'] }}</p>{% endif %}
+{% if raw_solr_doc['geographic_extent_rectangle_south'] %}
+	<label>
+		<strong>South:</strong>
+	</label>
+	{{ raw_solr_doc['geographic_extent_rectangle_south'] }}{% endif %}
+{% if raw_solr_doc['geographic_extent_rectangle_west'] %}
+	<label>
+		<strong>West:</strong>
+	</label>
+	{{ raw_solr_doc['geographic_extent_rectangle_west'] }}</p>{% endif %}
+
 <div class="dynamic-landing-page__overview-map-temporal">
 
 {% if raw_solr_doc['temporal_extent_start_date'] %}
@@ -131,15 +153,8 @@
 <h3 class="dynamic-landing-page__temporal-title">
 Temporal Coverage
 {{ icon('metsis_drupal', icon_id|default('date-time'), {size: 20}) }}
-
-
-
 </h3>
-
-
-
 <div class="dynamic-landing-page__temporal-dates">
-
 
 		<label><strong>Start Date:</strong></label>
 			{{ raw_solr_doc['temporal_extent_start_date'][0] }}</p>

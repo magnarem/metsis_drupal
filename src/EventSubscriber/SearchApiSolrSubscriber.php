@@ -336,7 +336,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // Use lucene query parser. To make use of join and subquerires.
         // Parent/Child matching. Only needed when we have query terms.
         $solarium_query->addParam('defType', 'lucene');
-        if ($main_query !== '*:*') {
+        if ($main_query !== '*:*' && !$query->hasTag('flat_search')) {
           $parent_query_param = 'metsis_parent_text_q';
           $child_query_param  = 'metsis_child_text_q';
           $child_join_param   = 'metsis_child_join_q';
@@ -372,7 +372,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
         // In child-browse mode we extract info about the parent of the child.
         $parent_id = $query->getOption('metsis_parent_id');
-        if ($parent_id !== NULL && $parent_id !== '') {
+        if ($parent_id !== NULL && $parent_id !== '' && !$query->hasTag('flat_search')) {
           $solarium_query->addParam('parent.defType', 'lucene');
           $solarium_query->addParam('parent.q', '{!term f=id v=$row.related_dataset_id}');
           $solarium_query->addParam('parent.fq', 'isParent:"true"');
@@ -413,40 +413,43 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // children for this row when the parent row itself matches text.
         // These params must live in the found_children.* namespace to be
         // visible inside the [subquery] request context.
-        $solarium_query->addParam('found_children.defType', 'lucene');
-        $solarium_query->addParam('found_children.child_text_q', $normalized_main_query);
-        $solarium_query->addParam('found_children.parent_row_q', '{!term f=id v=$row.id}');
-        $solarium_query->addParam('found_children.parent_text_q', $normalized_main_query);
-        $solarium_query->addParam(
-          'found_children.parent_source_q',
-          '{!bool must=$parent_row_q must=$parent_text_q}'
-        );
-        $solarium_query->addParam(
-          'found_children.parent_match_q',
-          '{!join from=id to=related_dataset_id defType=lucene' .
-          $join_localparams . ' v=$parent_source_q}'
-        );
-        $solarium_query->addParam(
-          'found_children.q',
-          '{!bool should=$child_text_q should=$parent_match_q}'
-        );
-        $child_query_filters = $this->createChildQueryFilters($main_query_filters);
-        $solarium_query->addParam('found_children.fq', $child_query_filters);
-        $solarium_query->addParam('found_children.rows', '0');
+        if (!$query->hasTag('flat_search')) {
+          $solarium_query->addParam('found_children.defType', 'lucene');
 
-        /*
-         * Create subquery for getting the total number of children for each
-         * parent document in the main query result set.
-         */
-        $solarium_query->addParam('total_children.q', 'id:*');
-        $solarium_query->addParam('total_children.fl', ['id']);
-        $solarium_query->addParam('total_children.fq', [
-          '+metadata_status:"Active"',
-          'collection:(' . implode(' ', array_keys((array) $this->configProvider->getSettingsConfig()->get('selected_collections'))) . ')',
-          'isChild:true',
-          '{!term f=related_dataset_id v=$row.id}',
-        ]);
-        $solarium_query->addParam('total_children.rows', '0');
+          $solarium_query->addParam('found_children.child_text_q', $normalized_main_query);
+          $solarium_query->addParam('found_children.parent_row_q', '{!term f=id v=$row.id}');
+          $solarium_query->addParam('found_children.parent_text_q', $normalized_main_query);
+          $solarium_query->addParam(
+            'found_children.parent_source_q',
+            '{!bool must=$parent_row_q must=$parent_text_q}'
+          );
+          $solarium_query->addParam(
+            'found_children.parent_match_q',
+            '{!join from=id to=related_dataset_id defType=lucene' .
+            $join_localparams . ' v=$parent_source_q}'
+          );
+          $solarium_query->addParam(
+            'found_children.q',
+            '{!bool should=$child_text_q should=$parent_match_q}'
+          );
+          $child_query_filters = $this->createChildQueryFilters($main_query_filters);
+          $solarium_query->addParam('found_children.fq', $child_query_filters);
+          $solarium_query->addParam('found_children.rows', '0');
+
+          /*
+           * Create subquery for getting the total number of children for each
+           * parent document in the main query result set.
+           */
+          $solarium_query->addParam('total_children.q', 'id:*');
+          $solarium_query->addParam('total_children.fl', ['id']);
+          $solarium_query->addParam('total_children.fq', [
+            '+metadata_status:"Active"',
+            'collection:(' . implode(' ', array_keys((array) $this->configProvider->getSettingsConfig()->get('selected_collections'))) . ')',
+            'isChild:true',
+            '{!term f=related_dataset_id v=$row.id}',
+          ]);
+          $solarium_query->addParam('total_children.rows', '0');
+        }
         /*
          * Add some extra edismax query parameters.
          */
