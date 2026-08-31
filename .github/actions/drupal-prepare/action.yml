@@ -56,7 +56,7 @@ runs:
         if [ "$_ddev_drupal_contrib_empty_composer" = true ]; then
           rm -f composer.json
         fi
-
+        jq 'del(.require."metno/mmd")' "$COMPOSER" > composer.json.tmp && mv composer.json.tmp "$COMPOSER"
         composer install "$@"
         rm -f composer.contrib.json composer.contrib.lock
 
