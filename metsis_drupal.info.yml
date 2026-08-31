@@ -15,4 +15,3 @@ dependencies:
   - leaflet:leaflet
   - views_filters_summary:views_filters_summary
   - views_ajax_history:views_ajax_history
-  - metno:mmd
