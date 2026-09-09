@@ -235,7 +235,7 @@ button.metsis-search-clear-button[hidden] {
   margin: 0 0 1rem;
   border: 1px solid #d8e0e8;
   border-radius: 12px;
-  background: #ffffff;
+  /* background: #ffffff; */
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
   padding: 0;
   overflow: hidden;
@@ -247,7 +247,7 @@ button.metsis-search-clear-button[hidden] {
   max-width: 100%;
   padding: 0;
   border: 0;
-  background: #f7fafc;
+  /* background: #f7fafc; */
 }
 
 .metsis-search-layout .metsis-search-fieldset__header {
