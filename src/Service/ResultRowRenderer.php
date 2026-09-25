@@ -209,7 +209,7 @@ final class ResultRowRenderer {
         '#theme' => 'image',
         '#uri' => $solr_doc['thumbnail_url'],
         '#alt' => "A WMS thumbnail",
-        '#title' => "Click thumbnail to visualise WMS layers",
+        '#title' => "A ",
         '#attributes' => [
           'class' => ['metsis-search-thumbnail'],
           'loading' => 'lazy',

@@ -15,9 +15,11 @@ recipes/
 .continue
 .ddev/commands/*
 .ddev/redis/*
+.ddev/xhprof/*
 .ddev/solr/*
 .ddev/docker-compose*
 .ddev/.*
+.ddev/vscode-server
 core.*
 config-sync
 *.map

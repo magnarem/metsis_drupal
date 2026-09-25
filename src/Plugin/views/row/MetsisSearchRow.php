@@ -11,6 +11,7 @@ use Drupal\Core\Url;
 use Drupal\search_api\Plugin\views\ResultRow;
 use Drupal\search_api\Plugin\views\row\SearchApiRow;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\metsis_drupal\Service\DatasetVisualisationBuilder;
 use Drupal\metsis_drupal\Service\MetadataExportService;
 use Drupal\metsis_drupal\Service\ResultRowRenderer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -48,6 +49,13 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
   protected MetadataExportService $metadataExportService;
 
   /**
+   * Dataset visualisation builder.
+   *
+   * @var \Drupal\metsis_drupal\Service\DatasetVisualisationBuilder
+   */
+  protected DatasetVisualisationBuilder $visualisationBuilder;
+
+  /**
    * Cached enabled export options with descriptions, keyed by type.
    *
    * @var array<string, array{label: string, description: string}>|null
@@ -67,6 +75,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    *   The result row renderer service.
    * @param \Drupal\metsis_drupal\Service\MetadataExportService $metadata_export_service
    *   The metadata export service.
+   * @param \Drupal\metsis_drupal\Service\DatasetVisualisationBuilder $visualisation_builder
+   *   The dataset visualisation builder.
    */
   public function __construct(
     array $configuration,
@@ -74,10 +84,12 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $plugin_definition,
     ResultRowRenderer $metsis_row_renderer,
     MetadataExportService $metadata_export_service,
+    DatasetVisualisationBuilder $visualisation_builder,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->rowRenderer = $metsis_row_renderer;
     $this->metadataExportService = $metadata_export_service;
+    $this->visualisationBuilder = $visualisation_builder;
   }
 
   /**
@@ -89,7 +101,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $plugin_id,
       $plugin_definition,
       $container->get('metsis_drupal.result_row_renderer'),
-      $container->get('metsis_drupal.metadata_export_service')
+      $container->get('metsis_drupal.metadata_export_service'),
+      $container->get('metsis_drupal.dataset_visualisation_builder'),
     );
   }
 
@@ -382,12 +395,18 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $this->buildDataAccessOptions($operations, $solr_doc, $row_id);
     }
 
-    // Add plot trigger if applicable.
-    $this->buildPlotTrigger($operations, $solr_doc, $row_id);
-
-    // Add WMS visualisation if the row contains WMS data.
-    if ($metadata_identifier !== '' && $row_id !== '') {
-      $this->buildWmsVisualisationTrigger($operations, $solr_doc, $row_id, $metadata_identifier);
+    if ($row_id !== '') {
+      $visualisations = $this->visualisationBuilder->build(
+        $solr_doc,
+        $row_id,
+        $metadata_identifier,
+      );
+      if ($visualisations !== []) {
+        unset($visualisations['controls']['#type'], $visualisations['controls']['#attributes']);
+        $operations['controls'] += $visualisations['controls'];
+        unset($visualisations['controls']);
+        $operations += $visualisations;
+      }
     }
 
     return $operations;
@@ -600,97 +619,6 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         ],
       ];
     }
-  }
-
-  /**
-   * Build WMS visualisation trigger and inline target.
-   *
-   * @param array $operations
-   *   The operations array to mutate.
-   * @param array $solr_doc
-   *   The Solr document.
-   * @param string $row_id
-   *   The row ID.
-   * @param string $metadata_identifier
-   *   The metadata identifier.
-   */
-  private function buildWmsVisualisationTrigger(array &$operations, array $solr_doc, string $row_id, string $metadata_identifier): void {
-    $rows = $this->extractDataAccessRows($solr_doc['data_access_json'] ?? []);
-    $has_wms = FALSE;
-
-    foreach ($rows as $entry) {
-      if (strtoupper((string) ($entry['type'] ?? '')) === 'OGC WMS' && $this->normalizeUri($entry['resource'] ?? '') !== '') {
-        $has_wms = TRUE;
-        break;
-      }
-    }
-
-    if (!$has_wms) {
-      return;
-    }
-
-    $anchor_suffix = $this->buildAnchorSuffix($row_id, $metadata_identifier);
-    $mount_id = 'metsis-wms-map-app-' . $anchor_suffix;
-    $target_id = 'metsis-wms-target-' . $anchor_suffix;
-    $spinner_id = 'metsis-wms-spinner-' . $anchor_suffix;
-    $wms_url = Url::fromRoute('metsis_drupal.wms_htmx', [
-      'id' => $metadata_identifier,
-      'mount_id' => $mount_id,
-    ]);
-
-    $button = [
-      '#type' => 'button',
-      '#value' => $this->t('Visualise WMS'),
-      '#attributes' => [
-        'type' => 'button',
-        'class' => ['metsis-wms-trigger', 'button--secondary'],
-        'aria-controls' => $target_id,
-        'aria-expanded' => 'false',
-      ],
-    ];
-
-    (new Htmx())
-      ->get($wms_url)
-      ->onlyMainContent()
-      ->target('#' . $target_id)
-      ->swap('innerHTML')
-      ->indicator('#' . $spinner_id)
-      ->applyTo($button);
-
-    $operations['controls']['wms_trigger'] = $button;
-
-    $operations['wms_container'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => 'metsis-wms-container-' . $anchor_suffix,
-        'class' => ['metsis-wms-container'],
-      ],
-      'spinner' => [
-        '#type' => 'container',
-        '#attributes' => [
-          'id' => $spinner_id,
-          'class' => ['htmx-indicator', 'metsis-wms-spinner'],
-          'aria-hidden' => 'true',
-        ],
-        'icon' => [
-          '#type' => 'icon',
-          '#pack_id' => 'metsis_drupal_spinners',
-          '#icon_id' => 'puff',
-          '#settings' => [
-            'stroke' => '#0074D9',
-            'height' => '48',
-            'width' => '48',
-          ],
-        ],
-      ],
-      'target' => [
-        '#type' => 'container',
-        '#attributes' => [
-          'id' => $target_id,
-          'class' => ['metsis-wms-target'],
-        ],
-      ],
-    ];
   }
 
   /**
@@ -1011,127 +939,6 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     }
 
     return $rebuilt;
-  }
-
-  /**
-   * Build plot trigger render array if conditions met.
-   *
-   * @param array $operations
-   *   The operations array to mutate.
-   * @param array $solr_doc
-   *   The Solr document.
-   * @param string $row_id
-   *   The row ID.
-   */
-  private function buildPlotTrigger(array &$operations, array $solr_doc, string $row_id): void {
-    $opendap_url = '';
-    if (!empty($solr_doc['data_access_url_opendap'])) {
-      $opendap = \is_array($solr_doc['data_access_url_opendap'])
-        ? reset($solr_doc['data_access_url_opendap'])
-        : $solr_doc['data_access_url_opendap'];
-      $opendap_url = \is_string($opendap) ? $opendap : '';
-    }
-    $feature_type = '';
-    if (!empty($solr_doc['feature_type'])) {
-      $feature = \is_array($solr_doc['feature_type'])
-        ? reset($solr_doc['feature_type'])
-        : $solr_doc['feature_type'];
-      $feature_type = \is_string($feature) ? $feature : '';
-    }
-
-    if ($opendap_url === '' || $feature_type === '') {
-      return;
-    }
-
-    $plot_trigger_id = 'metsis-plot-trigger-' . $row_id;
-    $plot_container_id = 'metsis-plot-container-' . $row_id;
-    $plot_spinner_id = 'metsis-plot-spinner-' . $row_id;
-    $plot_target_id = 'metsis-plot-target-' . $row_id;
-    $plot_url = Url::fromRoute('metsis_drupal.bokeh_plot', [], [
-      'query' => [
-        'url' => $opendap_url,
-        'feature_type' => $feature_type,
-      ],
-    ]);
-
-    $operations['controls']['plot_trigger'] = [
-      '#type' => 'button',
-      '#value' => $this->t('Plot @feature', ['@feature' => $feature_type]),
-      '#attributes' => [
-        'id' => $plot_trigger_id,
-        'type' => 'button',
-        'class' => ['metsis-plot-trigger', 'button--secondary'],
-        'aria-controls' => $plot_container_id,
-        'aria-expanded' => 'false',
-        'data-label-closed' => (string) $this->t('Plot'),
-        'data-label-open' => (string) $this->t('Close plot &times;'),
-        'data-plot-spinner' => $plot_spinner_id,
-        'data-plot-target' => $plot_target_id,
-      ],
-    ];
-    (new Htmx())
-      ->get($plot_url)
-      ->onlyMainContent()
-      ->trigger('metsis:loadPlot')
-      ->target('#' . $plot_target_id)
-      ->swap('innerHTML')
-      ->on('htmx:beforeRequest', 'Drupal.metsis.rowPlot.beforeRequest(this);')
-      ->on('htmx:afterRequest', 'Drupal.metsis.rowPlot.afterRequest(this);')
-      ->on('htmx:responseError', 'Drupal.metsis.rowPlot.onError(this);')
-      ->applyTo($operations['controls']['plot_trigger']);
-
-    $operations['plot_container'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => $plot_container_id,
-        'class' => ['metsis-plot-container'],
-      ],
-    ];
-    $operations['plot_container']['plot_close'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'button',
-      '#value' => '×',
-      '#attributes' => [
-        'type' => 'button',
-        'class' => ['metsis-close-button', 'metsis-plot-close'],
-        'aria-label' => (string) $this->t('Close plot'),
-        'data-plot-trigger' => $plot_trigger_id,
-      ],
-    ];
-
-    $operations['plot_container']['spinner'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => $plot_spinner_id,
-        'class' => ['metsis-plot-spinner', 'hidden'],
-        'aria-hidden' => 'true',
-      ],
-      '#allowed_tags' => ['div', 'svg'],
-    ];
-    $operations['plot_container']['spinner']['icon'] = [
-      '#type' => 'icon',
-      '#pack_id' => 'metsis_drupal_spinners',
-      '#icon_id' => 'puff',
-      '#settings' => [
-        'stroke' => '#0074D9',
-        'height' => '48',
-        'width' => '48',
-      ],
-    ];
-
-    $operations['plot_container']['plot_target'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => $plot_target_id,
-        'class' => ['metsis-plot-target'],
-      ],
-      '#allowed_tags' => ['div', 'script'],
-    ];
-
-    // Keep OOB behavior aligned with BokehPlotForm flow.
-    (new Htmx())
-      ->swapOob('innerHTML')
-      ->applyTo($operations['plot_container']['plot_target']);
   }
 
   /**

@@ -149,7 +149,7 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
       }
       elseif ($parent_child_info['unique_parents'] > $parent_child_info['parents_count']) {
         $num_missing_parents = $parent_child_info['unique_parents'] - $parent_child_info['parents_count'];
-        $info['index']['parent_child'] = $this->t('There are @num children pointing to parents that do not exists, or that are not marked as parents.', [
+        $info['index']['parent_child'] = $this->t('There are @num unique related_dataset(s) pointing to parents that do not exists, are inactive, or that are not marked as parents.', [
           '@num' => $num_missing_parents,
         ]);
         $info['index']['parent_child_level'] = RequirementSeverity::Warning;
@@ -172,6 +172,17 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
         '@pending' => $pending_msg,
         '@index_msg' => $index_msg,
       ]);
+
+      // Check dynamic landing pages.
+      if ($this->statusReportService->getModuleHandler()->moduleExists('dynamic_landing_pages')) {
+        $lp_config = $this->statusReportService->getConfigFactory()->get('dynamic_landing_pages.settings');
+        if ($naming_authority = $lp_config->get('naming_authority')) {
+          $info['dynamic_landing_pages'] = $naming_authority;
+        }
+        else {
+          $info['dynamic_landing_pages'] = '';
+        }
+      }
 
       // Build the requirements for the status report.
       $requirements = [
@@ -285,6 +296,25 @@ final class MetsisStatusReportController extends ControllerBase implements Conta
         ],
 
       ];
+      if (array_key_exists('dynamic_landing_pages', $info)) {
+        if (!empty($info['dynamic_landing_pages'])) {
+          $requirements['dynamic_landing_pages'] = [
+            'title' => $this->t('Dynamic landing pages enabled'),
+            'value' => $this->t('Configured naming authority: <strong>@na</strong>', [
+              '@na' => $info['dynamic_landing_pages'],
+            ]),
+            'severity' => RequirementSeverity::Info,
+          ];
+        }
+        else {
+          $requirements['dynamic_landing_pages'] = [
+            'title' => $this->t('Dynamic landing pages enabled'),
+            'value' => $this->t('Naming authorithy not configured'),
+            'severity' => RequirementSeverity::Error,
+          ];
+        }
+
+      }
     }
     else {
       $url = Url::fromRoute('entity.search_api_server.edit_form')

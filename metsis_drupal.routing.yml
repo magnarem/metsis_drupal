@@ -91,6 +91,17 @@ metsis_drupal.metadata_document_htmx:
   options:
     _htmx_route: true
 
+metsis_drupal.catalog_htmx_redirect:
+  path: "/metsis/catalog/htmx/{id}"
+  defaults:
+    _controller: '\Drupal\metsis_drupal\Controller\CatalogController::htmxRedirect'
+    _title: "HTMX catalog redirect"
+  requirements:
+    _permission: "access content"
+    id: "[A-Za-z0-9_.:-]+"
+  options:
+    _htmx_route: true
+
 metsis_drupal.wms:
   path: "/metsis/wms/{id}"
   defaults:

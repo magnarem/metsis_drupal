@@ -6,6 +6,7 @@ namespace Drupal\metsis_drupal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\metsis_drupal\Service\CatalogButtonBuilder;
 use Drupal\metsis_drupal\Service\LeafletMapRenderer;
 use Drupal\metsis_drupal\Service\MarkdownDetectorInterface;
 use Drupal\metsis_drupal\Service\MetadataDocumentNormalizer;
@@ -56,6 +57,13 @@ final class MetadataDocumentController extends ControllerBase {
   protected ModuleHandlerInterface $moduleHandlerService;
 
   /**
+   * The catalog button builder service.
+   *
+   * @var \Drupal\metsis_drupal\Service\CatalogButtonBuilder
+   */
+  protected CatalogButtonBuilder $catalogButtonBuilder;
+
+  /**
    * Constructs the controller.
    */
   public function __construct(
@@ -64,12 +72,14 @@ final class MetadataDocumentController extends ControllerBase {
     LeafletMapRenderer $leafletMapRenderer,
     MarkdownDetectorInterface $markdown_detector,
     ModuleHandlerInterface $module_handler,
+    CatalogButtonBuilder $catalog_button_builder,
   ) {
     $this->documentLoader = $documentLoader;
     $this->metadataDocumentNormalizer = $metadataDocumentNormalizer;
     $this->leafletMapRenderer = $leafletMapRenderer;
     $this->markdownDetector = $markdown_detector;
     $this->moduleHandlerService = $module_handler;
+    $this->catalogButtonBuilder = $catalog_button_builder;
   }
 
   /**
@@ -82,6 +92,7 @@ final class MetadataDocumentController extends ControllerBase {
       $container->get('metsis_drupal.leaflet_map_renderer'),
       $container->get('metsis_drupal.markdown_detector'),
       $container->get('module_handler'),
+      $container->get('metsis_drupal.catalog_button_builder'),
     );
   }
 
@@ -108,14 +119,19 @@ final class MetadataDocumentController extends ControllerBase {
     $abstract = (string) ($document['abstract'] ?? $document['abstract_en'] ?? '');
     $abstract_html = $this->renderAbstract($abstract);
 
+    $parent_child = $this->resolveParentChildInfo($document);
+    $summary = $this->metadataDocumentNormalizer->buildSummary($document);
+    $summary = $this->metadataDocumentNormalizer->mergeRelatedDatasetIntoSummary($summary, $parent_child);
+
     return [
       '#theme' => 'metsis_metadata_document',
       '#id' => $id,
       '#abstract' => $abstract_html,
       '#title' => $title,
       '#metadata_updates' => $this->metadataDocumentNormalizer->buildMetadataUpdates($document),
-      '#summary' => $this->metadataDocumentNormalizer->buildSummary($document),
+      '#summary' => $summary,
       '#sections' => $this->metadataDocumentNormalizer->buildSections($document, $this->leafletMapRenderer),
+      '#parent_child' => $parent_child,
       // '#raw' => $this->buildRaw($document),
       '#attached' => [
         'library' => [
@@ -221,6 +237,42 @@ final class MetadataDocumentController extends ControllerBase {
       'last_metadata_update_json:[json]',
       'dataset_citation_json:[json]',
     ]);
+  }
+
+  /**
+   * Resolve parent/child collection info, loading the parent doc if needed.
+   *
+   * When the document is itself a collection (parent), the "Open this
+   * collection in catalog" HTMX icon button is attached under the
+   * catalog_button key.
+   *
+   * @param array<string, mixed> $document
+   *   Solr document being rendered.
+   *
+   * @return array<string, mixed>
+   *   Parent/child info for the metadata document template.
+   */
+  private function resolveParentChildInfo(array $document): array {
+    $parent_document = NULL;
+
+    if (!empty($document['isChild'])) {
+      $parent_identifier = MetsisSolrUtilities::firstValue($document['related_dataset'] ?? '');
+      if ($parent_identifier !== '' && MetsisSolrUtilities::isValidIdentifier($parent_identifier)) {
+        $parent_document = $this->documentLoader->loadDocumentById(
+          MetsisSolrUtilities::toSolrId($parent_identifier),
+          ['metadata_identifier', 'related_url_landing_page', 'title',
+            'title_en', 'abstract', 'abstract_en', 'temporal_extent*',
+          ],
+        );
+      }
+    }
+
+    $parent_child = $this->metadataDocumentNormalizer->buildParentChildInfo($document, $parent_document);
+    if (!empty($parent_child['is_parent']) && !empty($parent_child['catalog_identifier'])) {
+      $parent_child['catalog_button'] = $this->catalogButtonBuilder->build($parent_child['catalog_identifier']);
+    }
+
+    return $parent_child;
   }
 
 }

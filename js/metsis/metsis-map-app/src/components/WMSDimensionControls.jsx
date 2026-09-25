@@ -1,5 +1,9 @@
 import { useEffect, useState } from "preact/hooks";
-import { formatDimensionDisplayValue, wmsParamKey } from "@utils/wmsDimensions";
+import {
+  formatDimensionDisplayValue,
+  formatWmsParamValue,
+  wmsParamKey,
+} from "@utils/wmsDimensions";
 
 /**
  * Human-readable label for a dimension, including unit symbol when present.
@@ -110,7 +114,10 @@ const WMSDimensionControls = ({
     for (const dim of dimensions ?? []) {
       const idx = idxMap[dim.canonicalName] ?? 0;
       if (dim.values.length > idx) {
-        params[wmsParamKey(dim.canonicalName)] = dim.values[idx];
+        params[wmsParamKey(dim.canonicalName)] = formatWmsParamValue(
+          dim.canonicalName,
+          dim.values[idx],
+        );
       }
     }
     return params;

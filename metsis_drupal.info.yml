@@ -13,5 +13,7 @@ dependencies:
   - facets:facets_exposed_filters
   - better_exposed_filters:better_exposed_filters
   - leaflet:leaflet
+  - vite:vite
   - views_filters_summary:views_filters_summary
   - views_ajax_history:views_ajax_history
+  - tagify_facets:tagify_facets

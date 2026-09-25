@@ -47,6 +47,13 @@
   margin-left: 1rem;
 }
 
+.metsis-metadata--landing-page .dynamic-landing-page__visualisations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 @media (max-width: 68rem) {
   .metsis-metadata--landing-page .dynamic-landing-page__overview-grid {
     grid-template-columns: 1fr;

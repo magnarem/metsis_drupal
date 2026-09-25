@@ -10,7 +10,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Solarium\QueryType\Select\Query\Query;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\metsis_drupal\LoggerTrait;
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -55,12 +55,12 @@ class StatusReportService {
   protected ImmutableConfig $settingsConfig;
 
   /**
-   * The metsis_drupal module extension.
+   * The module extension service.
    *
-   * @var \Drupal\Core\Extension\Extension
+   * @var \Drupal\Core\Extension\ModuleHandler
    */
 
-  protected $moduleExtension;
+  protected $moduleHandler;
 
   /**
    * Constructor.
@@ -70,10 +70,10 @@ class StatusReportService {
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    ModuleHandlerInterface $module_handler,
+    ModuleHandler $module_handler,
     ConfigFactoryInterface $config_factory,
   ) {
-    $this->moduleExtension = $module_handler->getModule('metsis_drupal');
+    $this->moduleHandler = $module_handler;
     $this->configFactory = $config_factory;
     $this->index = $entity_type_manager->getStorage('search_api_index')
       ->load(MetsisConstants::METSIS_SOLR_INDEX_ID);
@@ -140,25 +140,28 @@ class StatusReportService {
     // Use JSON facet query to get all unique parent ids referenced in children.
     $jsonFacetSet = $solarium_query->getFacetSet();
 
-    // Add a JSON facet for the HyperLogLog aggregation.
-    $jsonFacetSet->createJsonFacetAggregation('unique_parents')
-      ->setFunction('hll(related_dataset_id)');
-
+    // Add facet to get all the unique parent ids referenced in children.
+    // $jsonFacetSet->createJsonFacetTerms('referenced_parents')
+    //   ->setField('related_dataset')
+    //   ->setLimit(-1)
+    //   ->setMinCount(1)
+    //   ->setNumBuckets(TRUE);
+    $jsonFacetSet->createFacetField('referenced_parents')
+      ->setField('related_dataset')
+      ->setLimit(-1)
+      ->setMinCount(1);
     /** @var \Solarium\QueryType\Select\Result\Result $result */
     $result = $this->getConnector()->execute($solarium_query);
 
-    /** @var \Solarium\Component\Result\FacetSet $facetResSet */
-    $facetResSet = $result->getFacetSet();
-
-    /** @var \Solarium\Component\Result\Facet\Aggregation $uniqueParentsRes */
-    $uniqueParentsRes = $facetResSet->getFacet('unique_parents');
-    if (NULL !== $uniqueParentsRes) {
-      $uniqueParents = $uniqueParentsRes->getValue();
-    }
-    else {
-      $uniqueParents = 0;
-    }
-
+    // Get the list of unique parent ids referenced in children.
+    /** @var \Solarium\Component\Result\Facet\Buckets $buckets */
+    $buckets = $result->getFacetSet()->getFacet('referenced_parents');
+    dpm($buckets->count(), 'referenced parents buckets count');
+    dpm(array_keys($buckets->getValues()), 'referenced parents list');
+    $referenced_parent_ids = [];
+    // $uniqueParents = $buckets->getNumBuckets() ?? count($referenced_parent_ids);
+    // dpm($uniqueParents, 'unique parents count');.
+    $uniqueParents = $buckets->count();
     // Create a new select query and query for marked parents count.
     $solarium_query = $this->createSelectQuery();
     $solarium_query->setRows(0);
@@ -173,6 +176,17 @@ class StatusReportService {
     $result = $this->getConnector()->execute($solarium_query);
     $parentsCount = $result->getNumFound();
 
+    $solarium_query->setRows($parentsCount);
+    $solarium_query->setFields('metadata_identifier');
+    dpm($solarium_query->getFilterQueries(), 'parent query');
+    $result = $this->getConnector()->execute($solarium_query);
+    $marked_parent_ids = [];
+    foreach ($result as $doc) {
+      $marked_parent_ids[] = $doc->metadata_identifier;
+    }
+    // dpm(array_values(array_diff($referenced_parent_ids, $marked_parent_ids)), 'missing parents');
+    // dpm(array_values(array_diff($marked_parent_ids, $referenced_parent_ids)), 'missing children');.
+    // Ok. @todo create list of unique children and make the set difference.
     return [
       'unique_parents' => $uniqueParents,
       'parents_count' => $parentsCount,
@@ -229,6 +243,27 @@ class StatusReportService {
       'total_site_active' => $total_site_active,
       'total_site_inactive' => $total_site_inactive,
     ];
+  }
+
+  /**
+   * Getter function for module handler.
+   *
+   * @return \Drupal\Core\Extension\ModuleHandler
+   *   return s the module handler.
+   */
+  public function getModuleHandler(): ModuleHandler {
+    return $this->moduleHandler;
+  }
+
+  /**
+   * Getter function for config factory.
+   *
+   * @return \Drupal\Core\Config\ConfigFactoryInterface
+   *   The config factory.
+   */
+  public function getConfigFactory(): ConfigFactoryInterface {
+    return $this->configFactory;
+
   }
 
 }

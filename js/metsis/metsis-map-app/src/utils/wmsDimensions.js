@@ -8,14 +8,14 @@
 const MAX_RANGE_VALUES = 1000;
 
 /**
- * Parse an ISO 8601 duration string to milliseconds.
+ * Parse an ISO 8601 duration string into its component parts.
  * Handles P[nY][nM][nW][nD][T[nH][nM][nS]].
- * Uses approximations: 1 year ≈ 365.25 days, 1 month ≈ 30.44 days.
  *
  * @param {string} isoString  e.g. "PT1H", "P1D", "P1Y2M3DT4H5M6S"
- * @returns {number|null}  milliseconds, or null if unparseable / zero
+ * @returns {{years:number,months:number,weeks:number,days:number,hours:number,minutes:number,seconds:number}|null}
+ *   Component breakdown, or null if unparseable / zero.
  */
-export function parseDurationMs(isoString) {
+export function parseDurationComponents(isoString) {
   if (!isoString || typeof isoString !== "string") return null;
 
   const match = isoString.match(
@@ -27,16 +27,47 @@ export function parseDurationMs(isoString) {
     v !== undefined ? parseFloat(v) : 0,
   );
 
-  const ms =
-    (y ?? 0) * 365.25 * 86_400_000 +
-    (mo ?? 0) * 30.44 * 86_400_000 +
-    (w ?? 0) * 7 * 86_400_000 +
-    (d ?? 0) * 86_400_000 +
-    (h ?? 0) * 3_600_000 +
-    (mi ?? 0) * 60_000 +
-    (s ?? 0) * 1_000;
+  const hasAny = [y, mo, w, d, h, mi, s].some((v) => v > 0);
+  return hasAny
+    ? {
+        years: y,
+        months: mo,
+        weeks: w,
+        days: d,
+        hours: h,
+        minutes: mi,
+        seconds: s,
+      }
+    : null;
+}
 
-  return ms > 0 ? ms : null;
+/**
+ * Add ISO 8601 duration components to a UTC timestamp.
+ * Years/months use calendar-accurate Date arithmetic (leap years, variable month
+ * length) rather than fixed-length ms approximations, which drift over long ranges
+ * (e.g. P30Y) and can produce a value the WMS server doesn't recognise.
+ *
+ * @param {number} ms          epoch milliseconds
+ * @param {object} components  as returned by parseDurationComponents()
+ * @returns {number}  epoch milliseconds
+ */
+function addDurationComponents(ms, components) {
+  const date = new Date(ms);
+  if (components.years) {
+    date.setUTCFullYear(date.getUTCFullYear() + components.years);
+  }
+  if (components.months) {
+    date.setUTCMonth(date.getUTCMonth() + components.months);
+  }
+
+  const exactMsOffset =
+    components.weeks * 7 * 86_400_000 +
+    components.days * 86_400_000 +
+    components.hours * 3_600_000 +
+    components.minutes * 60_000 +
+    components.seconds * 1_000;
+
+  return date.getTime() + exactMsOffset;
 }
 
 /**
@@ -49,8 +80,8 @@ export function parseDurationMs(isoString) {
  * @returns {string[]}
  */
 export function expandRangeToValues(start, end, duration) {
-  const durationMs = parseDurationMs(duration);
-  if (!durationMs) return start ? [start] : [];
+  const components = parseDurationComponents(duration);
+  if (!components) return start ? [start] : [];
 
   const startMs = Date.parse(start);
   const endMs = Date.parse(end);
@@ -62,7 +93,9 @@ export function expandRangeToValues(start, end, duration) {
   let current = startMs;
   while (current <= endMs && values.length < MAX_RANGE_VALUES) {
     values.push(new Date(current).toISOString());
-    current += durationMs;
+    const next = addDurationComponents(current, components);
+    if (next <= current) break;
+    current = next;
   }
   return values;
 }
@@ -169,11 +202,26 @@ export function formatDimensionDisplayValue(
 }
 
 /**
+ * Format a dimension value for use in a WMS request parameter.
+ * Some WMS servers reject sub-second precision on TIME (expect %Y-%m-%dT%H:%M:%SZ).
+ *
+ * @param {string} canonicalName
+ * @param {string} value
+ * @returns {string}
+ */
+export function formatWmsParamValue(canonicalName, value) {
+  if (canonicalName === "time" && typeof value === "string") {
+    return value.replace(/\.\d+Z$/, "Z");
+  }
+  return value;
+}
+
+/**
  * Build an initial WMS dimension params object from a layer's dimension definitions,
  * honouring each dimension's advertised default value when available.
  *
  * @param {Array<{canonicalName: string, defaultValue: string, values: string[]}>} dims
- * @returns {object}  e.g. { TIME: "2020-01-01T00:00:00.000Z", ELEVATION: "0" }
+ * @returns {object}  e.g. { TIME: "2020-01-01T00:00:00Z", ELEVATION: "0" }
  */
 export function buildInitialDimParams(dims) {
   if (!Array.isArray(dims)) return {};
@@ -184,7 +232,10 @@ export function buildInitialDimParams(dims) {
       ? dim.values.indexOf(dim.defaultValue)
       : -1;
     const idx = defaultIdx >= 0 ? defaultIdx : 0;
-    params[wmsParamKey(dim.canonicalName)] = dim.values[idx];
+    params[wmsParamKey(dim.canonicalName)] = formatWmsParamValue(
+      dim.canonicalName,
+      dim.values[idx],
+    );
   }
   return params;
 }

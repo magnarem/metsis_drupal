@@ -8,6 +8,7 @@
 
 {% macro render_vocab_value(value) %}
 	{% set has_vocab = value.vocabulary is defined and value.vocabulary is not empty %}
+	{% set has_vocab_rows = has_vocab and value.vocabulary.rows is defined and value.vocabulary.rows is not empty %}
 	{% set has_vocab_entries = has_vocab and value.vocabulary.entries is defined and value.vocabulary.entries is not empty %}
 	<span class="metsis-metadata__vocab-value">
 		{% if value.resource_url is not empty %}
@@ -16,11 +17,18 @@
 			<span>{{ value.text }}</span>
 		{% endif %}
 		{% if has_vocab %}
-			<button type="button" class="metsis-vocab-popover-trigger" aria-label="Show vocabulary information for {{ value.text }}" aria-haspopup="dialog" aria-expanded="false" popovertarget="{{ value.popover_id }}" popovertargetaction="toggle">
+			<button type="button" class="metsis-vocab-popover-trigger" aria-label="Show more information for {{ value.text }}" aria-haspopup="dialog" aria-expanded="false" popovertarget="{{ value.popover_id }}" popovertargetaction="toggle">
 				<span class="metsis-vocab-popover-trigger__icon" aria-hidden="true">{{ icon('metsis_drupal', 'info-filled', {'size': 14}) }}</span>
 			</button>
 			<div id="{{ value.popover_id }}" class="metsis-vocab-popover" popover="auto">
-				{% if has_vocab_entries %}
+				{% if has_vocab_rows %}
+					<p class="metsis-vocab-popover__title">{{ value.text }}</p>
+					{% for row in value.vocabulary.rows %}
+						<p class="metsis-vocab-popover__entry">
+							<strong>{{ row.label }}:</strong>
+							{{ row.value }}</p>
+					{% endfor %}
+				{% elseif has_vocab_entries %}
 					<p class="metsis-vocab-popover__title">{{ value.text }}</p>
 					{% for concept in value.vocabulary.entries %}
 						<div class="metsis-vocab-popover__entry">
@@ -106,7 +114,20 @@
 	{% endif %}
 
 	<section class="metsis-metadata__summary" aria-label="Summary">
-		<h2>Core metadata</h2>
+		<div class="metsis-metadata__summary-header">
+			<h2>Core metadata</h2>
+			{% if parent_child is defined and parent_child.is_parent %}
+				<div class="metsis-metadata__collection-badge">
+					{% include 'metsis_drupal:collection' with {
+						icon_alt_text: 'Collection',
+						width: 96,
+					} only %}
+					{% if parent_child.catalog_button is not empty %}
+						{{ parent_child.catalog_button }}
+					{% endif %}
+				</div>
+			{% endif %}
+		</div>
 		<dl class="metsis-metadata__dl">
 			{% for label, value in summary %}
 				{% if value is not empty %}

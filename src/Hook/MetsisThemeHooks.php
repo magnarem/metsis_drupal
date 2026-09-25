@@ -36,6 +36,7 @@ class MetsisThemeHooks {
           'summary' => [],
           'sections' => [],
           'raw' => [],
+          'parent_child' => NULL,
         ],
         'template' => 'metsis-metadata-document',
       ],

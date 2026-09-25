@@ -33,12 +33,6 @@ final class MetadataDocumentNormalizer {
    *   Label/value map for summary.
    */
   public function buildSummary(array $document): array {
-    $license_identifier = $document['use_constraint_identifier'] ?? '';
-    $license_display = $license_identifier;
-    if ($this->toInlineText($license_display) === '' || $license_display === 'Not provided') {
-      $license_display = $document['use_constraint_resource'] ?? $document['use_constraint_license_text'] ?? 'Not provided';
-    }
-
     return [
       'Metadata identifier' => $this->buildSummaryValueNode($document['metadata_identifier'] ?? ''),
       'Metadata status' => $this->buildSummaryValueNode($document['metadata_status'] ?? '', ['Metadata_Status'], 'summary-metadata-status'),
@@ -51,11 +45,32 @@ final class MetadataDocumentNormalizer {
       'Iso topic category' => $this->buildSummaryValueNode($document['iso_topic_category'] ?? [], ['ISO_Topic_Category'], 'summary-iso-topic-category', TRUE),
       'Feature type' => $this->buildSummaryValueNode($document['feature_type'] ?? ''),
       'Access constraint' => $this->buildSummaryValueNode($document['access_constraint'] ?? '', ['Access_Constraint'], 'summary-access-constraint'),
-      'License' => $this->buildSummaryValueNode(
-        $license_display,
-        $this->toInlineText($license_identifier) !== '' ? ['Use_Constraint'] : [],
-        'summary-use-constraint',
-      ),
+      'License' => $this->buildLicenseValueNode($document),
+    ];
+  }
+
+  /**
+   * Build the License summary value node.
+   *
+   * No vocabulary lookup is performed for the license: the identifier is
+   * rendered as plain text, linked to the use constraint resource when one
+   * is available, and left unlinked otherwise.
+   *
+   * @param array<string, mixed> $document
+   *   Solr document.
+   *
+   * @return array<string, mixed>
+   *   Renderable value node.
+   */
+  private function buildLicenseValueNode(array $document): array {
+    $identifier = $this->toInlineText($document['use_constraint_identifier'] ?? '');
+    $resource_url = $identifier !== '' ? $this->normalizeUri($document['use_constraint_resource'] ?? '') : '';
+
+    return [
+      'text' => $identifier !== '' ? $identifier : 'Not provided',
+      'resource_url' => $resource_url,
+      'popover_id' => '',
+      'vocabulary' => NULL,
     ];
   }
 
@@ -285,6 +300,176 @@ final class MetadataDocumentNormalizer {
       }
       return !empty($section['value']);
     }));
+  }
+
+  /**
+   * Build parent/child collection info for a metadata document.
+   *
+   * The caller is responsible for loading the parent Solr document (when the
+   * current document is a child) so this normalizer stays free of Solr
+   * dependencies and remains easy to unit test.
+   *
+   * @param array<string, mixed> $document
+   *   Solr document being rendered.
+   * @param array<string, mixed>|null $parentDocument
+   *   Parent Solr document when $document is a child, or NULL when unknown
+   *   or not applicable.
+   *
+   * @return array<string, mixed>
+   *   Keys: is_parent, is_child, catalog_identifier, related_dataset.
+   *   catalog_identifier is the parent's own metadata identifier, used by
+   *   the caller to build the "Open this collection in catalog" HTMX
+   *   button (@see \Drupal\metsis_drupal\Service\CatalogButtonBuilder). This
+   *   normalizer intentionally does not build a direct catalog URL/link so
+   *   catalog navigation stays behind the HTMX redirect endpoint rather than
+   *   a plain anchor.
+   */
+  public function buildParentChildInfo(array $document, ?array $parentDocument = NULL): array {
+    $is_parent = $this->isTruthyFlag($document['isParent'] ?? FALSE);
+    $is_child = $this->isTruthyFlag($document['isChild'] ?? FALSE);
+
+    $catalog_identifier = NULL;
+    if ($is_parent) {
+      $metadata_identifier = $this->toInlineText($document['metadata_identifier'] ?? '');
+      if ($metadata_identifier !== '') {
+        $catalog_identifier = $metadata_identifier;
+      }
+    }
+
+    $related_dataset = NULL;
+    if ($is_child) {
+      $parent_identifier = $this->toInlineText($document['related_dataset'] ?? '');
+      if ($parent_identifier !== '') {
+        $resource_url = $parentDocument !== NULL
+          ? $this->normalizeUri($parentDocument['related_url_landing_page'] ?? '')
+          : '';
+
+        $related_dataset = [
+          'text' => $parent_identifier,
+          'resource_url' => $resource_url,
+          'popover_id' => 'summary-related-dataset',
+          'vocabulary' => $this->buildParentDatasetInfo($parentDocument),
+        ];
+      }
+    }
+
+    return [
+      'is_parent' => $is_parent,
+      'is_child' => $is_child,
+      'catalog_identifier' => $catalog_identifier,
+      'related_dataset' => $related_dataset,
+    ];
+  }
+
+  /**
+   * Insert the related dataset value into the summary map.
+   *
+   * The row is placed right after the Metadata identifier row.
+   *
+   * @param array<string, mixed> $summary
+   *   Summary map built by ::buildSummary().
+   * @param array<string, mixed> $parentChildInfo
+   *   Parent/child info built by ::buildParentChildInfo().
+   *
+   * @return array<string, mixed>
+   *   Summary map with the Related dataset row inserted, when applicable.
+   */
+  public function mergeRelatedDatasetIntoSummary(array $summary, array $parentChildInfo): array {
+    $related_dataset = $parentChildInfo['related_dataset'] ?? NULL;
+    if (!is_array($related_dataset)) {
+      return $summary;
+    }
+
+    $merged = [];
+    $inserted = FALSE;
+    foreach ($summary as $label => $value) {
+      $merged[$label] = $value;
+      if ($label === 'Metadata identifier') {
+        $merged['Related dataset'] = $related_dataset;
+        $inserted = TRUE;
+      }
+    }
+
+    if (!$inserted) {
+      $merged = ['Related dataset' => $related_dataset] + $merged;
+    }
+
+    return $merged;
+  }
+
+  /**
+   * Build popover info for the parent dataset referenced by a child.
+   *
+   * Includes the parent's title, abstract, and temporal extent.
+   *
+   * @param array<string, mixed>|null $parentDocument
+   *   Parent Solr document, or NULL when unavailable.
+   *
+   * @return array<string, mixed>|null
+   *   Popover data with a 'rows' list, or NULL when nothing to show.
+   */
+  private function buildParentDatasetInfo(?array $parentDocument): ?array {
+    if ($parentDocument === NULL) {
+      return NULL;
+    }
+
+    $rows = [];
+
+    $title = $this->toInlineText($parentDocument['title'] ?? $parentDocument['title_en'] ?? '');
+    if ($title !== '') {
+      $rows[] = ['label' => 'Title', 'value' => $title];
+    }
+
+    $abstract = $this->toInlineText($parentDocument['abstract'] ?? $parentDocument['abstract_en'] ?? '');
+    if ($abstract !== '') {
+      $rows[] = ['label' => 'Abstract', 'value' => $abstract];
+    }
+
+    $temporal_extent = $this->buildTemporalExtentText($parentDocument);
+    if ($temporal_extent !== '') {
+      $rows[] = ['label' => 'Temporal extent', 'value' => $temporal_extent];
+    }
+
+    return $rows !== [] ? ['rows' => $rows] : NULL;
+  }
+
+  /**
+   * Build a human-readable temporal extent string from start/end dates.
+   *
+   * @param array<string, mixed> $document
+   *   Solr document.
+   *
+   * @return string
+   *   Temporal extent text, or empty string when neither date is present.
+   */
+  private function buildTemporalExtentText(array $document): string {
+    $start = $this->toInlineText($document['temporal_extent_start_date'] ?? '');
+    $end = $this->toInlineText($document['temporal_extent_end_date'] ?? '');
+
+    if ($start === '' && $end === '') {
+      return '';
+    }
+    if ($start !== '' && $end !== '') {
+      return $start . ' – ' . $end;
+    }
+
+    return $start !== '' ? $start : $end;
+  }
+
+  /**
+   * Interpret mixed Solr boolean-flag payloads (bool, "true"/"false", array).
+   */
+  private function isTruthyFlag(mixed $value): bool {
+    if (is_array($value)) {
+      $value = reset($value);
+    }
+    if (is_bool($value)) {
+      return $value;
+    }
+    if (is_string($value)) {
+      return strcasecmp(trim($value), 'true') === 0;
+    }
+    return (bool) $value;
   }
 
   /**

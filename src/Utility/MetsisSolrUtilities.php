@@ -30,7 +30,7 @@ final class MetsisSolrUtilities {
    */
   public static function toSolrId(string $id): string {
     // List of characters to replace.
-    $idReplacements = [':', '/', '.'];
+    $idReplacements = [':', '/', '.', '?'];
 
     // Replace each character in the list with a hyphen (-).
     $solr_id = str_replace($idReplacements, '-', $id);
@@ -49,6 +49,25 @@ final class MetsisSolrUtilities {
    */
   public static function isValidIdentifier(string $id): bool {
     return $id !== '' && preg_match(self::SOLR_ID_PATTERN, $id) === 1;
+  }
+
+  /**
+   * Extract the first scalar value from a Solr field that may be multivalued.
+   *
+   * @param mixed $value
+   *   Raw Solr field value (scalar, array, or NULL).
+   *
+   * @return string
+   *   Trimmed first value, or empty string when unavailable.
+   */
+  public static function firstValue(mixed $value): string {
+    if (is_array($value)) {
+      $value = reset($value);
+    }
+    if (!is_scalar($value)) {
+      return '';
+    }
+    return trim((string) $value);
   }
 
 }

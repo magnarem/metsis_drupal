@@ -68,6 +68,21 @@ services:
   metsis_drupal.metadata_document_normalizer:
     class: Drupal\metsis_drupal\Service\MetadataDocumentNormalizer
 
+  metsis_drupal.catalog_button_builder:
+    class: Drupal\metsis_drupal\Service\CatalogButtonBuilder
+
+  Drupal\metsis_drupal\Service\CatalogButtonBuilder:
+    alias: "metsis_drupal.catalog_button_builder"
+
+  metsis_drupal.dataset_visualisation_builder:
+    class: Drupal\metsis_drupal\Service\DatasetVisualisationBuilder
+    arguments:
+      - "@string_translation"
+      - "@url_generator"
+
+  Drupal\metsis_drupal\Service\DatasetVisualisationBuilder:
+    alias: "metsis_drupal.dataset_visualisation_builder"
+
   metsis_drupal.markdown_detector:
     class: Drupal\metsis_drupal\Service\MarkdownDetector
 

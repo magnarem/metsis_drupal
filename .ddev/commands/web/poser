@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+#CUSTOM COMMAND TO ADD INTERNAL REPO
+## Command provided by https://github.com/ddev/ddev-drupal-contrib
+## Description: Expand composer.json and run composer update.
+## Usage: poser [flags] [args]
+## Example: "ddev poser" or "ddev poser --prefer-source" or "ddev poser --prefer-lowest --prefer-stable"
+## ExecRaw: true
+## MutagenSync: true
+
+set -eu -o pipefail
+
+export COMPOSER=composer.contrib.json
+.ddev/commands/web/expand-composer-json
+mkdir -p web/modules/custom
+composer repo add metno composer $INTERNAL_SATIS_REPO
+composer update "$@"
+# The -f flag suppresses errors if lock file does not exist.
+rm -f composer.contrib.json composer.contrib.lock
+touch $DDEV_DOCROOT/core/.env

@@ -11,6 +11,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\metsis_drupal\Service\CatalogButtonBuilder;
+use Drupal\metsis_drupal\Service\DatasetVisualisationBuilder;
 use Drupal\metsis_drupal\Service\LeafletMapRenderer;
 use Drupal\metsis_drupal\Service\MetadataDocumentNormalizer;
 use Drupal\metsis_drupal\Service\SolrDocumentLoader;
@@ -55,6 +57,8 @@ final class DynamicLandingPagesController extends ControllerBase {
     private readonly MetadataDocumentNormalizer $normalizer,
     private readonly LeafletMapRenderer $leafletMapRenderer,
     private readonly CacheBackendInterface $cache,
+    private readonly CatalogButtonBuilder $catalogButtonBuilder,
+    private readonly DatasetVisualisationBuilder $visualisationBuilder,
   ) {}
 
   /**
@@ -66,6 +70,8 @@ final class DynamicLandingPagesController extends ControllerBase {
       $container->get('metsis_drupal.metadata_document_normalizer'),
       $container->get('metsis_drupal.leaflet_map_renderer'),
       $container->get('cache.dynamic_landing_pages'),
+      $container->get('metsis_drupal.catalog_button_builder'),
+      $container->get('metsis_drupal.dataset_visualisation_builder'),
     );
   }
 
@@ -128,12 +134,17 @@ final class DynamicLandingPagesController extends ControllerBase {
     $title         = (string) ($doc['title'] ?? $doc['title_en'] ?? $doc['metadata_identifier'] ?? $id);
     $abstract_text = (string) ($doc['abstract'] ?? $doc['abstract_en'] ?? '');
 
+    $parent_child = $this->resolveParentChildInfo($doc);
+    $summary = $this->normalizer->buildSummary($doc);
+    $summary = $this->normalizer->mergeRelatedDatasetIntoSummary($summary, $parent_child);
+
     $data = [
       'title'            => $title,
       'abstract_text'    => $abstract_text,
-      'summary'          => $this->normalizer->buildSummary($doc),
+      'summary'          => $summary,
       'sections'         => $this->normalizer->buildSections($doc, $this->leafletMapRenderer),
       'metadata_updates' => $this->normalizer->buildMetadataUpdates($doc),
+      'parent_child'     => $parent_child,
       'doc_meta'         => $this->extractHeadMetaFields($doc),
       'solr_timestamp'   => (string) ($doc['timestamp'] ?? ''),
       'solr_last_update' => (string) ($doc['last_metadata_updated_date'] ?? ''),
@@ -182,6 +193,33 @@ final class DynamicLandingPagesController extends ControllerBase {
   }
 
   /**
+   * Resolve parent/child collection info, loading the parent doc if needed.
+   *
+   * @param array<string, mixed> $document
+   *   Solr document being rendered.
+   *
+   * @return array<string, mixed>
+   *   Parent/child info for the landing page template.
+   */
+  private function resolveParentChildInfo(array $document): array {
+    $parent_document = NULL;
+
+    if (!empty($document['isChild'])) {
+      $parent_identifier = MetsisSolrUtilities::firstValue($document['related_dataset'] ?? '');
+      if ($parent_identifier !== '' && MetsisSolrUtilities::isValidIdentifier($parent_identifier)) {
+        $parent_document = $this->documentLoader->loadDocumentById(
+          MetsisSolrUtilities::toSolrId($parent_identifier),
+          ['metadata_identifier', 'related_url_landing_page', 'title',
+            'title_en', 'abstract', 'abstract_en', 'temporal_extent*',
+          ],
+        );
+      }
+    }
+
+    return $this->normalizer->buildParentChildInfo($document, $parent_document);
+  }
+
+  /**
    * Assembles the render array from normalized (possibly cached) data.
    *
    * Sets max-age 0 to disable Drupal's render/page cache — the controller
@@ -202,6 +240,20 @@ final class DynamicLandingPagesController extends ControllerBase {
       ->setAbsolute()
       ->toString();
 
+    // Null-coalesce for cache items written before this key existed.
+    $parent_child = $data['parent_child'] ?? NULL;
+    if (is_array($parent_child) && !empty($parent_child['is_parent']) && !empty($parent_child['catalog_identifier'])) {
+      // Built fresh on every request (not cached) since it carries an
+      // HTMX-bound render array.
+      $parent_child['catalog_button'] = $this->catalogButtonBuilder->build($parent_child['catalog_identifier']);
+    }
+    $visualisations = $this->visualisationBuilder->build(
+      $data['raw_solr_doc'],
+      'landing-' . $solr_id,
+      $solr_id,
+      TRUE,
+    );
+
     return [
       '#title'            => $data['title'],
       '#theme'            => 'dynamic_landing_page',
@@ -213,7 +265,9 @@ final class DynamicLandingPagesController extends ControllerBase {
       '#summary'          => $data['summary'],
       '#sections'         => $data['sections'],
       '#metadata_updates' => $data['metadata_updates'],
+      '#parent_child'     => $parent_child,
       '#raw_solr_doc'      => $data['raw_solr_doc'],
+      '#visualisations'    => $visualisations,
       '#export_form'      => [
         '#type' => 'container',
         '#children' => $this->formBuilder()->getForm('Drupal\metsis_drupal\Form\MetadataExportForm', $solr_id),
@@ -221,6 +275,7 @@ final class DynamicLandingPagesController extends ControllerBase {
       '#attached'         => [
         'library'   => [
           'metsis_drupal/metsis_metadata_document',
+          'metsis_drupal/metsis_map',
           'dynamic_landing_pages/dynamic_landing_page',
         ],
         'html_head' => $this->buildHeadMeta($data['doc_meta'], $canonical_url),

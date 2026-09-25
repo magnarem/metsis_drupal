@@ -78,6 +78,24 @@
   font-size: 1.25rem;
 }
 
+.metsis-metadata__summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.metsis-metadata__collection-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.metsis-metadata__collection-catalog-button {
+  white-space: nowrap;
+}
+
 .metsis-metadata__updates-list {
   margin: 0;
   padding-left: 1.4rem;

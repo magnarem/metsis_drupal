@@ -365,6 +365,9 @@ ddev drush role:perm:list
 ddev drush watchdog:show --severity=Error --count=100
 ````
 
+## Dev guides
+
+Instructions for different drupal development tasks can be found here: [https://camoa.github.io/dev-guides/drupal/](https://camoa.github.io/dev-guides/drupal/)
 **Hardening**: `chmod 444 settings.php`, `chmod 755 sites/default/files`, disable PHP in files dir
 
 **Code**: Use placeholders in queries, `Html::escape()` for output, `$account->hasPermission()` for access, Form API for validation
@@ -899,6 +902,22 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 
 ```
 [Add entries here - newest first]
+
+2026-09-25 | TASK: Added inline WMS and supported OPeNDAP feature visualisations after the dynamic landing page Data Access table
+           | FILES: src/Service/DatasetVisualisationBuilder.php, src/Plugin/views/row/MetsisSearchRow.php, metsis_drupal.services.yml, metsis_drupal.libraries.yml, css/metsis_visualisations.css, css/metsis_default_row_layout.css, modules/dynamic_landing_pages/src/Controller/DynamicLandingPagesController.php, modules/dynamic_landing_pages/src/Hook/ThemeHooks.php, modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig, modules/dynamic_landing_pages/css/dynamic_landing_pages.css, tests/src/Unit/DatasetVisualisationBuilderTest.php
+           | NOTE: Extracted the search result's HTMX Bokeh/WMS controls into a shared DatasetVisualisationBuilder; landing pages now show Visualise <feature_type> when a valid OPeNDAP URL and feature_type are present and Visualise WMS when data_access_json contains a valid OGC WMS resource, with each response rendered inline below its button controls
+
+2026-09-25 | TASK: Replaced the "Open this collection in catalog" plain anchor link with an HTMX-driven icon_button (magnifier-catalog icon)
+           | FILES: src/Service/CatalogButtonBuilder.php, src/Controller/CatalogController.php, metsis_drupal.routing.yml, metsis_drupal.services.yml, src/Service/MetadataDocumentNormalizer.php, src/Controller/MetadataDocumentController.php, modules/dynamic_landing_pages/src/Controller/DynamicLandingPagesController.php, templates/metsis-metadata-document.html.twig, modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig, css/metsis_metadata_document.css
+           | NOTE: Clicking the button now issues an HTMX GET to the new metsis_drupal.catalog_htmx_redirect route (CatalogController::htmxRedirect), which responds with an HX-Redirect header to view.metsis_search.results?related_dataset={id} instead of exposing the destination as a plain <a href>; MetadataDocumentNormalizer::buildParentChildInfo() now returns catalog_identifier instead of a pre-built catalog_url, and the new CatalogButtonBuilder service (shared by both controllers) renders the metsis_drupal:icon_button SDC component with the existing magnifier-catalog icon
+
+2026-09-25 | TASK: Applied the same Related dataset placement/popover logic to the dynamic_landing_pages module
+           | FILES: modules/dynamic_landing_pages/src/Controller/DynamicLandingPagesController.php, modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig
+           | NOTE: Landing page controller now merges Related dataset into the summary map via MetadataDocumentNormalizer::mergeRelatedDatasetIntoSummary() and loads parent title/abstract/temporal_extent fields; template's render_vocab_value macro gained the same vocabulary.rows support and the two duplicated manual Related dataset rows were removed since the row now renders through the standard summary loop
+
+2026-09-25 | TASK: Reordered Related dataset into Core metadata (after Metadata identifier) with vocab-style (i) popover showing parent Title/Abstract/Temporal extent, and simplified License rendering to a plain identifier link (skipping vocab lookup)
+           | FILES: src/Service/MetadataDocumentNormalizer.php, src/Controller/MetadataDocumentController.php, templates/metsis-metadata-document.html.twig, tests/src/Unit/MetadataDocumentNormalizerTest.php
+           | NOTE: Added buildLicenseValueNode() (href=use_constraint_resource, text=use_constraint_identifier, no link when resource missing), buildParentDatasetInfo()/buildTemporalExtentText() to populate a generic 'rows' popover payload, and mergeRelatedDatasetIntoSummary() to splice Related dataset into the summary map; extended render_vocab_value Twig macro to support vocabulary.rows alongside existing vocabulary.entries rendering
 
 2026-08-13 | TASK: Integrated personnel_card into dynamic landing pages and added dedicated two-column Core metadata + map overview layout
            | FILES: modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig, modules/dynamic_landing_pages/src/Controller/DynamicLandingPagesController.php, modules/dynamic_landing_pages/dynamic_landing_pages.libraries.yml, modules/dynamic_landing_pages/css/dynamic_landing_pages.css

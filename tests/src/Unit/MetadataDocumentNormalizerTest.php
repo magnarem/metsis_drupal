@@ -258,13 +258,6 @@ final class MetadataDocumentNormalizerTest extends TestCase {
           'Access constraint concept',
         ),
       ],
-      'Use_Constraint' => [
-        'CC-BY-4.0' => $this->createConcept(
-          'https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0',
-          'CC-BY-4.0',
-          'Creative Commons attribution license',
-        ),
-      ],
       'Collection_Keywords' => [
         'NMAP' => $this->createConcept(
           'https://vocab.met.no/mmd/Collection_Keywords/NMAP',
@@ -313,6 +306,7 @@ final class MetadataDocumentNormalizerTest extends TestCase {
       'feature_type' => 'Grid',
       'access_constraint' => 'Open',
       'use_constraint_identifier' => 'CC-BY-4.0',
+      'use_constraint_resource' => 'https://creativecommons.org/licenses/by/4.0/',
     ]);
 
     $this->assertSame('no.met.dataset.1', $summary['Metadata identifier']['text']);
@@ -325,7 +319,9 @@ final class MetadataDocumentNormalizerTest extends TestCase {
     $this->assertSame('https://vocab.met.no/mmd/Activity_Type/Observation', $summary['Activity type']['vocabulary']['uri']);
     $this->assertSame('https://vocab.met.no/mmd/Quality_Control/QC0', $summary['Quality control']['vocabulary']['uri']);
     $this->assertSame('https://vocab.met.no/mmd/Access_Constraint/Open', $summary['Access constraint']['vocabulary']['uri']);
-    $this->assertSame('https://vocab.met.no/mmd/Use_Constraint/CC-BY-4.0', $summary['License']['vocabulary']['uri']);
+    $this->assertSame('CC-BY-4.0', $summary['License']['text']);
+    $this->assertSame('https://creativecommons.org/licenses/by/4.0/', $summary['License']['resource_url']);
+    $this->assertNull($summary['License']['vocabulary']);
 
     $this->assertSame('NMAP, YOPP', $summary['Collection']['text']);
     $this->assertCount(2, $summary['Collection']['vocabulary']['entries']);

@@ -75,32 +75,6 @@
   outline-offset: 2px;
 }
 
-.metsis-plot-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.875rem;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.metsis-plot-trigger[data-plot-open="true"] {
-  border-style: dashed;
-}
-
-.metsis-plot-trigger:hover,
-.metsis-plot-trigger:focus-visible {
-  background-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-  outline-offset: 2px;
-}
-
 /* Popover panel — display rules for native Popover API. */
 .metsis-popover-panel {
   /* Default: hidden by browser for native popover API. */
@@ -211,103 +185,6 @@
   a.metsis-data-access-option:hover {
   color: #241571;
   background-color: #fefdff;
-}
-
-.metsis-plot-container {
-  width: 100%;
-  min-height: 1px;
-  position: relative;
-}
-
-.metsis-plot-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.75rem 0;
-}
-
-.metsis-plot-spinner.hidden {
-  display: none;
-}
-
-.metsis-wms-spinner {
-  /* Use display:none so the hidden state takes no vertical space.
-     Overrides HTMX's default opacity:0 technique for htmx-indicator elements. */
-  display: none;
-  opacity: 1;
-  justify-content: center;
-  align-items: center;
-  padding: 0.75rem 0;
-}
-
-.metsis-wms-spinner.htmx-request {
-  display: flex;
-}
-
-.metsis-plot-target {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  /* contain: content; */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-/* Generic close button style matching metadata dialog close button */
-.metsis-close-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.metsis-close-button:hover,
-.metsis-close-button:focus-visible {
-  background: #e4eaf2;
-}
-
-/* Backward compatibility: plot close button is now styled with generic class */
-.metsis-plot-close {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  z-index: 2;
-}
-
-.metsis-plot-close.hidden {
-  display: none;
-}
-
-/* WMS container spans full width of result row */
-.metsis-wms-container {
-  width: 100%;
-  position: relative;
-}
-
-/* Inline WMS shell keeps actions above the map mount without overlap. */
-.metsis-wms-inline-shell {
-  width: 100%;
-}
-
-.metsis-wms-inline-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.25rem;
-}
-
-/* WMS map mount spans the full result-row width. */
-.metsis-wms-map {
-  width: 100%;
-  min-height: 400px;
-  position: relative;
 }
 
 /* style highlighted text */

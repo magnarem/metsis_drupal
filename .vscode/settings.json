@@ -16,9 +16,6 @@
       "markdown",
       "php"
     ],
-    "emmet.includeLanguages": {
-      "twig": "html"
-    },
 
     "eslint.format.enable": true,
     "eslint.run": "onSave",
@@ -99,5 +96,17 @@
 		"phpstan.pro": false,
 		"phpstan.tmpDir": "",
 		"phpstan.checkValidity": false,
-
+    "chat.tools.terminal.terminalProfile.linux": {
+    "path": "/bin/bash",
+    "args": ["--norc", "--noprofile"]
+    },
+    "terminal.integrated.shellIntegration.enabled": true,
+    "remote.extensionKind": {
+  	"GitHub.copilot": [
+    		"ui"
+   	],
+  	"GitHub.copilot-chat": [
+    		"ui"
+  	]
+    }
 }
