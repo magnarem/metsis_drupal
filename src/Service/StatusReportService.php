@@ -140,12 +140,6 @@ class StatusReportService {
     // Use JSON facet query to get all unique parent ids referenced in children.
     $jsonFacetSet = $solarium_query->getFacetSet();
 
-    // Add facet to get all the unique parent ids referenced in children.
-    // $jsonFacetSet->createJsonFacetTerms('referenced_parents')
-    //   ->setField('related_dataset')
-    //   ->setLimit(-1)
-    //   ->setMinCount(1)
-    //   ->setNumBuckets(TRUE);
     $jsonFacetSet->createFacetField('referenced_parents')
       ->setField('related_dataset')
       ->setLimit(-1)
@@ -156,10 +150,6 @@ class StatusReportService {
     // Get the list of unique parent ids referenced in children.
     /** @var \Solarium\Component\Result\Facet\Buckets $buckets */
     $buckets = $result->getFacetSet()->getFacet('referenced_parents');
-    dpm($buckets->count(), 'referenced parents buckets count');
-    dpm(array_keys($buckets->getValues()), 'referenced parents list');
-    $referenced_parent_ids = [];
-    // $uniqueParents = $buckets->getNumBuckets() ?? count($referenced_parent_ids);
     // dpm($uniqueParents, 'unique parents count');.
     $uniqueParents = $buckets->count();
     // Create a new select query and query for marked parents count.
@@ -178,15 +168,11 @@ class StatusReportService {
 
     $solarium_query->setRows($parentsCount);
     $solarium_query->setFields('metadata_identifier');
-    dpm($solarium_query->getFilterQueries(), 'parent query');
     $result = $this->getConnector()->execute($solarium_query);
     $marked_parent_ids = [];
     foreach ($result as $doc) {
       $marked_parent_ids[] = $doc->metadata_identifier;
     }
-    // dpm(array_values(array_diff($referenced_parent_ids, $marked_parent_ids)), 'missing parents');
-    // dpm(array_values(array_diff($marked_parent_ids, $referenced_parent_ids)), 'missing children');.
-    // Ok. @todo create list of unique children and make the set difference.
     return [
       'unique_parents' => $uniqueParents,
       'parents_count' => $parentsCount,
