@@ -235,6 +235,7 @@ final class MetadataDocumentNormalizer {
       'temporal_extent_start_date' => 'Start date',
       'temporal_extent_end_date' => 'End date',
       'spatial_representation' => 'Spatial representation',
+      'feature_type' => 'Feature type',
       'geographic_extent_rectangle_srsName' => 'Spatial reference system',
       'geographic_extent_rectangle_north' => 'North',
       'geographic_extent_rectangle_south' => 'South',

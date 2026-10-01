@@ -82,7 +82,7 @@ class SearchApiSubscriber implements EventSubscriberInterface {
 
     $mapping['mmd_parent_id']['filter'] = [
       'id' => 'metsis_parent_filter',
-      'title' => $this->t('Metsis Parent/Child filter'),
+      'title' => $this->t('Parent/Child filter'),
       'group' => $this->t('METSIS Filters'),
       'help' => $this->t('Filter on Solr Parent/Child relations'),
     ];
