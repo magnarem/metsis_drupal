@@ -2,11 +2,26 @@ import { useEffect } from "preact/hooks";
 import VectorLayer from "ol/layer/Vector.js";
 import VectorSource from "ol/source/Vector.js";
 import GeoJSON from "ol/format/GeoJSON.js";
+import Point from "ol/geom/Point.js";
+import { getCenter } from "ol/extent.js";
 import Style from "ol/style/Style.js";
 import Fill from "ol/style/Fill.js";
 import Stroke from "ol/style/Stroke.js";
 import Icon from "ol/style/Icon.js";
 import pinBlack from "@assets/pin-black.svg";
+
+const SMALL_GEOMETRY_PIXEL_THRESHOLD = 10;
+const pinImage = new Icon({
+  src: pinBlack,
+  scale: 0.1,
+  anchor: [0.5, 1],
+});
+const pointStyle = new Style({ image: pinImage });
+const smallGeometryStyle = new Style({
+  image: pinImage,
+  geometry: (feature) =>
+    new Point(getCenter(feature.getGeometry().getExtent())),
+});
 
 const GeoJSONLayer = ({ mapInstance, geojsonFeatures, projection }) => {
   useEffect(() => {
@@ -50,43 +65,39 @@ const GeoJSONLayer = ({ mapInstance, geojsonFeatures, projection }) => {
   return null;
 };
 
-function styleFunction(feature) {
+function styleFunction(feature, resolution) {
   const geometry = feature.getGeometry();
-  const geomtryType = geometry.getType();
-  if (geomtryType === "Point") {
-    const pointStyle = new Style({
-      image: new Icon({
-        src: pinBlack,
-        scale: 0.1, // Scale the size of the icon
-        anchor: [0.5, 1], // Anchor the icon at the bottom center
-      }),
-    });
+  const geometryType = geometry.getType();
+  if (geometryType === "Point") {
     return pointStyle;
-  } else {
-    // Determine if the geometry is world-bound
-    const isWorld = isWorldBound(geometry);
-    // Define fill and stroke styles
-    let fillColor, strokeColor;
-
-    if (isWorld) {
-      // World-bound geometry
-      fillColor = "rgba(52, 5, 79, 0.2)"; // Transparent blue fill
-      strokeColor = "rgba(65, 5, 100, 1)"; // Solid blue stroke
-    } else {
-      fillColor = "rgba(49, 12, 214, 0.5)";
-      strokeColor = "rgba(23, 6, 96, 1)"; // Black stroke for other geometries
-    }
-    // Return a style object
-    return new Style({
-      fill: new Fill({
-        color: fillColor,
-      }),
-      stroke: new Stroke({
-        color: strokeColor,
-        width: 2,
-      }),
-    });
   }
+
+  if (Number.isFinite(resolution) && resolution > 0) {
+    const extent = geometry.getExtent();
+    if (extent.every(Number.isFinite)) {
+      const widthInPixels = (extent[2] - extent[0]) / resolution;
+      const heightInPixels = (extent[3] - extent[1]) / resolution;
+      if (
+        widthInPixels < SMALL_GEOMETRY_PIXEL_THRESHOLD ||
+        heightInPixels < SMALL_GEOMETRY_PIXEL_THRESHOLD
+      ) {
+        return smallGeometryStyle;
+      }
+    }
+  }
+
+  // Determine if the geometry is world-bound.
+  const isWorld = isWorldBound(geometry);
+  const fillColor = isWorld ? "rgba(52, 5, 79, 0.2)" : "rgba(49, 12, 214, 0.5)";
+  const strokeColor = isWorld ? "rgba(65, 5, 100, 1)" : "rgba(23, 6, 96, 1)";
+
+  return new Style({
+    fill: new Fill({ color: fillColor }),
+    stroke: new Stroke({
+      color: strokeColor,
+      width: 2,
+    }),
+  });
 }
 
 // Function to check if a geometry spans the entire world

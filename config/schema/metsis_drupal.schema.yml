@@ -101,3 +101,14 @@ metsis_drupal.settings:
         Range:
           min: 3600
           max: 604800
+
+block.settings.metsis_search_exposed_form:
+  type: block_settings
+  label: 'METSIS search exposed form block settings'
+  mapping:
+    disabled_filters:
+      type: sequence
+      label: 'Disabled exposed filters'
+      sequence:
+        type: string
+        label: 'Filter plugin ID'

@@ -1,1 +1,11 @@
 netcdf_ondemand_service_endpoint: ""
+netcdf_ondemand_products:
+  - GRD
+  - MSI-L1C
+  - MSI-L2A
+  - S2MSI1C
+  - S2MSI2A
+  - SAR-EW-L1-GRDH
+  - SAR-EW-L1-GRDM
+  - SAR-IW-L1-GRDH
+  - SAR-IW-L1-GRDM

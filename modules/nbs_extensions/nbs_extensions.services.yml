@@ -9,3 +9,8 @@ services:
       - "@http_client"
       - "@config.factory"
       - "@logger.channel.nbs_extensions"
+
+  nbs_extensions.netcdf_on_demand_button_builder:
+    class: Drupal\nbs_extensions\Service\NetCDFOnDemandButtonBuilder
+    arguments:
+      - "@config.factory"

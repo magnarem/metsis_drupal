@@ -23,6 +23,10 @@ The module is focused on:
 
 It is designed as a service-oriented module with thin controllers/forms and explicit dependency injection.
 
+The repository also contains the `nbs_extensions` submodule in
+[`modules/nbs_extensions`](modules/nbs_extensions), which provides the NetCDF on-demand request flow. Configure its backend endpoint at `/admin/config/metno/nbs-extensions`; authenticated users can submit requests at `/metsis/netcdf-on-demand/{datasetId}`. The form uses Drupal core HTMX with normal Form API submission as its no-JavaScript fallback.
+Its installed configuration lists supported product types in `netcdf_ondemand_products`. Search result rows offer **Request "CF-NetCDF file"** only for those product types when the dataset does not already have an HTTP `.nc` data-access resource.
+
 ## Runtime and Compatibility
 
 - Drupal core: `^10 || ^11 || ^12`
@@ -41,6 +45,17 @@ See [metsis_drupal.info.yml](metsis_drupal.info.yml) and [.github/workflows/qual
 - Bokeh service/form endpoints under `/services/bokeh-plot/*`
 
 Route definitions are in [metsis_drupal.routing.yml](metsis_drupal.routing.yml).
+
+The `METSIS search exposed form` block renders the exposed form from the
+`metsis_search` View's `results` display. Its block settings are populated from
+the currently exposed filters on that display; selected filters are hidden,
+and newly added filters are enabled by default. The form submits to the
+configured View results endpoint, regardless of where the block is placed.
+Theme overrides can use `block--metsis-search-exposed-form.html.twig` or
+`block--metsis-search-exposed-form--metsis-search--results.html.twig` for the
+block, and `views-exposed-form--metsis-search-block.html.twig` or
+`views-exposed-form--metsis-search-block--metsis-search--results.html.twig`
+for the exposed form inside it.
 
 ## Important Services and Classes
 
@@ -91,6 +106,28 @@ Frontend assets are provided through [metsis_drupal.libraries.yml](metsis_drupal
 - metadata dialog and vocabulary popover behavior libraries
 
 Single Directory Components are in [components](components), for example DOI, collection, dataset citation, search, and temporal extent components.
+
+### Component schemas and examples
+
+Every component YAML includes schema-valid prop examples and, where applicable,
+slot examples. Citation entries declare their full nested structure, matching
+the output of `MetadataDocumentNormalizer`. Boolean props preserve explicit
+`false` values; omitted values use the documented defaults.
+
+The dataset citation component's `resource_icon` slot is rendered for each DOI
+entry. When embedding it in Twig, the slot can use `citation.resource_url` from
+the current loop entry. Both metadata document and landing page templates use
+this slot to supply the DOI component.
+
+Validate schemas, examples, template behavior, and the installed SDC Devel rules:
+
+```bash
+ddev exec vendor/bin/phpunit tests/src/Unit/SdcComponentsTest.php
+ddev drush sdc-devel:validate metsis_drupal
+```
+
+The SDC Devel check in PHPUnit is skipped if that optional development module
+is not installed; core schema and rendering checks still run.
 
 ## Dependencies
 

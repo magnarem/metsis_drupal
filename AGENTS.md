@@ -22,6 +22,68 @@ AI coding guide for METSIS Search (metsis_drupal) Drupal module project.
 - Include full file paths
 - Proper markdown code blocks
 
+### 1. Before responding to the user
+
+After completing any code changes, run through this checklist before returning to the user:
+
+1. [ ] All tests pass (`phpunit`)
+2. [ ] `DOCUMENTATION.md` and `README.md` are up to date
+3. [ ] `DISCUSSIONS_LOG.md` is updated with a summary of this interaction
+4. [ ] `AI_REASONING.md` updated if any new complex reasoning was produced
+5. [ ] Code has been reviewed for refactoring opportunities; improvements implemented if clear
+6. [ ] No secrets, credentials, or personal data are present in any file
+7. [ ] No security risk, malicious behavior, secret data leak, vulnerability
+
+### 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+### 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+### 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
 ## Project Overview
 
 - **Platform**: Drupal 11.3.5 / single site (dev test instance in `web/`)
@@ -55,15 +117,14 @@ node_modules/
 .env
 ```
 
-## Development Environment
+## Development Environment dev
 
 **Web root**: `web/`
 
 **Command context rule**:
 
-- VS Code in this project runs inside the DDEV web container.
 - Inside container: run tools directly (`drush`, `composer`, `php`, `npm`).
-- From host shell: use `ddev` prefixes (`ddev drush`, `ddev composer`, etc.).
+- From host shell: use `ddev` prefixes (`ddev drush`, `ddev composer`, etc.). refere to the [ddev-expert skill](.agents/skills/ddev-expert/SKILL.md)
 
 ### Setup
 
@@ -80,6 +141,8 @@ Location: `.ddev/commands/host/<name>`
 **WARNING**: Don't use `## #ddev-generated` comments - they break command recognition.
 
 ### Drush Commands
+
+**Prefix with ddev when outside container**
 
 ```bash
 # Core commands
@@ -152,6 +215,17 @@ ddev drush upgrade_status:analyze --all
 **Config files**: `phpstan.neon`, `phpcs.xml`, `rector.php`
 **Run before**: commits, PRs, Drupal upgrades
 
+After PHP changes, run the checks in this order: PHPCBF on changed PHP files,
+PHPCS on the same files, PHPStan using `phpstan.neon`, then PHPUnit using
+`phpunit.xml`. Example from the repository root:
+
+```bash
+vendor/bin/phpcbf -s src/ChangedFile.php tests/src/Unit/ChangedFileTest.php
+vendor/bin/phpcs -s src/ChangedFile.php tests/src/Unit/ChangedFileTest.php
+vendor/bin/phpstan analyse --configuration=phpstan.neon
+vendor/bin/phpunit --configuration=phpunit.xml tests/
+```
+
 ## Testing
 
 ```bash
@@ -216,6 +290,8 @@ ddev drush sql:query "OPTIMIZE TABLE cache_bootstrap, cache_config, cache_data, 
 **Optimization**: Enable page cache + dynamic page cache, CSS/JS aggregation, Redis/Memcache, CDN for assets, image styles with lazy loading
 
 ## Code Standards
+
+Also refere to the [drupal-expert skill](.agents/skills/drupal-expert/SKILL.md)
 
 ### Core Principles
 
@@ -902,6 +978,26 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 
 ```
 [Add entries here - newest first]
+
+2026-10-06 | TASK: Added configurable METSIS search exposed-form block
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, src/Hook/MetsisThemeHooks.php, config/schema/metsis_drupal.schema.yml, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Renders the current metsis_search results exposed form, dynamically lists exposed filters for block-level hiding, submits to the configured View route, and provides block/form Twig suggestions
+
+2026-10-06 | TASK: Added product-aware NetCDF on-demand action to NBS search rows
+           | FILES: modules/nbs_extensions/config/{install/nbs_extensions.settings.yml,schema/nbs_extensions.schema.yml}, modules/nbs_extensions/nbs_extensions.services.yml, modules/nbs_extensions/src/Service/NetCDFOnDemandButtonBuilder.php, modules/nbs_extensions/tests/src/Unit/NetCDFOnDemandButtonBuilderTest.php, src/Plugin/views/row/MetsisSearchRow.php, README.md
+           | NOTE: Added the default supported product list and schema; rows now link to the NetCDF request controller only for configured products without an existing HTTP .nc resource
+
+2026-10-05 | TASK: Ported the NetCDF on-demand request flow into nbs_extensions with core HTMX
+           | FILES: modules/nbs_extensions/nbs_extensions.routing.yml, modules/nbs_extensions/nbs_extensions.services.yml, modules/nbs_extensions/nbs_extensions.links.menu.yml, modules/nbs_extensions/config/schema/nbs_extensions.schema.yml, modules/nbs_extensions/config/install/nbs_extensions.settings.yml, modules/nbs_extensions/src/{Controller,Form,Service}/*.php, modules/nbs_extensions/tests/src/Unit/NetCDFOnDemandServiceTest.php, README.md
+           | NOTE: Added an authenticated Form API request page, core HTMX progressive enhancement, configurable HTTP(S) backend endpoint, isolated request service with safe failure handling, and unit coverage
+
+2026-10-05 | TASK: Scaffolded the NBS Extensions submodule
+           | FILES: modules/nbs_extensions/nbs_extensions.info.yml, modules/nbs_extensions/nbs_extensions.module, README.md
+           | NOTE: Added the METNO-packaged nbs_extensions module with Drupal 10/11 compatibility and a dependency on metsis_drupal
+
+2026-10-02 | TASK: Fixed SDC Devel findings and completed component schema examples
+           | FILES: components/*/*.component.yml, components/{cc_license,dataset_citation,doi,metadata_person_link,search,temporal_extent}/*.twig, templates/metsis-metadata-document.html.twig, modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig, tests/src/Unit/SdcComponentsTest.php, README.md, components/{cc_license,search}/README.md
+           | NOTE: Updated metadata schema references, defined nested citation props, added realistic prop/slot examples, preserved explicit false boolean options and zero-valued text, aligned omitted DOI color/license width with schema defaults, and moved citation DOI composition into a resource_icon slot in both callers; regression coverage validates all ten components and runs the optional installed SDC Devel rules
 
 2026-09-25 | TASK: Added inline WMS and supported OPeNDAP feature visualisations after the dynamic landing page Data Access table
            | FILES: src/Service/DatasetVisualisationBuilder.php, src/Plugin/views/row/MetsisSearchRow.php, metsis_drupal.services.yml, metsis_drupal.libraries.yml, css/metsis_visualisations.css, css/metsis_default_row_layout.css, modules/dynamic_landing_pages/src/Controller/DynamicLandingPagesController.php, modules/dynamic_landing_pages/src/Hook/ThemeHooks.php, modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig, modules/dynamic_landing_pages/css/dynamic_landing_pages.css, tests/src/Unit/DatasetVisualisationBuilderTest.php

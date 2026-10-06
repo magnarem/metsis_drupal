@@ -191,6 +191,30 @@ class MetsisThemeHooks {
    */
   #[Hook('theme_suggestions_views_exposed_form_alter')]
   public function themeHookSuggestion(&$suggestions, array $variables) {
+    $form = $variables['form'] ?? [];
+    if (empty($form['#metsis_search_exposed_form_block'])) {
+      return;
+    }
+
+    $suggestions[] = 'views_exposed_form__metsis_search_block';
+    $suggestions[] = 'views_exposed_form__metsis_search_block__' .
+      ($form['#metsis_search_view_id'] ?? 'metsis_search') . '__' .
+      ($form['#metsis_search_display_id'] ?? 'results');
+  }
+
+  /**
+   * Provides block template suggestions for the METSIS search form block.
+   *
+   * Implements hook_theme_suggestions_block_alter().
+   */
+  #[Hook('theme_suggestions_block_alter')]
+  public function themeSuggestionsBlockAlter(array &$suggestions, array $variables): void {
+    $elements = $variables['elements'] ?? [];
+    if (($elements['#plugin_id'] ?? NULL) !== 'metsis_search_exposed_form') {
+      return;
+    }
+
+    $suggestions[] = 'block__metsis_search_exposed_form__metsis_search__results';
   }
 
   /**

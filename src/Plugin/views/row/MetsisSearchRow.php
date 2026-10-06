@@ -14,6 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\metsis_drupal\Service\DatasetVisualisationBuilder;
 use Drupal\metsis_drupal\Service\MetadataExportService;
 use Drupal\metsis_drupal\Service\ResultRowRenderer;
+use Drupal\nbs_extensions\Service\NetCDFOnDemandButtonBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -33,6 +34,13 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    * @var bool
    */
   protected $usesFields = FALSE;
+
+  /**
+   * Optional NetCDF on-demand button builder from the NBS Extensions module.
+   *
+   * @var \Drupal\nbs_extensions\Service\NetCDFOnDemandButtonBuilder|null
+   */
+  protected ?NetCDFOnDemandButtonBuilder $netcdfOnDemandButtonBuilder;
 
   /**
    * Result row renderer service.
@@ -77,6 +85,8 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
    *   The metadata export service.
    * @param \Drupal\metsis_drupal\Service\DatasetVisualisationBuilder $visualisation_builder
    *   The dataset visualisation builder.
+   * @param \Drupal\nbs_extensions\Service\NetCDFOnDemandButtonBuilder|null $netcdf_ondemand_button_builder
+   *   The optional NBS NetCDF button builder.
    */
   public function __construct(
     array $configuration,
@@ -85,17 +95,25 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     ResultRowRenderer $metsis_row_renderer,
     MetadataExportService $metadata_export_service,
     DatasetVisualisationBuilder $visualisation_builder,
+    ?NetCDFOnDemandButtonBuilder $netcdf_ondemand_button_builder = NULL,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->rowRenderer = $metsis_row_renderer;
     $this->metadataExportService = $metadata_export_service;
     $this->visualisationBuilder = $visualisation_builder;
+    $this->netcdfOnDemandButtonBuilder = $netcdf_ondemand_button_builder;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): self {
+    /** @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler */
+    $module_handler = $container->get('module_handler');
+    $netcdf_ondemand_button_builder = $module_handler->moduleExists('nbs_extensions')
+      ? $container->get('nbs_extensions.netcdf_on_demand_button_builder')
+      : NULL;
+
     return new static(
       $configuration,
       $plugin_id,
@@ -103,6 +121,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       $container->get('metsis_drupal.result_row_renderer'),
       $container->get('metsis_drupal.metadata_export_service'),
       $container->get('metsis_drupal.dataset_visualisation_builder'),
+      $netcdf_ondemand_button_builder,
     );
   }
 
@@ -374,6 +393,13 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
         '#attributes' => ['class' => ['metsis-row-operations-controls']],
       ],
     ];
+
+    if ($this->netcdfOnDemandButtonBuilder !== NULL) {
+      $netcdf_button = $this->netcdfOnDemandButtonBuilder->build($solr_doc);
+      if ($netcdf_button !== NULL) {
+        $operations['controls']['netcdf_on_demand'] = $netcdf_button;
+      }
+    }
 
     // Add collection filter if parent.
     if ($is_parent && $dataset_identifier !== '') {

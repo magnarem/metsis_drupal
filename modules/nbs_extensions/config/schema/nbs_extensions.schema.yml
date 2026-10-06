@@ -6,3 +6,8 @@ nbs_extensions.settings:
       type: uri
       label: "NetCDF on-demand service endpoint"
       description: "HTTP or HTTPS endpoint receiving NetCDF generation requests."
+    netcdf_ondemand_products:
+      type: sequence
+      label: "NetCDF on-demand products"
+      sequence:
+        type: string
