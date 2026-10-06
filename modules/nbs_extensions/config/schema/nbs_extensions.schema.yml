@@ -1,0 +1,8 @@
+nbs_extensions.settings:
+  type: config_object
+  label: "NBS Extensions settings"
+  mapping:
+    netcdf_ondemand_service_endpoint:
+      type: uri
+      label: "NetCDF on-demand service endpoint"
+      description: "HTTP or HTTPS endpoint receiving NetCDF generation requests."

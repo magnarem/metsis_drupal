@@ -1,4 +1,4 @@
-"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
 name: personnel_card
 status: stable
 group: metsis
@@ -35,3 +35,6 @@ slots:
   content:
     title: Content
     description: Personnel details rendered inside the card body.
+    examples:
+      - "<dl><dt>Role</dt><dd>Investigator</dd><dt>Name</dt><dd>Example Researcher</dd></dl>"
+      - "<dl><dt>Role</dt><dd>Data centre</dd><dt>Organisation</dt><dd>MET Norway</dd></dl>"

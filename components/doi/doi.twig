@@ -1,6 +1,6 @@
-{% set show_doi = show_doi_identifier|default(false) %}
 {% set classes = 'doi-icon-wrapper' %}
 {% set icon_size = size|default(24) %}
+{% set use_color = color is not null ? color : true %}
 {% set identifier = doi_url|replace({'https://doi.org/': ''}) %}
 <div {{ attributes.addClass(classes).setAttribute('style', '--doi-icon-size: ' ~ icon_size ~ ';') }}>
 
@@ -9,12 +9,12 @@
   title="Open link (opens in a new window)"
   rel="noopener, noreferrer"
   target="blank">
-  {% if color %}
+  {% if use_color %}
   {{ icon('metsis_drupal', 'doi', {'size': icon_size}) }}
   {% else %}
   {{ icon('metsis_drupal', 'doi-black', {'size': icon_size}) }}
   {% endif %}
-  {% if show_doi %}
+  {% if show_doi_identifier %}
   <span class="doi-identifier">{{ identifier }}</span>
   {% endif %}
   </a>

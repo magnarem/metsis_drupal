@@ -1,4 +1,4 @@
-"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
 name: search
 status: stable
 group: metsis
@@ -8,11 +8,15 @@ props:
   properties:
     placeholder:
       type: string
-      title: placeholder
+      title: Placeholder
       description: Placeholder for the search input
-      # @todo Add examples here.
-      examples: []
+      default: Type your text
+      examples:
+        - Search datasets by title or keyword
+        - Search Arctic temperature observations
 slots:
   other_components:
     title: Other components
-    description: Maybe need to add others here
+    description: Additional controls displayed after the search input.
+    examples:
+      - '<button type="reset">Clear search</button>'

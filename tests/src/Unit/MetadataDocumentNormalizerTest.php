@@ -376,6 +376,33 @@ final class MetadataDocumentNormalizerTest extends TestCase {
   }
 
   /**
+   * Parent/child identifiers keep display IDs separate from route IDs.
+   */
+  #[Test]
+  public function buildParentChildInfoUsesMetadataIdentifierForDisplayAndSolrIdForCatalogRoute(): void {
+    $parent_info = $this->normalizer->buildParentChildInfo([
+      'id' => 'doi-10-1594-PANGAEA-995890',
+      'metadata_identifier' => 'doi:10.1594/PANGAEA.995890',
+      'isParent' => TRUE,
+      'isChild' => FALSE,
+    ]);
+
+    $this->assertSame('doi-10-1594-PANGAEA-995890', $parent_info['catalog_solr_id']);
+
+    $child_info = $this->normalizer->buildParentChildInfo([
+      'isParent' => FALSE,
+      'isChild' => TRUE,
+      'related_dataset' => 'doi:10.1594/PANGAEA.995890',
+      'related_dataset_id' => 'doi-10-1594-PANGAEA-995890',
+    ]);
+
+    $this->assertSame(
+      'doi:10.1594/PANGAEA.995890',
+      $child_info['related_dataset']['text'],
+    );
+  }
+
+  /**
    * Create a minimal concept info array for test assertions.
    *
    * @param string $uri

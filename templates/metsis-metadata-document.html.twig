@@ -250,9 +250,18 @@
 					{% endfor %}
 				</div>
 			{% elseif section.field == 'dataset_citation_json' and section.dataset_citation_entries is defined and section.dataset_citation_entries is not empty %}
-				{% include 'metsis_drupal:dataset_citation' with {
-					citations: section.dataset_citation_entries,
-				} only %}
+        {% embed 'metsis_drupal:dataset_citation' with {
+          citations: section.dataset_citation_entries,
+        } only %}
+          {% block resource_icon %}
+            {% include 'metsis_drupal:doi' with {
+              doi_url: citation.resource_url,
+              size: 16,
+              color: true,
+              show_doi_identifier: false,
+            } only %}
+          {% endblock %}
+        {% endembed %}
 			{% elseif (section.field == 'related_information_json' or section.field == 'data_access_json') and section.related_information_entries is defined and section.related_information_entries is not empty %}
 				<dl class="metsis-metadata__dl">
 					{% for entry in section.related_information_entries %}

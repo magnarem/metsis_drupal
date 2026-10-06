@@ -317,8 +317,8 @@ final class MetadataDocumentNormalizer {
    *   or not applicable.
    *
    * @return array<string, mixed>
-   *   Keys: is_parent, is_child, catalog_identifier, related_dataset.
-   *   catalog_identifier is the parent's own metadata identifier, used by
+   *   Keys: is_parent, is_child, catalog_solr_id, related_dataset.
+   *   catalog_solr_id is the parent's Solr ID, used by
    *   the caller to build the "Open this collection in catalog" HTMX
    *   button (@see \Drupal\metsis_drupal\Service\CatalogButtonBuilder). This
    *   normalizer intentionally does not build a direct catalog URL/link so
@@ -329,11 +329,11 @@ final class MetadataDocumentNormalizer {
     $is_parent = $this->isTruthyFlag($document['isParent'] ?? FALSE);
     $is_child = $this->isTruthyFlag($document['isChild'] ?? FALSE);
 
-    $catalog_identifier = NULL;
+    $catalog_solr_id = NULL;
     if ($is_parent) {
-      $metadata_identifier = $this->toInlineText($document['metadata_identifier'] ?? '');
-      if ($metadata_identifier !== '') {
-        $catalog_identifier = $metadata_identifier;
+      $solr_id = $this->toInlineText($document['id'] ?? '');
+      if ($solr_id !== '') {
+        $catalog_solr_id = $solr_id;
       }
     }
 
@@ -357,7 +357,7 @@ final class MetadataDocumentNormalizer {
     return [
       'is_parent' => $is_parent,
       'is_child' => $is_child,
-      'catalog_identifier' => $catalog_identifier,
+      'catalog_solr_id' => $catalog_solr_id,
       'related_dataset' => $related_dataset,
     ];
   }

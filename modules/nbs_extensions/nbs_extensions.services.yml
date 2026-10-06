@@ -1,0 +1,11 @@
+services:
+  logger.channel.nbs_extensions:
+    parent: logger.channel_base
+    arguments: ["nbs_extensions"]
+
+  nbs_extensions.netcdf_on_demand:
+    class: Drupal\nbs_extensions\Service\NetCDFOnDemandService
+    arguments:
+      - "@http_client"
+      - "@config.factory"
+      - "@logger.channel.nbs_extensions"

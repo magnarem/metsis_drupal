@@ -1,0 +1,6 @@
+nbs_extensions.settings:
+  title: "NBS Extensions"
+  description: "Configure NBS extension services."
+  route_name: nbs_extensions.settings
+  parent: metsis_drupal.admin_metno
+  weight: 20

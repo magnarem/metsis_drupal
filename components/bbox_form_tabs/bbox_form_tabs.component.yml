@@ -1,4 +1,4 @@
-"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
 name: bbox-form-tabs
 status: stable
 group: metsis
@@ -23,6 +23,10 @@ slots:
   map_input_tab:
     title: Map input tab
     description: The tab for the map form input
+    examples:
+      - '<div aria-label="Bounding box map">Select an area on the map.</div>'
   coords_input_tab:
     title: Coordinates input tab
     description: The coordinates form input
+    examples:
+      - '<label>North latitude <input type="number" value="70" min="-90" max="90"></label>'

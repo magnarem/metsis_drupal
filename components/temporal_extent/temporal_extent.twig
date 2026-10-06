@@ -1,13 +1,11 @@
-{% set has_end = end_date is defined and end_date is not empty %}
-{% set show_icon = add_icon is not defined or add_icon %}
-{% set is_short = short_notation is defined and short_notation %}
-{% set is_compact = compact_labels is not defined or compact_labels %}
+{% set show_icon = add_icon is not null ? add_icon : true %}
+{% set is_compact = compact_labels is not null ? compact_labels : true %}
 {% set row_class = is_compact ? 'temporal-extent-row' : 'temporal-extent-row temporal-extent-row--stacked' %}
 
-{% if is_short %}
+{% if short_notation %}
   <span {{ attributes.addClass('temporal-extent-short') }}>
     {{- start_date -}}
-    {%- if has_end %} {{ 'to'|t }} {{ end_date }}{% endif -%}
+    {%- if end_date %} {{ 'to'|t }} {{ end_date }}{% endif -%}
   </span>
 {% else %}
   <div {{ attributes.addClass('temporal-extent-wrapper') }}
@@ -27,7 +25,7 @@
         <span class="temporal-extent-label">{{ 'Start date:'|t }}</span>
         <span class="temporal-extent-value">{{ start_date }}</span>
       </div>
-      {% if has_end %}
+      {% if end_date %}
         <div class="{{ row_class }}">
           <span class="temporal-extent-label">{{ 'End date:'|t }}</span>
           <span class="temporal-extent-value">{{ end_date }}</span>

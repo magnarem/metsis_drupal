@@ -257,10 +257,14 @@ final class MetadataDocumentController extends ControllerBase {
 
     if (!empty($document['isChild'])) {
       $parent_identifier = MetsisSolrUtilities::firstValue($document['related_dataset'] ?? '');
-      if ($parent_identifier !== '' && MetsisSolrUtilities::isValidIdentifier($parent_identifier)) {
+      $parent_solr_id = MetsisSolrUtilities::firstValue($document['related_dataset_id'] ?? '');
+      if ($parent_solr_id === '' && $parent_identifier !== '') {
+        $parent_solr_id = MetsisSolrUtilities::toSolrId($parent_identifier);
+      }
+      if ($parent_identifier !== '' && MetsisSolrUtilities::isValidIdentifier($parent_solr_id)) {
         $parent_document = $this->documentLoader->loadDocumentById(
-          MetsisSolrUtilities::toSolrId($parent_identifier),
-          ['metadata_identifier', 'related_url_landing_page', 'title',
+          $parent_solr_id,
+          ['id', 'metadata_identifier', 'related_url_landing_page', 'title',
             'title_en', 'abstract', 'abstract_en', 'temporal_extent*',
           ],
         );
@@ -268,8 +272,8 @@ final class MetadataDocumentController extends ControllerBase {
     }
 
     $parent_child = $this->metadataDocumentNormalizer->buildParentChildInfo($document, $parent_document);
-    if (!empty($parent_child['is_parent']) && !empty($parent_child['catalog_identifier'])) {
-      $parent_child['catalog_button'] = $this->catalogButtonBuilder->build($parent_child['catalog_identifier']);
+    if (!empty($parent_child['is_parent']) && !empty($parent_child['catalog_solr_id'])) {
+      $parent_child['catalog_button'] = $this->catalogButtonBuilder->build($parent_child['catalog_solr_id']);
     }
 
     return $parent_child;

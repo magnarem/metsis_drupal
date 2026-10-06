@@ -1,0 +1,17 @@
+nbs_extensions.netcdf_on_demand:
+  path: "/metsis/netcdf-on-demand/{datasetId}"
+  defaults:
+    _title: "NetCDF OnDemand"
+    _controller: '\Drupal\nbs_extensions\Controller\NetCDFOnDemandController::content'
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+    datasetId: "[A-Za-z0-9_.:-]+"
+
+nbs_extensions.settings:
+  path: "/admin/config/metno/nbs-extensions"
+  defaults:
+    _form: '\Drupal\nbs_extensions\Form\NbsExtensionsSettingsForm'
+    _title: "NBS Extensions settings"
+  requirements:
+    _permission: "administer site configuration"

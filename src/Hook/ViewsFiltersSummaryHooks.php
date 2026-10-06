@@ -59,10 +59,10 @@ class ViewsFiltersSummaryHooks {
         ];
       }
     }
-     if ($filter->getPluginId() === 'metsis_parent_filter' && !empty($filter->value)) {
+    if ($filter->getPluginId() === 'metsis_parent_filter' && !empty($filter->value)) {
       // Set the label for the parent/collection filter.
       $info['label'] = 'Parent/Collection filter';
-     }
+    }
   }
 
   /**

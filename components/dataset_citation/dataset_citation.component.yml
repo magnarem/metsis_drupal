@@ -1,4 +1,4 @@
-"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
 name: dataset_citation
 status: stable
 group: metsis
@@ -14,3 +14,75 @@ props:
       description: List of normalized dataset citation entries.
       items:
         type: object
+        required:
+          - fields
+          - resource_url
+          - resource_is_doi
+          - resource_label
+          - citation_text
+        properties:
+          fields:
+            type: array
+            title: Citation fields
+            description: Ordered label and value pairs containing the citation metadata.
+            items:
+              type: object
+              required:
+                - label
+                - value
+              properties:
+                label:
+                  type: string
+                  title: Field label
+                value:
+                  type: string
+                  title: Field value
+          resource_url:
+            type: string
+            title: Resource URL
+            description: Normalized resource URL, or an empty string when unavailable.
+          resource_is_doi:
+            type: boolean
+            title: DOI resource
+            description: Whether the resource URL points to doi.org.
+          resource_label:
+            type: string
+            title: Resource label
+          citation_text:
+            type: string
+            title: Suggested citation
+            description: Generated scientific citation text, or an empty string when unavailable.
+      examples:
+        - - fields:
+              - label: Author
+                value: Example Research Team
+              - label: Title
+                value: Arctic temperature observations
+              - label: Publisher
+                value: MET Norway
+              - label: Publication date
+                value: "2023"
+            resource_url: "https://doi.org/10.1000/182"
+            resource_is_doi: true
+            resource_label: Resource
+            citation_text: "Example Research Team (2023). Arctic temperature observations. MET Norway. https://doi.org/10.1000/182"
+        - - fields:
+              - label: Title
+                value: Coastal weather observations
+            resource_url: "https://example.org/datasets/coastal-weather"
+            resource_is_doi: false
+            resource_label: Resource
+            citation_text: Coastal weather observations. https://example.org/datasets/coastal-weather
+        - - fields:
+              - label: Title
+                value: Historical weather observations
+            resource_url: ""
+            resource_is_doi: false
+            resource_label: Resource
+            citation_text: Historical weather observations.
+slots:
+  resource_icon:
+    title: Resource icon
+    description: Optional DOI icon rendered for each DOI resource. Twig overrides can use citation.resource_url from the current citation entry.
+    examples:
+      - '<span aria-hidden="true">DOI</span>'

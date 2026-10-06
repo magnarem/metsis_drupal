@@ -1,4 +1,4 @@
-"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
 name: icon_button
 status: stable
 group: metsis
@@ -35,6 +35,8 @@ slots:
   button:
     title: Button
     description: A rendered Drupal button element (#type button).
+    examples:
+      - '<button type="button">Show related datasets</button>'
 libraryOverrides:
   dependencies:
     - core/drupal

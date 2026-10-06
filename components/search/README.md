@@ -1,13 +1,20 @@
 # Search
 
-This is some default content for the README. Change this to the appropriate
-content.
+Renders a search input with a magnifier button and optional additional controls.
 
 ## Usage
 
-Here you should describe how/when to use this component. This information may be
-for developers or for editors, depending on the component type.
+```twig
+{% embed 'metsis_drupal:search' with {
+  placeholder: 'Search datasets by title or keyword'|t,
+} only %}
+  {% block other_components %}
+    <button type="reset">{{ 'Clear search'|t }}</button>
+  {% endblock %}
+{% endembed %}
+```
 
 ## Additional information
 
-Some extra info about the component.
+The placeholder defaults to the translated text "Type your text".
+Schema-valid prop and slot examples are in [search.component.yml](search.component.yml).

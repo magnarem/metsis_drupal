@@ -1,4 +1,4 @@
-"$schema": "https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json"
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
 name: temporal_extent
 status: stable
 group: metsis
@@ -24,6 +24,7 @@ props:
       default: ""
       examples:
         - "2023-10-01T00:00:00Z"
+        - ""
     short_notation:
       type: boolean
       title: Short notation
@@ -31,6 +32,9 @@ props:
         When true renders as a compact inline string:
         "start_date to end_date" or just "start_date" when no end date.
       default: false
+      examples:
+        - false
+        - true
     compact_labels:
       type: boolean
       title: Compact labels
@@ -39,11 +43,17 @@ props:
         When true the label and value are on the same line.
         When false they are stacked on separate lines.
       default: true
+      examples:
+        - true
+        - false
     add_icon:
       type: boolean
       title: Add icon
       description: Show the date-time icon in the section header.
       default: true
+      examples:
+        - true
+        - false
     icon_id:
       type: string
       title: Icon ID

@@ -1,6 +1,6 @@
-name: "METSIS Dynamic Landing Pages"
+name: "NBS Extensions"
 type: module
-description: "Dynamic landing pages for ADC/METSIS datasets"
+description: "NBS-specific extensions for METSIS"
 package: METNO
 core_version_requirement: ^11.4 || ^12
 dependencies:

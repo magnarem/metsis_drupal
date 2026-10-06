@@ -24,15 +24,15 @@ final class CatalogButtonBuilder {
   /**
    * Build the icon_button render array for a parent/collection dataset.
    *
-   * @param string $metadata_identifier
-   *   Metadata identifier of the parent (collection) dataset.
+   * @param string $solr_id
+   *   Solr ID of the parent (collection) dataset.
    *
    * @return array<string, mixed>
    *   Render array for the metsis_drupal:icon_button SDC component.
    */
-  public function build(string $metadata_identifier): array {
+  public function build(string $solr_id): array {
     $htmx_url = Url::fromRoute('metsis_drupal.catalog_htmx_redirect', [
-      'id' => $metadata_identifier,
+      'id' => $solr_id,
     ]);
 
     $button = [
