@@ -44,6 +44,7 @@ class MetsisSearchFormHooks {
         $form['#attached']['library'] = [];
       }
       $form['#attached']['library'][] = 'metsis_drupal/metsis_vocab_popover';
+      $form['#attached']['library'][] = 'metsis_drupal/metsis_icon_sync';
       $form = self::markMetsisFieldsetsAfterBuild($form, $form_state);
       // Convert the search input to a button.
       $form['actions']['submit']['#attributes']['data-twig-suggestion'] = 'search_results_submit';

@@ -4,6 +4,7 @@ version: 4.x-dev
 description: Drupal interactive search frontend for the MET Norway Scientific Information System (METSIS).
 package: METNO
 core_version_requirement: ^11.4 || ^12
+configure: metsis_drupal.settings
 dependencies:
   - drupal:views
   - search_api_solr_autocomplete:search_api_solr_autocomplete

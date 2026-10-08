@@ -31,6 +31,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
+   * Configuration key for the optional secondary Search action.
+   */
+  private const SECONDARY_SEARCH_ID = 'secondary_search';
+
+  /**
    * The search view executable.
    */
   protected ?ViewExecutable $view = NULL;
@@ -92,7 +97,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     $form['disabled_filters'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Exposed filters to disable'),
-      '#description' => $this->t('Select exposed filters to omit from this block. Newly added exposed filters are enabled by default.'),
+      '#description' => $this->t('Select exposed filters or actions to omit from this block. Newly added exposed filters are enabled by default.'),
       '#options' => $filter_options,
       '#default_value' => $disabled_filters,
     ];
@@ -123,13 +128,15 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     $form['filter_columns'] = [
       '#type' => 'details',
       '#title' => $this->t('Exposed filter columns'),
-      '#description' => $this->t('Choose a desktop grid column for each filter. Automatic filters are balanced across the configured columns. Search and temporal filters default to Column 1, and geographic bounds default to Column 2.'),
+      '#description' => $this->t('Choose a desktop grid column for each filter or action. Automatic items are balanced across the configured columns. Search and temporal filters default to Column 1, and geographic bounds and the secondary Search button default to Column 2.'),
       '#open' => TRUE,
       '#tree' => TRUE,
     ];
 
     foreach ($filter_options as $filter_id => $label) {
-      $column = $configured_columns[$filter_id] ?? 'auto';
+      $column = $configured_columns[$filter_id]
+        ?? $this->getDefaultFilterColumn($filter_id)
+        ?? 'auto';
       $form['filter_columns'][$filter_id] = [
         '#type' => 'select',
         '#title' => $label,
@@ -227,11 +234,47 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     $this->removeDisabledFilters($form);
     unset($form['sort_by'], $form['sort_order'], $form['items_per_page']);
 
-    $this->applyFilterWeights($form);
+    unset($form['actions']);
     if (isset($form['search-box-container']['actions']['submit'])) {
       $form['search-box-container']['actions']['submit']['#value'] = $this->t('Search');
     }
-    unset($form['actions']);
+
+    // Keep BEF autosubmit enabled on the View page, but not in this block.
+    unset(
+      $form['#attributes']['data-bef-auto-submit'],
+      $form['#attributes']['data-bef-auto-submit-delay'],
+      $form['#attributes']['data-bef-auto-submit-minimum-length'],
+      $form['#attributes']['data-bef-auto-submit-full-form'],
+    );
+    if (!in_array(self::SECONDARY_SEARCH_ID, $this->configuration['disabled_filters'] ?? [], TRUE)) {
+      $form['actions'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['form-actions', 'metsis-search-exposed-form-block__actions'],
+        ],
+        '#weight' => 100,
+        'submit_filters' => [
+          '#type' => 'component',
+          '#component' => 'metsis_drupal:icon_button',
+          '#props' => [
+            'icon_size' => 18,
+            'icon_pack' => 'metsis_drupal',
+            'icon_id' => 'magnifier',
+          ],
+          '#slots' => [
+            'button' => [
+              '#type' => 'submit',
+              '#value' => $this->t('Search'),
+              '#attributes' => [
+                'class' => ['metsis-search-secondary-submit'],
+              ],
+            ],
+          ],
+        ],
+      ];
+    }
+
+    $this->applyFilterWeights($form);
     $this->applyFilterGrid($form);
 
     // Use the configured View page route, not the route where this block is
@@ -242,6 +285,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     $form['#metsis_search_display_id'] = 'results';
     $form['#attributes']['class'][] = 'metsis-search-exposed-form-block';
     $form['#attached']['library'][] = 'metsis_drupal/bbox_map_filter';
+    $form['#attached']['library'][] = 'metsis_drupal/metsis_icon_sync';
     $form['#attached']['library'][] = 'metsis_drupal/metsis_search_exposed_form_block';
 
     return $form;
@@ -305,6 +349,8 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
       $options[$id] = $label ?: $handler->adminLabel() ?: $id;
     }
 
+    $options[self::SECONDARY_SEARCH_ID] = $this->t('Secondary Search button');
+
     return $options;
   }
 
@@ -316,6 +362,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
       'search_api_fulltext' => -10,
       'temporal_extent_period_dr' => -1,
       'bbox' => 0,
+      self::SECONDARY_SEARCH_ID => 100,
       default => $index,
     };
   }
@@ -338,6 +385,11 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
         $form[$element_name]['#weight'] = (int) $weight;
       }
     }
+
+    if (isset($form['actions']) && is_array($form['actions'])) {
+      $form['actions']['#weight'] = (int) ($weights[self::SECONDARY_SEARCH_ID]
+        ?? $this->getDefaultFilterWeight(self::SECONDARY_SEARCH_ID, $index));
+    }
   }
 
   /**
@@ -359,20 +411,11 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
         continue;
       }
 
-      $configured_column = $columns[$id] ?? $this->getDefaultFilterColumn($id);
-      if (in_array((string) $configured_column, ['1', '2', '3'], TRUE)) {
-        $column = min((int) $configured_column, $column_count) - 1;
-        $column_preference = (string) $configured_column;
-      }
-      else {
-        $column = 0;
-        foreach (array_slice($column_counts, 0, $column_count, TRUE) as $candidate => $count) {
-          if ($count < $column_counts[$column]) {
-            $column = $candidate;
-          }
-        }
-        $column_preference = 'auto';
-      }
+      [$column, $column_preference] = $this->resolveFilterColumn(
+        $columns[$id] ?? $this->getDefaultFilterColumn($id),
+        $column_count,
+        $column_counts,
+      );
       $element_names = [$element_name];
       $operator_name = $handler->exposedInfo()['operator'] ?? NULL;
       if (is_string($operator_name)
@@ -391,6 +434,21 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
         $column_elements[$column][$name] = $form[$name];
         unset($form[$name]);
       }
+      $column_counts[$column]++;
+    }
+
+    if (isset($form['actions']) && is_array($form['actions'])) {
+      [$column, $column_preference] = $this->resolveFilterColumn(
+        $columns[self::SECONDARY_SEARCH_ID] ?? $this->getDefaultFilterColumn(self::SECONDARY_SEARCH_ID),
+        $column_count,
+        $column_counts,
+      );
+      $form['actions']['#attributes']['class'][] = 'metsis-search-filter-grid__item';
+      $form['actions']['#attributes']['data-metsis-filter-id'] = self::SECONDARY_SEARCH_ID;
+      $form['actions']['#attributes']['data-metsis-filter-column'] = $column_preference;
+      $form['actions']['#attributes']['data-metsis-filter-weight'] = (string) ($form['actions']['#weight'] ?? 0);
+      $column_elements[$column]['actions'] = $form['actions'];
+      unset($form['actions']);
       $column_counts[$column]++;
     }
 
@@ -427,8 +485,40 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     return match ($filter_id) {
       'search_api_fulltext', 'temporal_extent_period_dr' => 1,
       'bbox' => 2,
+      self::SECONDARY_SEARCH_ID => 2,
       default => NULL,
     };
+  }
+
+  /**
+   * Resolves an exposed element's configured or automatic grid column.
+   *
+   * @param mixed $configured_column
+   *   The configured column or automatic preference.
+   * @param int $column_count
+   *   The number of available columns.
+   * @param array<int, int> $column_counts
+   *   The number of assigned items in each column.
+   *
+   * @return array{int, string}
+   *   The zero-based column index and configured preference.
+   */
+  private function resolveFilterColumn(mixed $configured_column, int $column_count, array $column_counts): array {
+    if (in_array((string) $configured_column, ['1', '2', '3'], TRUE)) {
+      return [
+        min((int) $configured_column, $column_count) - 1,
+        (string) $configured_column,
+      ];
+    }
+
+    $column = 0;
+    foreach (array_slice($column_counts, 0, $column_count, TRUE) as $candidate => $count) {
+      if ($count < $column_counts[$column]) {
+        $column = $candidate;
+      }
+    }
+
+    return [$column, 'auto'];
   }
 
   /**

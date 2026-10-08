@@ -22,6 +22,10 @@
             return;
           }
 
+          if (form.classList.contains("metsis-search-exposed-form-block")) {
+            return;
+          }
+
           const isDateRange = operator.hasAttribute(
             "data-metsis-date-range-autosubmit",
           );

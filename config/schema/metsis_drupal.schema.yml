@@ -108,19 +108,19 @@ block.settings.metsis_search_exposed_form:
   mapping:
     disabled_filters:
       type: sequence
-      label: 'Disabled exposed filters'
+      label: 'Disabled exposed filters and actions'
       sequence:
         type: string
-        label: 'Filter plugin ID'
+        label: 'Exposed filter or action ID'
     filter_weights:
       type: sequence
-      label: 'Exposed filter weights'
+      label: 'Exposed filter and action weights'
       sequence:
         type: integer
-        label: 'Filter weight'
+        label: 'Filter or action weight'
     filter_columns:
       type: sequence
-      label: 'Exposed filter columns'
+      label: 'Exposed filter and action columns'
       sequence:
         type: string
         label: 'Grid column'

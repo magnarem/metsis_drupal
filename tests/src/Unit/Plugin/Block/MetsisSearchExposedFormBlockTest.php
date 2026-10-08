@@ -131,13 +131,19 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
       'sort_by' => ['#type' => 'select'],
       'sort_order' => ['#type' => 'select'],
       'items_per_page' => ['#type' => 'select'],
+      '#attributes' => [
+        'data-bef-auto-submit' => '',
+        'data-bef-auto-submit-delay' => '500',
+        'data-bef-auto-submit-minimum-length' => '3',
+        'data-bef-auto-submit-full-form' => '',
+      ],
       '#info' => [
         'filter-hidden_filter_plugin' => [],
         'filter-visible_filter_plugin' => [],
         'filter-facets_collection' => [],
       ],
     ];
-    $view->expects(self::once())
+    $view->expects(self::exactly(2))
       ->method('execute')
       ->with('results')
       ->willReturn(TRUE);
@@ -159,11 +165,13 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
           'bbox' => 6,
           'related_dataset' => 3,
           'facets_collection' => 5,
+          'secondary_search' => 8,
         ],
         'filter_columns' => [
           'temporal_extent_period_dr' => '1',
           'bbox' => '3',
           'related_dataset' => 'invalid',
+          'secondary_search' => '1',
         ],
         'column_count' => 2,
       ],
@@ -187,6 +195,7 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
         'bbox' => 'Geographic filter',
         'related_dataset' => 'Related dataset',
         'facets_collection' => 'Collection facet',
+        'secondary_search' => 'Secondary Search button',
       ],
       $configuration_form['disabled_filters']['#options'],
     );
@@ -200,6 +209,8 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     self::assertSame('1', $configuration_form['filter_columns']['temporal_extent_period_dr']['#default_value']);
     self::assertSame('3', $configuration_form['filter_columns']['bbox']['#default_value']);
     self::assertSame('auto', $configuration_form['filter_columns']['related_dataset']['#default_value']);
+    self::assertSame('1', $configuration_form['filter_columns']['secondary_search']['#default_value']);
+    self::assertSame(8, $configuration_form['filter_weights']['secondary_search']['#default_value']);
     self::assertSame(2, $configuration_form['column_count']['#default_value']);
 
     $previous_container = \Drupal::hasContainer() ? \Drupal::getContainer() : NULL;
@@ -234,6 +245,52 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     self::assertArrayNotHasKey('sort_order', $form);
     self::assertArrayNotHasKey('items_per_page', $form);
     self::assertArrayNotHasKey('actions', $form);
+    self::assertArrayHasKey(
+      'actions',
+      $form['metsis-search-filter-grid']['column_1'],
+    );
+    self::assertSame(
+      8,
+      $form['metsis-search-filter-grid']['column_1']['actions']['#weight'],
+    );
+    self::assertSame(
+      'metsis_drupal:icon_button',
+      $form['metsis-search-filter-grid']['column_1']['actions']['submit_filters']['#component'],
+    );
+    self::assertSame(
+      'magnifier',
+      $form['metsis-search-filter-grid']['column_1']['actions']['submit_filters']['#props']['icon_id'],
+    );
+    self::assertSame(
+      'secondary_search',
+      $form['metsis-search-filter-grid']['column_1']['actions']['#attributes']['data-metsis-filter-id'],
+    );
+    $secondary_submit = $form['metsis-search-filter-grid']['column_1']['actions']['submit_filters']['#slots']['button'];
+    self::assertSame('submit', $secondary_submit['#type']);
+    self::assertInstanceOf(
+      TranslatableMarkup::class,
+      $secondary_submit['#value'],
+    );
+    self::assertSame(
+      'Search',
+      $secondary_submit['#value']->getUntranslatedString(),
+    );
+    self::assertArrayNotHasKey(
+      'data-bef-auto-submit',
+      $form['#attributes'],
+    );
+    self::assertArrayNotHasKey(
+      'data-bef-auto-submit-delay',
+      $form['#attributes'],
+    );
+    self::assertArrayNotHasKey(
+      'data-bef-auto-submit-minimum-length',
+      $form['#attributes'],
+    );
+    self::assertArrayNotHasKey(
+      'data-bef-auto-submit-full-form',
+      $form['#attributes'],
+    );
     self::assertSame(
       4,
       $form['metsis-search-filter-grid']['column_1']['temporal_extent_period_dr_wrapper']['#weight'],
@@ -252,6 +309,10 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
       'metsis_drupal/metsis_search_exposed_form_block',
       $form['#attached']['library'],
     );
+    self::assertContains(
+      'metsis_drupal/metsis_icon_sync',
+      $form['#attached']['library'],
+    );
     self::assertSame('2', $form['metsis-search-filter-grid']['#attributes']['data-metsis-column-count']);
     self::assertSame(
       '1',
@@ -267,20 +328,32 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     );
 
     $submit_state = new FormState();
-    $submit_state->setValue('disabled_filters', ['visible_filter_plugin' => 'visible_filter_plugin']);
-    $submit_state->setValue('filter_weights', ['bbox' => 9]);
-    $submit_state->setValue('filter_columns', ['bbox' => '3', 'related_dataset' => 'invalid']);
+    $submit_state->setValue('disabled_filters', [
+      'visible_filter_plugin' => 'visible_filter_plugin',
+      'secondary_search' => 'secondary_search',
+    ]);
+    $submit_state->setValue('filter_weights', ['bbox' => 9, 'secondary_search' => 11]);
+    $submit_state->setValue('filter_columns', [
+      'bbox' => '3',
+      'related_dataset' => 'invalid',
+      'secondary_search' => '3',
+    ]);
     $submit_state->setValue('column_count', 1);
     $block->blockSubmit([], $submit_state);
     $saved_configuration_form = $block->buildConfigurationForm([], new FormState());
     self::assertSame(
-      ['visible_filter_plugin'],
+      ['visible_filter_plugin', 'secondary_search'],
       $saved_configuration_form['disabled_filters']['#default_value'],
     );
     self::assertSame(9, $saved_configuration_form['filter_weights']['bbox']['#default_value']);
+    self::assertSame(11, $saved_configuration_form['filter_weights']['secondary_search']['#default_value']);
     self::assertSame('3', $saved_configuration_form['filter_columns']['bbox']['#default_value']);
     self::assertSame('auto', $saved_configuration_form['filter_columns']['related_dataset']['#default_value']);
+    self::assertSame('3', $saved_configuration_form['filter_columns']['secondary_search']['#default_value']);
     self::assertSame(1, $saved_configuration_form['column_count']['#default_value']);
+    $form_without_secondary_search = $block->build();
+    self::assertArrayNotHasKey('actions', $form_without_secondary_search['metsis-search-filter-grid']['column_1']);
+    self::assertArrayNotHasKey('actions', $form_without_secondary_search['metsis-search-filter-grid']['column_2']);
 
     $theme_hooks = new MetsisThemeHooks($this->createMock(MetVocabServiceInterface::class));
     $block_suggestions = [];

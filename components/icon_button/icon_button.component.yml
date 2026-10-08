@@ -39,6 +39,4 @@ slots:
       - '<button type="button">Show related datasets</button>'
 libraryOverrides:
   dependencies:
-    - core/drupal
-    - core/once
-    - core/jquery
+    - metsis_drupal/metsis_icon_sync
