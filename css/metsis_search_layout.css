@@ -124,90 +124,6 @@
   font-size: 1.2em;
 }
 
-/* styling for the search box and button */
-
-/* Container is the positioning anchor; input fills it naturally */
-.metsis-search-box-container {
-  position: relative;
-  display: block;
-}
-
-/* The form-actions wrapper sits absolutely over the left side of the input */
-.metsis-search-box-container > .form-actions {
-  position: absolute;
-  left: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  pointer-events: none; /* let clicks pass through to input unless on button */
-}
-
-/* Input fills full width; left padding creates the icon slot */
-.metsis-search-box-container > .form-item {
-  display: block;
-}
-
-.metsis-search-text__input {
-  padding-left: 2.2rem !important;
-  padding-right: 2.2rem !important;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.metsis-search-box-container.metsis-search-hide-idle-autocomplete-indicator
-  .metsis-search-text__input.form-autocomplete:not(.ui-autocomplete-loading) {
-  background-image: none !important;
-}
-
-button.metsis-search-box__button {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto; /* re-enable clicks on the button itself */
-  color: #555;
-  transition: color 0.15s ease;
-}
-
-button.metsis-search-box__button:hover {
-  color: #000;
-}
-
-button.metsis-search-box__button svg {
-  height: 1.1em;
-  width: auto;
-}
-
-button.metsis-search-clear-button {
-  position: absolute;
-  right: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  color: #777;
-  cursor: pointer;
-  font-size: 1.15rem;
-  line-height: 1;
-  padding: 0;
-  margin: 0;
-  z-index: 2;
-}
-
-button.metsis-search-clear-button:hover {
-  color: #111;
-}
-
-button.metsis-search-clear-button[hidden] {
-  display: none;
-}
-
 .metsis-search-layout .metsis-active-filters {
   margin-bottom: 1rem;
   border-bottom: 1px dashed #ddd;
@@ -265,8 +181,9 @@ button.metsis-search-clear-button[hidden] {
 }
 
 .metsis-search-layout .metsis-search-fieldset__body {
-  border-top: 1px solid #dfe7ef;
-  padding: 0.8rem 0.85rem 0.9rem;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 .metsis-search-layout .metsis-search-fieldset__body > .description {
@@ -310,11 +227,11 @@ button.metsis-search-clear-button[hidden] {
   padding-top: 0.95rem;
 }
 
-.metsis-search-layout
-  [data-drupal-selector^="edit-temporal-extent-period-dr-wrapper"]
-  .js-form-item-temporal-extent-period-dr-op {
-  margin: 0.35rem auto 1rem;
-  max-width: 19rem;
+.metsis-search-layout .metsis-date-range-operator {
+  box-sizing: border-box;
+  width: calc(100% - 1.5rem);
+  max-width: 30.5rem;
+  margin: 0.35rem auto 0.75rem;
 }
 
 .metsis-search-layout
@@ -324,24 +241,40 @@ button.metsis-search-clear-button[hidden] {
   margin: 0.15em 0 0.15em;
 }
 
-.metsis-search-layout
-  [data-drupal-selector^="edit-temporal-extent-period-dr-wrapper"]
-  [data-drupal-selector^="edit-temporal-extent-period-dr"] {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+#page-wrapper .metsis-search-layout .metsis-date-range-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: 0.85rem;
   margin: 0 auto;
-  max-width: 32rem;
+  width: calc(100% - 1.5rem);
+  max-width: 30.5rem;
 }
 
-.metsis-search-layout
-  [data-drupal-selector^="edit-temporal-extent-period-dr-wrapper"]
-  [data-drupal-selector^="edit-temporal-extent-period-dr"]
-  .js-form-item {
-  margin: 0.65em 0.65em;
-  flex: 1 1 0;
-  min-width: 10rem;
+#page-wrapper .metsis-search-layout .metsis-date-range-field {
+  box-sizing: border-box;
+  flex: initial;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#page-wrapper .metsis-search-layout .metsis-date-range-field label {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 0 0.35rem;
+}
+
+#page-wrapper
+  .metsis-search-layout
+  .metsis-date-range-field
+  input[type="date"] {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin: 0;
 }
 
 .metsis-search-layout
@@ -352,12 +285,9 @@ button.metsis-search-clear-button[hidden] {
 }
 
 @media (max-width: 560px) {
-  .metsis-search-layout
-    [data-drupal-selector^="edit-temporal-extent-period-dr-wrapper"]
-    [data-drupal-selector^="edit-temporal-extent-period-dr"] {
-    flex-direction: column;
-    align-items: stretch;
-    max-width: 100%;
+  #page-wrapper .metsis-search-layout .metsis-date-range-fields {
+    grid-template-columns: minmax(0, 1fr);
+    width: calc(100% - 1.5rem);
   }
 }
 
@@ -383,45 +313,4 @@ button.metsis-search-clear-button[hidden] {
     grid-row: 3;
     /* Move below filters */
   }
-}
-
-#bbox-map-filter-container {
-  max-width: 100%;
-  min-width: 360px;
-  height: 250px;
-  margin-bottom: 0.35rem;
-}
-
-#bbox-map-filter-attribution {
-  font-size: 0.75rem;
-  line-height: 1.3;
-  color: #4b5563;
-  min-height: 1.2rem;
-  position: relative;
-}
-
-#bbox-map-filter-attribution .ol-control,
-#bbox-map-filter-attribution .ol-attribution {
-  position: static;
-  inset: auto;
-  margin: 0;
-}
-
-#bbox-map-filter-attribution .ol-attribution {
-  max-width: 100%;
-  box-shadow: none;
-  background: transparent;
-  border-radius: 0;
-  padding-bottom: 0.5rem;
-}
-
-#bbox-map-filter-attribution .ol-attribution ul {
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
-}
-#bbox-map-filter-attribution .ol-button {
-  margin: 0;
-  padding: 0;
-  display: hidden;
 }

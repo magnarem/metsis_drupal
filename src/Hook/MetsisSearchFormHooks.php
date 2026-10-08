@@ -57,10 +57,10 @@ class MetsisSearchFormHooks {
       $form['search-box-container'] = [
         '#type' => 'container',
         '#attributes' => [
-          'class' => [
-            'metsis-search-box-container',
-          ],
+          'class' => ['metsis-search-box-container'],
         ],
+        '#metsis_search_box' => TRUE,
+        '#weight' => -100,
       ];
 
       // Move the text search input and submit button into the container.
@@ -71,10 +71,10 @@ class MetsisSearchFormHooks {
         unset($form['text']);
       }
       if (isset($form['actions']['submit'])) {
+        $form['actions']['#attributes']['class'][] = 'metsis-search-box__actions';
         $form['search-box-container']['actions'] = $form['actions'];
         unset($form['actions']);
       }
-      $form['search-box-container']['#weight'] = -100;
 
       // Add a secondary submit button with text
       // and filter icon as the last element.

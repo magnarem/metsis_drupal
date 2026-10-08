@@ -1,13 +1,10 @@
-# Bbox-form-tabs
+# Bounding-box form tabs
 
-This is some default content for the README. Change this to the appropriate
-content.
+The `bbox_form_tabs` component presents the bounding-box filter's map and
+coordinate inputs in accessible tabs. Its map viewport has a 300px minimum
+width on larger layouts and is capped to the viewport width on small screens.
 
-## Usage
-
-Here you should describe how/when to use this component. This information may be
-for developers or for editors, depending on the component type.
-
-## Additional information
-
-Some extra info about the component.
+The spatial predicate select is excluded from Better Exposed Filters'
+unconditional autosubmit. A METSIS behavior submits an operator change only
+when all four coordinate inputs contain numeric values; map drawing retains
+its separate submit behavior.

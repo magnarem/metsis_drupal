@@ -445,6 +445,11 @@ field_settings:
     datasource_id: solr_document
     property_path: platform_orbit_relative
     type: integer
+  platform_sentinel:
+    label: 'Platform sentinel'
+    datasource_id: solr_document
+    property_path: platform_sentinel
+    type: string
   platform_short_name:
     label: 'Platform short name'
     datasource_id: solr_document
@@ -499,6 +504,11 @@ field_settings:
     label: 'Related url landing page'
     datasource_id: solr_document
     property_path: related_url_landing_page
+    type: string
+  sentinel_tile:
+    label: 'Sentinel tile'
+    datasource_id: solr_document
+    property_path: sentinel_tile
     type: string
   spatial_representation:
     label: 'Spatial representation'

@@ -3,5 +3,6 @@ type: module
 description: "NBS-specific extensions for METSIS"
 package: METNO
 core_version_requirement: ^11.4 || ^12
+configure: nbs_extensions.settings
 dependencies:
   - metsis_drupal:metsis_drupal

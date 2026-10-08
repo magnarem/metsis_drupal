@@ -112,3 +112,18 @@ block.settings.metsis_search_exposed_form:
       sequence:
         type: string
         label: 'Filter plugin ID'
+    filter_weights:
+      type: sequence
+      label: 'Exposed filter weights'
+      sequence:
+        type: integer
+        label: 'Filter weight'
+    filter_columns:
+      type: sequence
+      label: 'Exposed filter columns'
+      sequence:
+        type: string
+        label: 'Grid column'
+    column_count:
+      type: integer
+      label: 'Number of grid columns'

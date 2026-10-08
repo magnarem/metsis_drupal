@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\metsis_drupal\Plugin\views\filter;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\search_api\Plugin\views\filter\SearchApiDate;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Solarium\Core\Query\Helper;
@@ -80,6 +81,42 @@ class MetsisSolrDateRangeFilter extends SearchApiDate {
     unset($form["expose"]["min_placeholder"]);
     unset($form["expose"]["max_placeholder"]);
     unset($form["value"]["value"]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildExposedForm(&$form, FormStateInterface $form_state) {
+    parent::buildExposedForm($form, $form_state);
+
+    $identifier = $this->options['expose']['identifier'];
+    $wrapper = $identifier . '_wrapper';
+    $operator_key = $identifier . '_op';
+    if (empty($form[$wrapper][$identifier])) {
+      return;
+    }
+
+    $form[$wrapper][$identifier]['#attributes']['class'][] = 'metsis-date-range-fields';
+    foreach (['min', 'max'] as $bound) {
+      if (isset($form[$wrapper][$identifier][$bound])) {
+        $form[$wrapper][$identifier][$bound]['#wrapper_attributes']['class'][] = 'metsis-date-range-field';
+        $form[$wrapper][$identifier][$bound]['#wrapper_attributes']['class'][] = 'metsis-date-range-field--' . $bound;
+        $form[$wrapper][$identifier][$bound]['#attributes']['data-metsis-date-range-bound'] = $bound;
+        $form[$wrapper][$identifier][$bound]['#attributes']['data-metsis-date-range-autosubmit'] = '';
+        $form[$wrapper][$identifier][$bound]['#attributes']['data-bef-auto-submit-exclude'] = '';
+      }
+    }
+
+    if (isset($form[$wrapper][$operator_key]) && is_array($form[$wrapper][$operator_key])) {
+      $form[$wrapper][$operator_key]['#wrapper_attributes']['class'][] = 'metsis-date-range-operator';
+      $form[$wrapper][$operator_key]['#attributes']['data-bef-auto-submit-exclude'] = '';
+      $form[$wrapper][$operator_key]['#attributes']['data-metsis-date-range-autosubmit'] = '';
+      $form = BubbleableMetadata::mergeAttachments($form, [
+        '#attached' => [
+          'library' => ['metsis_drupal/metsis_filter_autosubmit'],
+        ],
+      ]);
+    }
   }
 
   /**

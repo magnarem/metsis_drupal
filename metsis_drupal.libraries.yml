@@ -22,11 +22,25 @@ bbox_map_filter:
     - core/drupalSettings
     - core/once
 
+metsis_filter_autosubmit:
+  version: 1.x
+  js:
+    js/metsis-filter-autosubmit.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
 metsis_search_layout:
   version: 1.x
   css:
     component:
       css/metsis_search_layout.css: {}
+
+metsis_search_exposed_form_block:
+  version: 1.x
+  css:
+    component:
+      css/metsis_search_exposed_form_block.css: {}
 
 metsis_default_row_layout:
   version: 1.x

@@ -8,7 +8,7 @@
   --bbox-tabs-accent-soft: rgba(0, 94, 162, 0.08);
   /* border: 1px solid var(--bbox-tabs-border);
   border-radius: 16px; */
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  /* background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%); */
   box-shadow: 0 8px 24px rgba(29, 44, 66, 0.08);
   overflow: clip;
 }
@@ -18,11 +18,11 @@
   gap: 0.5rem;
   padding: 0.75rem 0.75rem 0;
   border-bottom: 1px solid var(--bbox-tabs-border);
-  background: linear-gradient(
+  /* background: linear-gradient(
     180deg,
     #fefeff 0%,
     var(--bbox-tabs-surface) 100%
-  );
+  ); */
 }
 
 [data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button {
@@ -48,7 +48,7 @@
 
 [data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button:hover {
   color: var(--bbox-tabs-text);
-  background: rgba(255, 255, 255, 0.75);
+  /* background: rgba(255, 255, 255, 0.75); */
 }
 
 [data-component-id="metsis_drupal:bbox_form_tabs"] .tab-button.is-active {
@@ -75,7 +75,7 @@
   /* padding: 1rem; */
   /* border: 1px solid var(--bbox-tabs-border);
   border-radius: 14px; */
-  background: #fff;
+  /* background: #fff; */
 }
 
 [data-component-id="metsis_drupal:bbox_form_tabs"] .tab-panel.is-active {
@@ -84,4 +84,47 @@
 
 [data-component-id="metsis_drupal:bbox_form_tabs"] .tab-panel:focus-within {
   box-shadow: 0 0 0 3px var(--bbox-tabs-accent-soft);
+}
+
+#bbox-map-filter-container {
+  max-width: 100%;
+  min-width: min(300px, calc(100vw - 2rem));
+  height: 250px;
+  margin-bottom: 0.35rem;
+  box-sizing: border-box;
+}
+
+#bbox-map-filter-attribution {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: #4b5563;
+  min-height: 1.2rem;
+  position: relative;
+}
+
+#bbox-map-filter-attribution .ol-control,
+#bbox-map-filter-attribution .ol-attribution {
+  position: static;
+  inset: auto;
+  margin: 0;
+}
+
+#bbox-map-filter-attribution .ol-attribution {
+  max-width: 100%;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  padding-bottom: 0.5rem;
+}
+
+#bbox-map-filter-attribution .ol-attribution ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+#bbox-map-filter-attribution .ol-button {
+  margin: 0;
+  padding: 0;
+  display: hidden;
 }

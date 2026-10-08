@@ -3,5 +3,6 @@ type: module
 description: "Dynamic landing pages for ADC/METSIS datasets"
 package: METNO
 core_version_requirement: ^11.4 || ^12
+configure: dynamic_landing_pages.settings_form
 dependencies:
   - metsis_drupal:metsis_drupal

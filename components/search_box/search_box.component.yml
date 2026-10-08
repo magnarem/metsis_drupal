@@ -1,0 +1,14 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Search box
+status: stable
+group: metsis
+description: Wraps themed Drupal search input and submit elements for the exposed search form.
+props:
+  type: object
+  properties: {}
+slots:
+  content:
+    title: Search controls
+    description: Form API-processed search input and submit controls.
+    examples:
+      - '<div class="form-actions"><button type="submit">Search</button></div><input type="search" aria-label="Search">'

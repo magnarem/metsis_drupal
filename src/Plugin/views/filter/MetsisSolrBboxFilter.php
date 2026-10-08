@@ -140,6 +140,20 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
     $form[$wrapper]['#metsis_bbox_show_coords'] = !$map_input_enabled || $user_input_enabled;
     $form[$wrapper]['#metsis_bbox_use_tabs'] = $map_input_enabled && $user_input_enabled && $tabs_component_enabled;
 
+    foreach (['minX', 'maxX', 'minY', 'maxY'] as $coordinate) {
+      $form[$wrapper][$identifier][$coordinate]['#attributes']['data-metsis-bbox-coordinate'] = $coordinate;
+    }
+
+    if (isset($form[$wrapper][$operator_key]) && is_array($form[$wrapper][$operator_key])) {
+      $form[$wrapper][$operator_key]['#attributes']['data-bef-auto-submit-exclude'] = '';
+      $form[$wrapper][$operator_key]['#attributes']['data-metsis-bbox-autosubmit'] = '';
+      $form = BubbleableMetadata::mergeAttachments($form, [
+        '#attached' => [
+          'library' => ['metsis_drupal/metsis_filter_autosubmit'],
+        ],
+      ]);
+    }
+
     if (!$map_input_enabled) {
       return;
     }

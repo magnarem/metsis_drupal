@@ -1,0 +1,79 @@
+.metsis-search-box-container {
+  position: relative;
+  display: block;
+}
+
+.metsis-search-box-container > .metsis-search-box__actions {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.metsis-search-box-container > .form-item {
+  display: block;
+}
+
+.metsis-search-text__input {
+  padding-left: 2.2rem !important;
+  padding-right: 2.2rem !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.metsis-search-box-container.metsis-search-hide-idle-autocomplete-indicator
+  .metsis-search-text__input.form-autocomplete:not(.ui-autocomplete-loading) {
+  background-image: none !important;
+}
+
+.metsis-search-box-container button.metsis-search-box__button {
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  color: #555;
+  transition: color 0.15s ease;
+}
+
+button.metsis-search-box__button:hover {
+  color: #000;
+}
+
+button.metsis-search-box__button svg {
+  height: 1.1em;
+  width: auto;
+}
+
+button.metsis-search-clear-button {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+}
+
+button.metsis-search-clear-button:hover {
+  color: #111;
+}
+
+button.metsis-search-clear-button[hidden] {
+  display: none;
+}

@@ -136,6 +136,11 @@ class MetsisThemeHooks {
         'render element' => 'element',
         'template' => 'components/input--submit--search-results-submit',
       ],
+      'container__metsis_search_box' => [
+        'render element' => 'element',
+        'base hook' => 'container',
+        'template' => 'container--metsis-search-box',
+      ],
       'fieldset__metsis_search' => [
         'render element' => 'element',
         'base hook' => 'fieldset',
@@ -179,6 +184,18 @@ class MetsisThemeHooks {
     // Mainly used to swap the search input to a button.
     if (isset($element['#attributes']['data-twig-suggestion'])) {
       $suggestions[] = 'input__' . $element['#type'] . '__' . $element['#attributes']['data-twig-suggestion'];
+    }
+  }
+
+  /**
+   * Uses the search-box SDC to wrap the METSIS search controls.
+   *
+   * Implements hook_theme_suggestions_HOOK_alter().
+   */
+  #[Hook('theme_suggestions_container_alter')]
+  public function themeSuggestionsContainerAlter(array &$suggestions, array $variables): void {
+    if (!empty($variables['element']['#metsis_search_box'])) {
+      $suggestions[] = 'container__metsis_search_box';
     }
   }
 

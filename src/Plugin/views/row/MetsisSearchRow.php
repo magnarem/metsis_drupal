@@ -688,15 +688,23 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ];
 
       if ($normalized_type === 'http') {
-        if (str_starts_with($resource, 'https://nbstds') && str_ends_with($resource, '.zip')) {
-          $label = $this->t('Direct HTTP Download (SAFE)');
-        }
-        elseif (str_starts_with($resource, 'https://nbstds') && str_ends_with($resource, '.nc')) {
-          $label = $this->t('Direct HTTP Download (NetCDF)');
-        }
-        else {
-          $label = $this->t('Direct HTTP Download');
-        }
+        $path = parse_url($resource, PHP_URL_PATH);
+        $extension = strtolower(pathinfo(is_string($path) ? $path : '', PATHINFO_EXTENSION));
+        $file_type = match ($extension) {
+          'nc', 'netcdf' => 'NetCDF file',
+          'zip' => 'ZIP archive',
+          'pdf' => 'PDF file',
+          'mp3' => 'MP3 audio file',
+          'doc', 'docx' => 'Word document',
+          'xls', 'xlsx' => 'Excel spreadsheet',
+          'ppt', 'pptx' => 'PowerPoint presentation',
+          'csv' => 'CSV file',
+          'txt' => 'text file',
+          default => $extension !== '' ? strtoupper($extension) . ' file' : 'data file',
+        };
+        $label = str_starts_with($resource, 'https://nbstds') && $extension === 'zip'
+          ? $this->t('Direct HTTP download (@file_type, SAFE)', ['@file_type' => $file_type])
+          : $this->t('Direct HTTP download (@file_type)', ['@file_type' => $file_type]);
         $target_blank = FALSE;
         $attributes['download'] = TRUE;
       }
@@ -711,10 +719,10 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
 
       if ($description !== '') {
         $attributes['title'] = $description;
-        $attributes['aria-label'] = $description;
       }
 
       if ($target_blank) {
+        $label = $this->t('@label (opens in a new tab)', ['@label' => $label]);
         $attributes['target'] = '_blank';
       }
 
@@ -755,11 +763,13 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     ];
 
     foreach ($items as $item) {
+      $link_attributes = $item['attributes'];
+      $link_attributes['class'][] = 'button';
       $link = [
         '#type' => 'link',
         '#title' => $item['title'],
         '#url' => Url::fromUri($item['url']),
-        '#attributes' => $item['attributes'],
+        '#attributes' => $link_attributes,
       ];
 
       $operations['data_access_popover'][$item['item_key']] = [
