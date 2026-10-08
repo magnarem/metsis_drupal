@@ -17,9 +17,7 @@
           "metsis-search-box__actions",
         );
         const icon = wrapper.querySelector(
-          isSearchBox
-            ? ".metsis-search-box__button svg"
-            : ".icon-button__icon",
+          isSearchBox ? ".metsis-search-box__button svg" : ".icon-button__icon",
         );
         const button = wrapper.querySelector(
           isSearchBox

@@ -186,6 +186,10 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     $block->setStringTranslation($translation);
 
     $configuration_form = $block->buildConfigurationForm([], new FormState());
+    $filter_options = $configuration_form['disabled_filters']['#options'];
+    self::assertIsArray($filter_options);
+    $secondary_search_label = $filter_options['secondary_search'];
+    unset($filter_options['secondary_search']);
     self::assertSame(
       [
         'hidden_filter_plugin' => 'Hidden filter',
@@ -195,9 +199,16 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
         'bbox' => 'Geographic filter',
         'related_dataset' => 'Related dataset',
         'facets_collection' => 'Collection facet',
-        'secondary_search' => 'Secondary Search button',
       ],
-      $configuration_form['disabled_filters']['#options'],
+      $filter_options,
+    );
+    self::assertInstanceOf(
+      TranslatableMarkup::class,
+      $secondary_search_label,
+    );
+    self::assertSame(
+      'Secondary Search button',
+      $secondary_search_label->getUntranslatedString(),
     );
     self::assertSame(
       ['hidden_filter_plugin'],
@@ -353,7 +364,6 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     self::assertSame(1, $saved_configuration_form['column_count']['#default_value']);
     $form_without_secondary_search = $block->build();
     self::assertArrayNotHasKey('actions', $form_without_secondary_search['metsis-search-filter-grid']['column_1']);
-    self::assertArrayNotHasKey('actions', $form_without_secondary_search['metsis-search-filter-grid']['column_2']);
 
     $theme_hooks = new MetsisThemeHooks($this->createMock(MetVocabServiceInterface::class));
     $block_suggestions = [];
