@@ -21,8 +21,8 @@ The module is focused on:
 - vocabulary-aware metadata enrichment (MMD SKOS vocabularies)
 - map and bounding-box filtering with Preact + OpenLayers apps
 
-
 ### NBS extensions
+
 The repository also contains the `nbs_extensions` submodule in
 [`modules/nbs_extensions`](modules/nbs_extensions), which provides the NetCDF on-demand request flow. Configure its backend endpoint at `/admin/config/metno/nbs-extensions`; authenticated users can submit requests at `/metsis/netcdf-on-demand/{datasetId}`. The form uses Drupal core HTMX with normal Form API submission as its no-JavaScript fallback.
 Its installed configuration lists supported product types in `netcdf_ondemand_products`. Search result rows offer **Request "CF-NetCDF file"** only for those product types when the dataset does not already have an HTTP `.nc` data-access resource.
