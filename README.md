@@ -74,6 +74,10 @@ the bbox Views filter (150–1000 pixels, default 250); blocks inherit that heig
 unless overridden. Map width adapts to the available container, including
 narrow columns and non-tabbed maps.
 
+For a left-sidebar search block in Solo, use the theme's `solo-col-1-2`
+two-column main layout (sidebar:content = 1:2). The block's column count
+controls only its internal filter layout, not the theme's region widths.
+
 Additional usage guides are available in [`docs/`](docs/); more detailed
 feature documentation can be added there as the project manual grows.
 
