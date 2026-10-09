@@ -17,6 +17,9 @@ bbox_map_filter:
     version: 1.x
   js:
     js/metsis/bbox-map-filter/src/main.js: { attributes: { type: module } }
+  css:
+    component:
+      css/metsis_bbox_map_filter.css: {}
   dependencies:
     - core/drupal
     - core/drupalSettings

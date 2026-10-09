@@ -7,6 +7,20 @@
 }
 
 #page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-search-filter-grid
+  .metsis-date-range-fields::before,
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-search-filter-grid
+  .metsis-date-range-fields::after {
+  content: none;
+  display: none;
+}
+
+#page-wrapper
   form.views-exposed-form.metsis-search-exposed-form-block
   .exposed-form
   .metsis-search-filter-grid {
@@ -60,6 +74,93 @@
   max-width: 100%;
   margin: 0;
   align-self: stretch;
+}
+
+#page-wrapper
+  form.views-exposed-form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-search-filter-grid,
+#page-wrapper
+  form.views-exposed-form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-search-filter-grid__column {
+  gap: 0.5rem;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .metsis-search-filter-grid
+  fieldset {
+  padding: 0.5rem;
+  margin-block: 0;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .metsis-search-filter-grid
+  .form-item {
+  margin-block: 0.35rem;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .metsis-search-fieldset__body {
+  padding: 0.25rem;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-search-filter-grid
+  .metsis-date-range-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-date-range-fields
+  .form-item {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  .exposed-form
+  .metsis-date-range-fields
+  input[type="date"] {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  [data-component-id="metsis_drupal:bbox_form_tabs"]
+  .tabs {
+  padding: 0.25rem 0.25rem 0;
+  gap: 0.25rem;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  [data-component-id="metsis_drupal:bbox_form_tabs"]
+  .tab-panels {
+  padding: 0.5rem;
+}
+
+#page-wrapper
+  form.metsis-search-exposed-form-block--compact
+  [data-component-id="metsis_drupal:bbox_form_tabs"]
+  .tab-button {
+  padding: 0.65rem 0.75rem;
 }
 
 #page-wrapper

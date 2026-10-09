@@ -21,11 +21,17 @@ The module is focused on:
 - vocabulary-aware metadata enrichment (MMD SKOS vocabularies)
 - map and bounding-box filtering with Preact + OpenLayers apps
 
-It is designed as a service-oriented module with thin controllers/forms and explicit dependency injection.
 
+### NBS extensions
 The repository also contains the `nbs_extensions` submodule in
 [`modules/nbs_extensions`](modules/nbs_extensions), which provides the NetCDF on-demand request flow. Configure its backend endpoint at `/admin/config/metno/nbs-extensions`; authenticated users can submit requests at `/metsis/netcdf-on-demand/{datasetId}`. The form uses Drupal core HTMX with normal Form API submission as its no-JavaScript fallback.
 Its installed configuration lists supported product types in `netcdf_ondemand_products`. Search result rows offer **Request "CF-NetCDF file"** only for those product types when the dataset does not already have an HTTP `.nc` data-access resource.
+Data-access popover links use the theme's button styling and include file-type
+or new-tab information in their link text for accessibility.
+
+### Dynamic landing pages
+
+The repository also includes the standalone [`modules/dynamic_landing_pages`](modules/dynamic_landing_pages) submodule. It renders dataset landing pages directly from Solr data, with rich metadata summaries, map previews, parent/child dataset context, and export/visualisation controls. The module is intended for catalogue-style detail pages that keep the metadata presentation consistent with the main METSIS search experience while allowing a dedicated, more document-like layout.
 
 ## Runtime and Compatibility
 
@@ -46,16 +52,30 @@ See [metsis_drupal.info.yml](metsis_drupal.info.yml) and [.github/workflows/qual
 
 Route definitions are in [metsis_drupal.routing.yml](metsis_drupal.routing.yml).
 
-The `METSIS search exposed form` block renders the exposed form from the
-`metsis_search` View's `results` display. Its block settings are populated from
-the currently exposed filters on that display; selected filters are hidden,
-and newly added filters are enabled by default. The form submits to the
-configured View results endpoint, regardless of where the block is placed.
-Theme overrides can use `block--metsis-search-exposed-form.html.twig` or
-`block--metsis-search-exposed-form--metsis-search--results.html.twig` for the
-block, and `views-exposed-form--metsis-search-block.html.twig` or
-`views-exposed-form--metsis-search-block--metsis-search--results.html.twig`
-for the exposed form inside it.
+The **METSIS search exposed form** block displays filters from the
+`metsis_search` View's `results` display and submits searches to that View,
+wherever the block is placed. Configure which filters and the optional
+secondary Search button to show, their order, and their column placement in
+the block settings. Choose one to three columns; each filter can use automatic
+placement or a specific column. The layout stacks on narrow screens, and
+filters in the block submit when a Search button is used. Sort and pager
+controls are not included. New blocks initially show the search box, temporal
+filter, geographic filter, and secondary Search button. Existing blocks retain
+their selections; `vendor/bin/drush updb` migrates legacy exclusion settings.
+Weight and column controls appear only for selected elements and retain their
+preferences when an element is temporarily hidden.
+
+Block settings also offer **Compact presentation**, independent predicate
+visibility for the temporal and geographic filters, and a bbox map-height
+override. Hidden exposed predicates submit **Intersects**. If the View does not
+expose a predicate, its fixed operator remains in effect; hiding is unavailable
+if the View's allowed operators exclude Intersects. Configure the map height in
+the bbox Views filter (150–1000 pixels, default 250); blocks inherit that height
+unless overridden. Map width adapts to the available container, including
+narrow columns and non-tabbed maps.
+
+Additional usage guides are available in [`docs/`](docs/); more detailed
+feature documentation can be added there as the project manual grows.
 
 ## Important Services and Classes
 

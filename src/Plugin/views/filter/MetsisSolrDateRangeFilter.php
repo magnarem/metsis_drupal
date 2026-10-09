@@ -91,7 +91,7 @@ class MetsisSolrDateRangeFilter extends SearchApiDate {
 
     $identifier = $this->options['expose']['identifier'];
     $wrapper = $identifier . '_wrapper';
-    $operator_key = $identifier . '_op';
+    $operator_key = $this->options['expose']['operator_id'] ?? '';
     if (empty($form[$wrapper][$identifier])) {
       return;
     }
@@ -202,12 +202,21 @@ class MetsisSolrDateRangeFilter extends SearchApiDate {
     if (empty($this->options['exposed'])) {
       return TRUE;
     }
+    $identifier = $this->options['expose']['identifier'];
+    if (!isset($input[$identifier]) || !is_array($input[$identifier])) {
+      return FALSE;
+    }
+    $input[$identifier] += ['min' => '', 'max' => ''];
+    $operator_id = $this->options['expose']['operator_id'] ?? '';
+    if (!empty($this->options['expose']['use_operator']) && $operator_id !== '') {
+      $input[$operator_id] ??= $this->operator;
+    }
     $rc = parent::acceptExposedInput($input);
     // We accept open start and end dates.
-    if ($input['temporal_extent_period_dr']['min'] != '') {
+    if (($input[$identifier]['min'] ?? '') !== '') {
       $rc = TRUE;
     }
-    if ($input['temporal_extent_period_dr']['max'] != '') {
+    if (($input[$identifier]['max'] ?? '') !== '') {
       $rc = TRUE;
     }
     return $rc;

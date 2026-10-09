@@ -99,6 +99,13 @@ views.filter.metsis_filter_bbox:
         tabs_component:
           type: integer
           label: "Render map and coordinate inputs in tabs"
+        map_height:
+          type: integer
+          label: "Map height in pixels"
+          constraints:
+            Range:
+              min: 150
+              max: 1000
 
 views.row.metsis_search_row:
   type: mapping

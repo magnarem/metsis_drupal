@@ -106,9 +106,9 @@ block.settings.metsis_search_exposed_form:
   type: block_settings
   label: 'METSIS search exposed form block settings'
   mapping:
-    disabled_filters:
+    shown_filters:
       type: sequence
-      label: 'Disabled exposed filters and actions'
+      label: 'Visible exposed filters and actions'
       sequence:
         type: string
         label: 'Exposed filter or action ID'
@@ -127,3 +127,22 @@ block.settings.metsis_search_exposed_form:
     column_count:
       type: integer
       label: 'Number of grid columns'
+    hidden_predicates:
+      type: sequence
+      label: 'Filters using a hidden Intersects predicate'
+      sequence:
+        type: string
+        label: 'Filter ID'
+    bbox_map_heights:
+      type: sequence
+      label: 'Bounding-box map height overrides'
+      sequence:
+        type: integer
+        label: 'Map height in pixels'
+        constraints:
+          Range:
+            min: 150
+            max: 1000
+    compact:
+      type: boolean
+      label: 'Compact presentation'

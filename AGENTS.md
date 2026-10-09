@@ -979,6 +979,86 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-10-10 | TASK: Added positive quick-search block selections, conditional configuration controls, predicate visibility, compact layout, and bbox map-height overrides
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, src/Plugin/views/filter/MetsisSolrBboxFilter.php, src/Plugin/views/filter/MetsisSolrDateRangeFilter.php, config/schema/metsis_drupal{,.views}.schema.yml, metsis_drupal.install, metsis_drupal.libraries.yml, css/metsis_{bbox_map_filter,search_exposed_form_block}.css, components/bbox_form_tabs/bbox_form_tabs.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, tests/src/Unit/Plugin/views/filter/MetsisExposedFiltersTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Update 11001 preserves existing visibility; Form API states gate applicable controls, hidden exposed predicates submit Intersects without overriding fixed View operators, custom operator IDs and nested BEF wrappers are supported, map height inherits from Views unless overridden, and mobile maps/tabs fit their parent containers
+
+2026-10-08 | TASK: Aligned exposed-form block columns and made secondary Search configurable
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, css/metsis_search_exposed_form_block.css, js/metsis-icon-sync.js, assets/icons/magnifier.svg, components/icon_button/icon_button.component.yml, templates/components/input--submit--search-results-submit.html.twig, src/Hook/MetsisSearchFormHooks.php, metsis_drupal.libraries.yml, config/schema/metsis_drupal.schema.yml, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Overrode Solo's date-range alignment on block columns, reset exposed-item margins, extracted icon color tracking to a shared library using currentColor for both search magnifiers, and added disable/weight/column settings for the secondary Search action
+
+2026-10-08 | PROBLEM/SOLUTION: Prevented Solo clear-fix pseudo-elements from wrapping the exposed-form block columns
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, css/metsis_search_exposed_form_block.css, js/metsis-filter-autosubmit.js, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Solo adds .solo-clear pseudo-elements to every container; hiding those generated flex items only within the block grid keeps columns side-by-side. The block now disables BEF and METSIS filter-change autosubmit and adds an always-visible Search button with a magnifier icon
+
+2026-10-08 | PROBLEM/SOLUTION: Removed disabled filter wrappers and stabilized the block flex layout against Solo container classes
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, css/metsis_search_exposed_form_block.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Disabled filters now remove their generated wrapper in addition to raw value/operator elements; Solo's container preprocess adds .solo-date-range to outer containers with date widgets, so the block explicitly overrides that theme layout and uses viewport breakpoints for responsive flex columns
+
+2026-10-08 | PROBLEM/SOLUTION: Replaced exposed-form height reflow with configurable responsive column count
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, css/metsis_search_exposed_form_block.css, metsis_drupal.libraries.yml, config/schema/metsis_drupal.schema.yml, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Removed the JavaScript height packer; the block now groups filters in Form API render arrays, balances Automatic placement across one to three configured columns, clamps out-of-range assignments, and responsively stacks the grid without requiring a custom outer block template
+
+2026-10-08 | PROBLEM/SOLUTION: Overrode Solo date-range flex rules to align stacked temporal controls
+           | FILES: css/metsis_search_layout.css, DISCUSSIONS_LOG.md
+           | NOTE: Scoped date-grid rules with sufficient specificity over the theme's .solo-date-range layout and reset flex sizing, padding, and margins on the wrappers, labels, and inputs
+
+2026-10-08 | PROBLEM/SOLUTION: Aligned temporal date field wrappers and inset the predicate control
+           | FILES: src/Plugin/views/filter/MetsisSolrDateRangeFilter.php, css/metsis_search_layout.css, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Added targeted form wrapper classes and scoped responsive layout rules to prevent theme margins from offsetting the end date field and to keep the predicate dropdown narrower than the fieldset
+
+2026-10-08 | TASK: Gated temporal-filter autosubmit on both dates and aligned date controls
+           | FILES: src/Plugin/views/filter/MetsisSolrDateRangeFilter.php, src/Plugin/views/filter/MetsisSolrBboxFilter.php, js/metsis-filter-autosubmit.js, metsis_drupal.libraries.yml, css/metsis_search_layout.css, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Temporal operator and date changes bypass BEF's unconditional autosubmit and trigger a search only when both date inputs are selected; the two date fields now use aligned responsive grid columns
+
+2026-10-08 | TASK: Widened the bounding-box map and gated predicate autosubmit on coordinates
+           | FILES: components/bbox_form_tabs/bbox_form_tabs.css, src/Plugin/views/filter/MetsisSolrBboxFilter.php, js/metsis-bbox-filter-autosubmit.js, metsis_drupal.libraries.yml, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Increased the component map minimum width with a viewport cap; operator changes bypass BEF's unconditional autosubmit and submit only when all four coordinate values are numeric, leaving map drawing submission unchanged
+
+2026-10-08 | PROBLEM/SOLUTION: Matched data-access popover link colors to themed export buttons and clarified file/new-tab behavior for assistive technology
+           | FILES: src/Plugin/views/row/MetsisSearchRow.php, css/metsis_default_row_layout.css, tests/src/Unit/Plugin/views/row/MetsisSearchRowTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Data-access links now carry the theme's .button class without a competing wrapper border/color; direct HTTP labels identify common file formats, links opening a new tab announce it in link text, and description text no longer overrides the accessible name
+
+2026-10-08 | TASK: Made the exposed-form block grid independent of theme wrappers and restored compact column stacking
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, css/metsis_search_exposed_form_block.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Exposed widgets and operators are grouped into independently stacked column containers; the block's submit button now says Search and uses the existing magnifier button, with the secondary Update filters/icon-button action omitted
+
+2026-10-08 | TASK: Added per-filter grid-column selectors and applied the block grid to the actual exposed-form wrapper
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, config/schema/metsis_drupal.schema.yml, css/metsis_search_exposed_form_block.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md
+           | NOTE: Block settings support Automatic or explicit columns 1-3; the grid styles now target the theme's inner .solo-block.exposed-form wrapper, and column 3 maps to column 2 at the two-column breakpoint
+
+2026-10-08 | TASK: Added per-block exposed-filter weights and retained the column-first responsive layout
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, config/schema/metsis_drupal.schema.yml, css/metsis_search_exposed_form_block.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md
+           | NOTE: Block settings now expose Drupal weight controls per active Views filter, apply weights to their actual exposed widgets including wrapper elements, and keep the actions row spanning the responsive 2-3 column grid
+
+2026-10-08 | PROBLEM/SOLUTION: Kept the search controls in Form API's processed element tree while wrapping them in the search-box SDC
+           | FILES: src/Hook/MetsisSearchFormHooks.php, src/Hook/MetsisThemeHooks.php, components/search_box/*, templates/container--metsis-search-box.html.twig, tests/src/Unit/Hook/MetsisSearchFormHooksTest.php, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php
+           | NOTE: Moving controls into SDC #slots bypassed Form API name/context processing and triggered a Better Exposed Filters warning; a container theme suggestion now embeds the SDC around its normally processed children
+
+2026-10-08 | TASK: Wrapped the exposed search controls in a reusable SDC component
+           | FILES: src/Hook/MetsisSearchFormHooks.php, components/search_box/*, css/metsis_search_layout.css, tests/src/Unit/Hook/MetsisSearchFormHooksTest.php, README.md
+           | NOTE: The SDC keeps Drupal's themed input/submit elements intact and owns the magnifier overlay styles, so both the View and exposed-form block receive the styling
+
+2026-10-07 | TASK: Styled the METSIS exposed-form block as a column-first responsive filter grid
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, metsis_drupal.libraries.yml, css/metsis_search_exposed_form_block.css, css/metsis_search_layout.css, components/bbox_form_tabs/bbox_form_tabs.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md
+           | NOTE: Added a block-scoped responsive grid that fills top-to-bottom before moving right; moved bbox map sizing/attribution styling from the page layout CSS into the reusable bbox_form_tabs SDC styling
+
+2026-10-07 | TASK: Grant anonymous users the metadata export permission on METSIS installation
+           | FILES: metsis_drupal.install, tests/src/Kernel/MetsisDrupalInstallUninstallTest.php
+           | NOTE: Added the permission to the anonymous role from metsis_drupal_install() and a kernel assertion for the install-hook behavior
+
+2026-10-07 | PROBLEM/SOLUTION: Fixed METSIS exposed-form block access check that hid the block
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, DISCUSSIONS_LOG.md
+           | NOTE: blockAccess() previously tested displaySet before getView() initialized it, denying access unconditionally; now the placed block renders and emits the configured Views form and theme suggestions
+
+2026-10-07 | PROBLEM/SOLUTION: Removed Devel-only debug calls from the METSIS exposed-form block
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php
+           | NOTE: Debug dpm() calls caused the block unit test to fail when Devel is not bootstrapped; Drupal's 303 after the block configuration POST is the normal successful redirect
+
+2026-10-07 | TASK: Populated facet filters in the exposed-form block and hid sort/pager controls
+           | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Executes the results View when exposed Facets filters need result-backed options, removes sort/pager widgets, and weights temporal extent before geographic bounds; runtime verification confirmed facet options render
+
 2026-10-06 | TASK: Added configurable METSIS search exposed-form block
            | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, src/Hook/MetsisThemeHooks.php, config/schema/metsis_drupal.schema.yml, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, README.md, DISCUSSIONS_LOG.md
            | NOTE: Renders the current metsis_search results exposed form, dynamically lists exposed filters for block-level hiding, submits to the configured View route, and provides block/form Twig suggestions

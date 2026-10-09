@@ -11,8 +11,10 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\metsis_drupal\Plugin\views\filter\MetsisSolrBboxFilter;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\exposed_form\ExposedFormPluginInterface;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
@@ -76,11 +78,27 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
    */
   public function defaultConfiguration(): array {
     return parent::defaultConfiguration() + [
-      'disabled_filters' => [],
+      'shown_filters' => ['search_api_fulltext', 'temporal_extent_period_dr', 'bbox', self::SECONDARY_SEARCH_ID],
       'filter_weights' => [],
       'filter_columns' => [],
       'column_count' => 3,
+      'hidden_predicates' => [],
+      'bbox_map_heights' => [],
+      'compact' => FALSE,
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setConfiguration(array $configuration): void {
+    parent::setConfiguration($configuration);
+    // Numeric lists must replace defaults, not merge into them.
+    $this->configuration['shown_filters'] = $configuration['shown_filters']
+      ?? (array_key_exists('disabled_filters', $configuration)
+        ? array_values(array_diff(array_keys($this->getExposedFilterOptions()), $configuration['disabled_filters']))
+        : $this->defaultConfiguration()['shown_filters']);
+    unset($this->configuration['disabled_filters']);
   }
 
   /**
@@ -89,17 +107,17 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildConfigurationForm($form, $form_state);
     $filter_options = $this->getExposedFilterOptions();
-    $disabled_filters = array_intersect(
-      $this->configuration['disabled_filters'] ?? [],
-      array_keys($filter_options),
-    );
-
-    $form['disabled_filters'] = [
+    $parents = $form['#parents'] ?? ['settings'];
+    $name_prefix = array_shift($parents) ?? '';
+    foreach ($parents as $parent) {
+      $name_prefix .= '[' . $parent . ']';
+    }
+    $form['shown_filters'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Exposed filters to disable'),
-      '#description' => $this->t('Select exposed filters or actions to omit from this block. Newly added exposed filters are enabled by default.'),
+      '#title' => $this->t('Elements to show'),
+      '#description' => $this->t('Select the exposed filters and actions to show in this block. Newly added filters are not selected automatically.'),
       '#options' => $filter_options,
-      '#default_value' => $disabled_filters,
+      '#default_value' => $this->getShownFilters(),
     ];
 
     $configured_weights = array_intersect_key(
@@ -121,6 +139,9 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
         '#title' => $filter_options[$filter_id],
         '#default_value' => $default_weight,
         '#delta' => max(10, count($filter_options)),
+        '#states' => [
+          'visible' => [':input[name="' . $name_prefix . '[shown_filters][' . $filter_id . ']"]' => ['checked' => TRUE]],
+        ],
       ];
     }
 
@@ -147,6 +168,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
           '3' => $this->t('Column 3'),
         ],
         '#default_value' => in_array((string) $column, ['1', '2', '3'], TRUE) ? (string) $column : 'auto',
+        '#states' => $form['filter_weights'][$filter_id]['#states'],
       ];
     }
 
@@ -162,7 +184,102 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
       '#default_value' => $this->getValidColumnCount($this->configuration['column_count'] ?? 3),
     ];
 
+    $form['compact'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Compact presentation'),
+      '#description' => $this->t('Reduce spacing and padding for quick-access search forms without removing labels or controls.'),
+      '#default_value' => $this->configuration['compact'],
+    ];
+    $form['hidden_predicates'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Predicate visibility'),
+      '#open' => TRUE,
+      '#tree' => TRUE,
+    ];
+    $form['bbox_map_overrides'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Bounding-box map size'),
+      '#open' => TRUE,
+      '#tree' => TRUE,
+    ];
+    foreach ($this->getView()->display_handler->getHandlers('filter') as $id => $handler) {
+      if (!$handler instanceof FilterPluginBase || !isset($filter_options[$id]) || !$this->supportsPredicate($handler)) {
+        continue;
+      }
+      $reason = $this->predicateUnavailableReason($handler);
+      $form['hidden_predicates'][$id] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Hide @filter predicate', ['@filter' => $filter_options[$id]]),
+        '#description' => $reason ?? $this->t('Use Intersects when searching from this block.'),
+        '#disabled' => $reason !== NULL,
+        '#default_value' => $reason === NULL && in_array($id, $this->configuration['hidden_predicates'], TRUE),
+        '#states' => $form['filter_weights'][$id]['#states'],
+      ];
+      if (!$handler instanceof MetsisSolrBboxFilter || empty($handler->options['expose']['map_input'])) {
+        continue;
+      }
+      $form['bbox_map_overrides'][$id] = [
+        '#type' => 'container',
+        '#states' => $form['filter_weights'][$id]['#states'],
+        'enabled' => [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Override @filter map height', ['@filter' => $filter_options[$id]]),
+          '#description' => $this->t('Otherwise inherit the View map height (@height px).', ['@height' => $handler->getExposedMapHeight()]),
+          '#default_value' => isset($this->configuration['bbox_map_heights'][$id]),
+        ],
+        'height' => [
+          '#type' => 'number',
+          '#title' => $this->t('Map height (pixels)'),
+          '#min' => MetsisSolrBboxFilter::MIN_MAP_HEIGHT,
+          '#max' => MetsisSolrBboxFilter::MAX_MAP_HEIGHT,
+          '#step' => 1,
+          // Block validation checks bounds only when this override applies.
+          '#element_validate' => [],
+          '#default_value' => $this->configuration['bbox_map_heights'][$id] ?? $handler->getExposedMapHeight(),
+          '#states' => [
+            'visible' => [':input[name="' . $name_prefix . '[bbox_map_overrides][' . $id . '][enabled]"]' => ['checked' => TRUE]],
+            'disabled' => [
+              [':input[name="' . $name_prefix . '[shown_filters][' . $id . ']"]' => ['checked' => FALSE]],
+              'or',
+              [':input[name="' . $name_prefix . '[bbox_map_overrides][' . $id . '][enabled]"]' => ['checked' => FALSE]],
+            ],
+          ],
+        ],
+      ];
+    }
+    $form['hidden_predicates']['#access'] = Element::children($form['hidden_predicates']) !== [];
+    $form['bbox_map_overrides']['#access'] = Element::children($form['bbox_map_overrides']) !== [];
+
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockValidate($form, FormStateInterface $form_state): void {
+    parent::blockValidate($form, $form_state);
+    $shown = array_keys(array_filter($form_state->getValue('shown_filters', [])));
+    foreach ($this->getView()->display_handler->getHandlers('filter') as $id => $handler) {
+      if (!$handler instanceof FilterPluginBase || !in_array($id, $shown, TRUE) || !$handler->isExposed()) {
+        continue;
+      }
+      if ($form_state->getValue(['hidden_predicates', $id]) && $this->supportsPredicate($handler)) {
+        $reason = $this->predicateUnavailableReason($handler);
+        if ($reason !== NULL) {
+          $form_state->setError($form['hidden_predicates'][$id], $reason);
+        }
+      }
+      if ($handler instanceof MetsisSolrBboxFilter
+        && !empty($handler->options['expose']['map_input'])
+        && $form_state->getValue(['bbox_map_overrides', $id, 'enabled'])) {
+        $height = $form_state->getValue(['bbox_map_overrides', $id, 'height']);
+        if (filter_var($height, FILTER_VALIDATE_INT) === FALSE
+          || (int) $height < MetsisSolrBboxFilter::MIN_MAP_HEIGHT
+          || (int) $height > MetsisSolrBboxFilter::MAX_MAP_HEIGHT) {
+          $form_state->setError($form['bbox_map_overrides'][$id]['height'], $this->t('Map height must be a whole number between 150 and 1000 pixels.'));
+        }
+      }
+    }
   }
 
   /**
@@ -170,8 +287,10 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
    */
   public function blockSubmit($form, FormStateInterface $form_state): void {
     parent::blockSubmit($form, $form_state);
-    $disabled_filters = $form_state->getValue('disabled_filters', []);
-    $this->configuration['disabled_filters'] = array_keys(array_filter($disabled_filters));
+    $this->configuration['shown_filters'] = array_values(array_intersect(
+      array_keys(array_filter($form_state->getValue('shown_filters', []))),
+      array_keys($this->getExposedFilterOptions()),
+    ));
     $filter_weights = $form_state->getValue('filter_weights', []);
     $this->configuration['filter_weights'] = array_map('intval', $filter_weights);
     $filter_columns = $form_state->getValue('filter_columns', []);
@@ -182,6 +301,25 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     $this->configuration['column_count'] = $this->getValidColumnCount(
       $form_state->getValue('column_count', 3),
     );
+    $this->configuration['compact'] = (bool) $form_state->getValue('compact', FALSE);
+    $this->configuration['hidden_predicates'] = [];
+    $this->configuration['bbox_map_heights'] = [];
+    foreach ($this->getView()->display_handler->getHandlers('filter') as $id => $handler) {
+      if (!$handler instanceof FilterPluginBase || !in_array($id, $this->configuration['shown_filters'], TRUE) || !$handler->isExposed()) {
+        continue;
+      }
+      if ($this->supportsPredicate($handler)
+        && $this->predicateUnavailableReason($handler) === NULL
+        && $form_state->getValue(['hidden_predicates', $id])) {
+        $this->configuration['hidden_predicates'][] = $id;
+      }
+      if ($handler instanceof MetsisSolrBboxFilter
+        && !empty($handler->options['expose']['map_input'])
+        && $form_state->getValue(['bbox_map_overrides', $id, 'enabled'])) {
+        $height = $form_state->getValue(['bbox_map_overrides', $id, 'height']);
+        $this->configuration['bbox_map_heights'][$id] = (int) $height;
+      }
+    }
   }
 
   /**
@@ -232,6 +370,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     }
 
     $this->removeDisabledFilters($form);
+    $this->applyFilterPresentation($form);
     unset($form['sort_by'], $form['sort_order'], $form['items_per_page']);
 
     unset($form['actions']);
@@ -246,7 +385,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
       $form['#attributes']['data-bef-auto-submit-minimum-length'],
       $form['#attributes']['data-bef-auto-submit-full-form'],
     );
-    if (!in_array(self::SECONDARY_SEARCH_ID, $this->configuration['disabled_filters'] ?? [], TRUE)) {
+    if (in_array(self::SECONDARY_SEARCH_ID, $this->getShownFilters(), TRUE)) {
       $form['actions'] = [
         '#type' => 'container',
         '#attributes' => [
@@ -284,7 +423,9 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
     $form['#metsis_search_view_id'] = $view->id();
     $form['#metsis_search_display_id'] = 'results';
     $form['#attributes']['class'][] = 'metsis-search-exposed-form-block';
-    $form['#attached']['library'][] = 'metsis_drupal/bbox_map_filter';
+    if ($this->configuration['compact']) {
+      $form['#attributes']['class'][] = 'metsis-search-exposed-form-block--compact';
+    }
     $form['#attached']['library'][] = 'metsis_drupal/metsis_icon_sync';
     $form['#attached']['library'][] = 'metsis_drupal/metsis_search_exposed_form_block';
 
@@ -349,7 +490,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
       $options[$id] = $label ?: $handler->adminLabel() ?: $id;
     }
 
-    $options[self::SECONDARY_SEARCH_ID] = $this->t('Secondary Search button');
+    $options[self::SECONDARY_SEARCH_ID] = new TranslatableMarkup('Secondary Search button');
 
     return $options;
   }
@@ -560,7 +701,7 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
    * Removes widgets belonging to block-disabled filters from the form.
    */
   private function removeDisabledFilters(array &$form): void {
-    $disabled_filters = array_flip($this->configuration['disabled_filters']);
+    $disabled_filters = array_flip(array_diff(array_keys($this->getExposedFilterOptions()), $this->getShownFilters()));
     if ($disabled_filters === []) {
       return;
     }
@@ -591,6 +732,87 @@ final class MetsisSearchExposedFormBlock extends BlockBase implements ContainerF
         : $id;
       unset($form['#info']['filter-' . $info_id]);
     }
+  }
+
+  /**
+   * Returns selected IDs that still exist in the results display.
+   */
+  private function getShownFilters(): array {
+    return array_values(array_intersect($this->configuration['shown_filters'], array_keys($this->getExposedFilterOptions())));
+  }
+
+  /**
+   * Whether the filter has a METSIS spatial or temporal predicate.
+   */
+  private function supportsPredicate(FilterPluginBase $handler): bool {
+    return in_array($handler->getPluginId(), ['metsis_filter_bbox', 'metsis_filter_date_range'], TRUE);
+  }
+
+  /**
+   * Explains why a predicate cannot be hidden.
+   */
+  private function predicateUnavailableReason(FilterPluginBase $handler): ?TranslatableMarkup {
+    if ($handler->isAGroup()) {
+      return $this->t('Grouped filters do not expose an independent predicate.');
+    }
+    $expose = $handler->options['expose'];
+    if (empty($expose['use_operator']) || empty($expose['operator_id'])) {
+      return $this->t('The View does not expose this predicate. Its configured fixed operator is used.');
+    }
+    if (!empty($expose['operator_limit_selection'])
+      && !empty($expose['operator_list'])
+      && empty($expose['operator_list']['intersects'])) {
+      return $this->t('The View excludes Intersects from the allowed predicates. Enable Intersects in the View before hiding this predicate.');
+    }
+    return NULL;
+  }
+
+  /**
+   * Applies block-only predicate and map presentation to retained wrappers.
+   */
+  private function applyFilterPresentation(array &$form): void {
+    foreach ($this->getView()->display_handler->getHandlers('filter') as $id => $handler) {
+      if (!$handler instanceof FilterPluginBase || !$this->supportsPredicate($handler)) {
+        continue;
+      }
+      $name = $this->getFilterElementName($form, $handler);
+      if ($name === NULL) {
+        continue;
+      }
+      $operator = $handler->options['expose']['operator_id'] ?? '';
+      if (in_array($id, $this->configuration['hidden_predicates'], TRUE)
+        && $this->predicateUnavailableReason($handler) === NULL) {
+        if (!$this->hidePredicate($form[$name], $operator) && isset($form[$operator])) {
+          $this->hidePredicate($form, $operator);
+        }
+      }
+      if ($handler instanceof MetsisSolrBboxFilter && isset($this->configuration['bbox_map_heights'][$id])) {
+        $handler->setExposedMapHeight($form[$name], $this->configuration['bbox_map_heights'][$id]);
+      }
+    }
+  }
+
+  /**
+   * Replaces a predicate even when BEF adds another nested wrapper.
+   */
+  private function hidePredicate(array &$element, string $operator): bool {
+    foreach ($element as $key => &$child) {
+      if (!is_array($child) || str_starts_with((string) $key, '#')) {
+        continue;
+      }
+      if ($key === $operator) {
+        $child = [
+          '#type' => 'hidden',
+          '#name' => $operator,
+          '#value' => 'intersects',
+        ];
+        return TRUE;
+      }
+      if ($this->hidePredicate($child, $operator)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**

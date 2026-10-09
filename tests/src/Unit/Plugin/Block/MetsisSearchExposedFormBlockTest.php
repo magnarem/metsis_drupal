@@ -8,6 +8,7 @@ use Drupal\Core\Cache\Context\CacheContextsManager;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\block\BlockInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -15,6 +16,7 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Url;
 use Drupal\metsis_drupal\Hook\MetsisThemeHooks;
 use Drupal\metsis_drupal\Plugin\Block\MetsisSearchExposedFormBlock;
+use Drupal\metsis_drupal\Plugin\views\filter\MetsisSolrBboxFilter;
 use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 use Drupal\views\Entity\View as ViewEntity;
 use Drupal\views\Plugin\views\display\Page;
@@ -186,7 +188,7 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     $block->setStringTranslation($translation);
 
     $configuration_form = $block->buildConfigurationForm([], new FormState());
-    $filter_options = $configuration_form['disabled_filters']['#options'];
+    $filter_options = $configuration_form['shown_filters']['#options'];
     self::assertIsArray($filter_options);
     $secondary_search_label = $filter_options['secondary_search'];
     unset($filter_options['secondary_search']);
@@ -211,8 +213,16 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
       $secondary_search_label->getUntranslatedString(),
     );
     self::assertSame(
-      ['hidden_filter_plugin'],
-      $configuration_form['disabled_filters']['#default_value'],
+      [
+        'visible_filter_plugin',
+        'search_api_fulltext',
+        'temporal_extent_period_dr',
+        'bbox',
+        'related_dataset',
+        'facets_collection',
+        'secondary_search',
+      ],
+      $configuration_form['shown_filters']['#default_value'],
     );
     self::assertSame(-8, $configuration_form['filter_weights']['search_api_fulltext']['#default_value']);
     self::assertSame(4, $configuration_form['filter_weights']['temporal_extent_period_dr']['#default_value']);
@@ -339,9 +349,13 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     );
 
     $submit_state = new FormState();
-    $submit_state->setValue('disabled_filters', [
-      'visible_filter_plugin' => 'visible_filter_plugin',
-      'secondary_search' => 'secondary_search',
+    $submit_state->setValue('shown_filters', [
+      'hidden_filter_plugin' => 'hidden_filter_plugin',
+      'search_api_fulltext' => 'search_api_fulltext',
+      'temporal_extent_period_dr' => 'temporal_extent_period_dr',
+      'bbox' => 'bbox',
+      'related_dataset' => 'related_dataset',
+      'facets_collection' => 'facets_collection',
     ]);
     $submit_state->setValue('filter_weights', ['bbox' => 9, 'secondary_search' => 11]);
     $submit_state->setValue('filter_columns', [
@@ -353,8 +367,15 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     $block->blockSubmit([], $submit_state);
     $saved_configuration_form = $block->buildConfigurationForm([], new FormState());
     self::assertSame(
-      ['visible_filter_plugin', 'secondary_search'],
-      $saved_configuration_form['disabled_filters']['#default_value'],
+      [
+        'hidden_filter_plugin',
+        'search_api_fulltext',
+        'temporal_extent_period_dr',
+        'bbox',
+        'related_dataset',
+        'facets_collection',
+      ],
+      $saved_configuration_form['shown_filters']['#default_value'],
     );
     self::assertSame(9, $saved_configuration_form['filter_weights']['bbox']['#default_value']);
     self::assertSame(11, $saved_configuration_form['filter_weights']['secondary_search']['#default_value']);
@@ -396,6 +417,230 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
   }
 
   /**
+   * Tests positive defaults, empty selections, and conditional controls.
+   */
+  #[Test]
+  public function testPositiveSelectionAndConditionalControls(): void {
+    $handlers = [
+      'search_api_fulltext' => $this->createFilter('Search', ['value' => 'text']),
+      'temporal_extent_period_dr' => $this->createFilter('Dates', ['value' => 'dates']),
+      'bbox' => $this->createFilter('Bbox', ['value' => 'bbox']),
+      'extra' => $this->createFilter('Extra', ['value' => 'extra']),
+    ];
+    $block = $this->createBlock([], $handlers);
+    $form = $block->buildConfigurationForm(['#parents' => ['settings']], new FormState());
+    self::assertSame(
+      ['search_api_fulltext', 'temporal_extent_period_dr', 'bbox', 'secondary_search'],
+      $form['shown_filters']['#default_value'],
+    );
+    self::assertSame(
+      ['visible' => [':input[name="settings[shown_filters][bbox]"]' => ['checked' => TRUE]]],
+      $form['filter_columns']['bbox']['#states'],
+    );
+    self::assertSame($form['filter_columns']['bbox']['#states'], $form['filter_weights']['bbox']['#states']);
+    $block->setConfiguration(['shown_filters' => []]);
+    self::assertSame([], $block->buildConfigurationForm([], new FormState())['shown_filters']['#default_value']);
+    $block->setConfiguration(['disabled_filters' => ['bbox', 'secondary_search', 'stale']]);
+    self::assertSame(['search_api_fulltext', 'temporal_extent_period_dr', 'extra'], $block->getConfiguration()['shown_filters']);
+    self::assertArrayNotHasKey('disabled_filters', $block->getConfiguration());
+    $block->setConfiguration(['shown_filters' => ['extra', 'stale']]);
+    self::assertSame(['extra'], $block->buildConfigurationForm([], new FormState())['shown_filters']['#default_value']);
+  }
+
+  /**
+   * Tests fixed hidden predicates and map overrides with custom identifiers.
+   */
+  #[Test]
+  public function testPredicateAndMapPresentation(): void {
+    $bbox = $this->createBboxFilter();
+    $date = $this->createFilter('Dates', ['value' => 'dates', 'operator' => 'date_relation'], 'metsis_filter_date_range');
+    $date->options['expose'] += ['use_operator' => TRUE, 'operator_id' => 'date_relation'];
+    $widgets = [
+      'bounds_wrapper' => [
+        '#type' => 'fieldset',
+        'spatial_relation' => ['#type' => 'select', '#value' => 'contains'],
+        'bbox_map_filter' => ['map' => ['#type' => 'container']],
+      ],
+      'dates_wrapper' => [
+        '#type' => 'fieldset',
+        'dates_wrapper' => [
+          'date_relation' => ['#type' => 'select', '#value' => 'within'],
+        ],
+      ],
+    ];
+    $block = $this->createBlock([
+      'shown_filters' => ['bbox', 'dates'],
+      'hidden_predicates' => ['bbox', 'dates'],
+      'bbox_map_heights' => ['bbox' => 180],
+      'compact' => TRUE,
+      'column_count' => 1,
+    ], ['bbox' => $bbox, 'dates' => $date], $widgets);
+    $configuration_form = $block->buildConfigurationForm([], new FormState());
+    self::assertFalse($configuration_form['hidden_predicates']['bbox']['#disabled']);
+    self::assertSame(180, $configuration_form['bbox_map_overrides']['bbox']['height']['#default_value']);
+    $form = $block->build();
+    $column = $form['metsis-search-filter-grid']['column_1'];
+    self::assertSame(
+      ['#type' => 'hidden', '#name' => 'spatial_relation', '#value' => 'intersects'],
+      $column['bounds_wrapper']['spatial_relation'],
+    );
+    self::assertSame(
+      ['#type' => 'hidden', '#name' => 'date_relation', '#value' => 'intersects'],
+      $column['dates_wrapper']['dates_wrapper']['date_relation'],
+    );
+    self::assertSame('--metsis-bbox-map-height: 180px;', $column['bounds_wrapper']['bbox_map_filter']['map']['#attributes']['style']);
+    self::assertContains('metsis-search-exposed-form-block--compact', $form['#attributes']['class']);
+
+    $date->options['expose']['use_operator'] = FALSE;
+    $bbox->options['expose']['operator_limit_selection'] = TRUE;
+    $bbox->options['expose']['operator_list'] = ['within' => 'within'];
+    $configuration_form = $block->buildConfigurationForm([], new FormState());
+    self::assertTrue($configuration_form['hidden_predicates']['dates']['#disabled']);
+    self::assertTrue($configuration_form['hidden_predicates']['bbox']['#disabled']);
+    $form = $block->build();
+    self::assertSame('contains', $form['metsis-search-filter-grid']['column_1']['bounds_wrapper']['spatial_relation']['#value']);
+    self::assertSame('within', $form['metsis-search-filter-grid']['column_1']['dates_wrapper']['dates_wrapper']['date_relation']['#value']);
+
+    $state = new FormState();
+    $state->setValue('shown_filters', ['bbox' => 'bbox', 'dates' => 'dates']);
+    $state->setValue('hidden_predicates', ['bbox' => TRUE, 'dates' => TRUE]);
+    $block->blockSubmit([], $state);
+    self::assertSame([], $block->getConfiguration()['hidden_predicates']);
+    self::assertSame([], $block->getConfiguration()['bbox_map_heights']);
+  }
+
+  /**
+   * Tests map height validation and applicability on submission.
+   */
+  #[Test]
+  public function testMapHeightValidation(): void {
+    $bbox = $this->createBboxFilter();
+    $block = $this->createBlock([], ['bbox' => $bbox]);
+    foreach ([150, 1000, 149, 1001, '1.5', ''] as $height) {
+      $state = new FormState();
+      $state->setValue('shown_filters', ['bbox' => 'bbox']);
+      $state->setValue('bbox_map_overrides', ['bbox' => ['enabled' => TRUE, 'height' => $height]]);
+      $form = $block->buildConfigurationForm([], $state);
+      $form['bbox_map_overrides']['bbox']['height']['#parents'] = ['bbox_map_overrides', 'bbox', 'height'];
+      $block->blockValidate($form, $state);
+      self::assertSame(!in_array($height, [150, 1000], TRUE), $state->getErrors() !== []);
+      if ($state->getErrors() === []) {
+        $block->blockSubmit($form, $state);
+        self::assertSame(['bbox' => $height], $block->getConfiguration()['bbox_map_heights']);
+      }
+    }
+    $state = new FormState();
+    $state->setValue('shown_filters', []);
+    $state->setValue('bbox_map_overrides', ['bbox' => ['enabled' => TRUE, 'height' => 180]]);
+    $state->setValue('hidden_predicates', ['bbox' => TRUE]);
+    $block->blockSubmit([], $state);
+    self::assertSame([], $block->getConfiguration()['shown_filters']);
+    self::assertSame([], $block->getConfiguration()['hidden_predicates']);
+    self::assertSame([], $block->getConfiguration()['bbox_map_heights']);
+  }
+
+  /**
+   * Tests the update hook preserves existing block filter visibility.
+   */
+  #[Test]
+  public function testVisibilityUpdate(): void {
+    require_once dirname(__DIR__, 5) . '/metsis_drupal.install';
+    $plugin = $this->createBlock(
+      ['disabled_filters' => ['extra']],
+      ['extra' => $this->createFilter('Extra', ['value' => 'extra'])],
+    );
+    $entity = $this->createMock(BlockInterface::class);
+    $entity->method('getPluginId')->willReturn('metsis_search_exposed_form');
+    $entity->method('get')->with('settings')->willReturn(['disabled_filters' => ['extra']]);
+    $entity->method('getPlugin')->willReturn($plugin);
+    $entity->expects(self::once())->method('set')->with('settings', $plugin->getConfiguration());
+    $entity->expects(self::once())->method('save');
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('loadMultiple')->willReturn([$entity]);
+    $manager = $this->createMock(EntityTypeManagerInterface::class);
+    $manager->method('hasDefinition')->with('block')->willReturn(TRUE);
+    $manager->method('getStorage')->with('block')->willReturn($storage);
+    $container = new ContainerBuilder();
+    $container->set('entity_type.manager', $manager);
+    $previous = \Drupal::hasContainer() ? \Drupal::getContainer() : NULL;
+    \Drupal::setContainer($container);
+    try {
+      metsis_drupal_update_11001();
+      self::assertSame(['secondary_search'], $plugin->getConfiguration()['shown_filters']);
+    }
+    finally {
+      if ($previous === NULL) {
+        \Drupal::unsetContainer();
+      }
+      else {
+        \Drupal::setContainer($previous);
+      }
+    }
+  }
+
+  /**
+   * Creates a bbox handler with custom exposed identifiers.
+   */
+  private function createBboxFilter(): MetsisSolrBboxFilter&MockObject {
+    $bbox = $this->getMockBuilder(MetsisSolrBboxFilter::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['canExpose', 'isExposed', 'exposedInfo', 'getPluginId', 'isAGroup'])
+      ->getMock();
+    $bbox->options = [
+      'expose' => [
+        'label' => 'Geography',
+        'identifier' => 'bounds',
+        'operator_id' => 'spatial_relation',
+        'use_operator' => TRUE,
+        'map_input' => TRUE,
+        'map_height' => 350,
+      ],
+    ];
+    $bbox->method('canExpose')->willReturn(TRUE);
+    $bbox->method('isExposed')->willReturn(TRUE);
+    $bbox->method('isAGroup')->willReturn(FALSE);
+    $bbox->method('getPluginId')->willReturn('metsis_filter_bbox');
+    $bbox->method('exposedInfo')->willReturn(['value' => 'bounds', 'operator' => 'spatial_relation']);
+    return $bbox;
+  }
+
+  /**
+   * Creates a block with an isolated results display.
+   */
+  private function createBlock(array $configuration, array $handlers, array $widgets = []): MetsisSearchExposedFormBlock {
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('setDisplay')->willReturn(TRUE);
+    $view->method('getUrlInfo')->willReturn($this->getViewUrl('/metsis/search'));
+    $view->filter = [];
+    $display = $this->getMockBuilder(Page::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['getHandlers', 'getPlugin'])
+      ->getMock();
+    $display->method('getHandlers')->willReturn($handlers);
+    $exposed_form = $this->createMock(ExposedFormPluginInterface::class);
+    $exposed_form->method('renderExposedForm')->willReturn($widgets);
+    $display->method('getPlugin')->willReturn($exposed_form);
+    $view->display_handler = $display;
+    $factory = $this->createMock(ViewExecutableFactory::class);
+    $factory->method('get')->willReturn($view);
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('load')->willReturn($this->createMock(ViewEntity::class));
+    $manager = $this->createMock(EntityTypeManagerInterface::class);
+    $manager->method('getStorage')->willReturn($storage);
+    $block = new MetsisSearchExposedFormBlock(
+      $configuration,
+      'metsis_search_exposed_form',
+      ['provider' => 'metsis_drupal', 'admin_label' => 'METSIS search'],
+      $factory,
+      $manager,
+    );
+    $translation = $this->createMock(TranslationInterface::class);
+    $translation->method('translate')->willReturnCallback(static fn (string $string, array $args = []): string => strtr($string, $args));
+    $block->setStringTranslation($translation);
+    return $block;
+  }
+
+  /**
    * Creates an exposed Views filter handler mock.
    *
    * @param string $label
@@ -411,7 +656,7 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
   private function createFilter(string $label, array $exposed_info, string $plugin_id = 'string'): StringFilter&MockObject {
     $filter = $this->getMockBuilder(StringFilter::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['canExpose', 'isExposed', 'adminLabel', 'exposedInfo', 'getPluginId'])
+      ->onlyMethods(['canExpose', 'isExposed', 'adminLabel', 'exposedInfo', 'getPluginId', 'isAGroup'])
       ->getMock();
     $filter->options = ['expose' => ['label' => $label]];
     $filter->method('canExpose')->willReturn(TRUE);
@@ -419,6 +664,7 @@ final class MetsisSearchExposedFormBlockTest extends TestCase {
     $filter->method('adminLabel')->willReturn($label);
     $filter->method('exposedInfo')->willReturn($exposed_info);
     $filter->method('getPluginId')->willReturn($plugin_id);
+    $filter->method('isAGroup')->willReturn(FALSE);
 
     return $filter;
   }

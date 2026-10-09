@@ -39,3 +39,21 @@ function metsis_drupal_uninstall() {
   // $index->delete();
   // }
 }
+
+/**
+ * Converts search block exclusions into explicit visible element selections.
+ */
+function metsis_drupal_update_11001(): void {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if (!$entity_type_manager->hasDefinition('block')) {
+    return;
+  }
+  $storage = $entity_type_manager->getStorage('block');
+  foreach ($storage->loadMultiple() as $block) {
+    if ($block->getPluginId() === 'metsis_search_exposed_form'
+      && array_key_exists('disabled_filters', $block->get('settings'))) {
+      $block->set('settings', $block->getPlugin()->getConfiguration());
+      $block->save();
+    }
+  }
+}

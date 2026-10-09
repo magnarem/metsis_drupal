@@ -20,6 +20,10 @@ use Drupal\search_api\Plugin\views\filter\SearchApiFilterTrait;
 class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryPluginInterface {
   use SearchApiFilterTrait;
 
+  public const DEFAULT_MAP_HEIGHT = 250;
+  public const MIN_MAP_HEIGHT = 150;
+  public const MAX_MAP_HEIGHT = 1000;
+
   /**
    * Disable the possibility to force a single value.
    *
@@ -68,6 +72,7 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
     $options['expose']['contains']['map_input'] = ['default' => FALSE];
     $options['expose']['contains']['user_input'] = ['default' => FALSE];
     $options['expose']['contains']['tabs_component'] = ['default' => FALSE];
+    $options['expose']['contains']['map_height'] = ['default' => self::DEFAULT_MAP_HEIGHT];
 
     return $options;
   }
@@ -122,7 +127,7 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
 
     $identifier = $this->options['expose']['identifier'];
     $wrapper = $identifier . '_wrapper';
-    $operator_key = $identifier . '_op';
+    $operator_key = $this->options['expose']['operator_id'] ?? '';
     $map_input_enabled = !empty($this->options['expose']['map_input']);
     $user_input_enabled = !empty($this->options['expose']['user_input']);
     $tabs_component_enabled = !empty($this->options['expose']['tabs_component']);
@@ -176,6 +181,7 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
         'class' => ['bbox-map-filter-container'],
       ],
     ];
+    $this->setExposedMapHeight($form[$wrapper], $this->getExposedMapHeight());
     $form[$wrapper]['bbox_map_filter']['map']['coords'] = [
       '#type' => 'markup',
       '#markup' => '<div id="coords">
@@ -243,6 +249,38 @@ class MetsisSolrBboxFilter extends FilterPluginBase implements ContainerFactoryP
         ],
       ],
     ];
+    $form['expose']['map_height'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Map height (pixels)'),
+      '#description' => $this->t('The map fills the available width. Search blocks can override this height.'),
+      '#default_value' => $this->getExposedMapHeight(),
+      '#min' => self::MIN_MAP_HEIGHT,
+      '#max' => self::MAX_MAP_HEIGHT,
+      '#step' => 1,
+      '#required' => TRUE,
+      '#states' => [
+        'visible' => [
+          ':input[name="options[expose][map_input]"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Returns the configured height for the exposed map.
+   */
+  public function getExposedMapHeight(): int {
+    return (int) ($this->options['expose']['map_height'] ?? self::DEFAULT_MAP_HEIGHT);
+  }
+
+  /**
+   * Sets the map mount height, including block-specific overrides.
+   */
+  public function setExposedMapHeight(array &$wrapper, int $height): void {
+    if (isset($wrapper['bbox_map_filter']['map'])) {
+      $height = max(self::MIN_MAP_HEIGHT, min(self::MAX_MAP_HEIGHT, $height));
+      $wrapper['bbox_map_filter']['map']['#attributes']['style'] = '--metsis-bbox-map-height: ' . $height . 'px;';
+    }
   }
 
   /**
