@@ -74,10 +74,7 @@ while core schema and rendering checks still run. Vocabulary tests require
 
 Local browser-suite execution requires a compatible ChromeDriver/WebDriver
 endpoint, `SIMPLETEST_BASE_URL`, a test database via `SIMPLETEST_DB`, and
-`MINK_DRIVER_ARGS_WEBDRIVER`. Local execution is deferred until the driver is
-configured; do not install system packages without approval.
-
-Once configured:
+`MINK_DRIVER_ARGS_WEBDRIVER`.
 
 ```bash
 vendor/bin/phpunit --configuration=phpunit.xml tests/src/FunctionalJavascript/MetsisMapsTest.php
