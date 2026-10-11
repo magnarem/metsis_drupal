@@ -27,13 +27,6 @@ const GeoJSONLayer = ({ mapInstance, geojsonFeatures, projection }) => {
   useEffect(() => {
     if (!mapInstance || !projection || !geojsonFeatures) return;
     console.log("GeoJSON event: ", projection, geojsonFeatures);
-    // Remove all previous vector layers except the base layer
-    mapInstance.getLayers().forEach((layer) => {
-      if (layer instanceof VectorLayer) {
-        mapInstance.removeLayer(layer);
-      }
-    });
-
     // Always read GeoJSON as EPSG:4326 and transform to map's projection
     const source = new VectorSource({
       wrapX: true,

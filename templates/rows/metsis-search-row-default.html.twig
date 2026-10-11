@@ -31,6 +31,13 @@
 			{{ fields.title }}
 		{% endif %}
 	</div>
+  {% if fields.parent_metadata %}
+    <div class="metsis-parent-metadata">
+      {{ 'Related collection'|t }}:
+      {{ fields.parent_metadata.title }}
+      ({{ fields.parent_metadata.metadata_identifier }})
+    </div>
+  {% endif %}
 	{% if solr_doc is defined and solr_doc is not empty %}
 		{% set solr_meta_fields = [
 			{

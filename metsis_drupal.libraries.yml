@@ -17,13 +17,17 @@ bbox_map_filter:
     version: 1.x
   js:
     js/metsis/bbox-map-filter/src/main.js: { attributes: { type: module } }
-  css:
-    component:
-      css/metsis_bbox_map_filter.css: {}
   dependencies:
     - core/drupal
     - core/drupalSettings
     - core/once
+    - metsis_drupal/bbox_map_filter_styles
+
+bbox_map_filter_styles:
+  version: 1.x
+  css:
+    component:
+      css/metsis_bbox_map_filter.css: {}
 
 metsis_filter_autosubmit:
   version: 1.x
@@ -138,3 +142,9 @@ metsis_metadata_dialog:
   dependencies:
     - core/drupal
     - core/once
+metsis_view_targets:
+  js:
+    js/metsis-view-targets.js: {}
+  dependencies:
+    - core/drupal
+    - metsis_drupal/metsis_metadata_dialog

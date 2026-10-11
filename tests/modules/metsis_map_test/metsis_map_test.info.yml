@@ -1,0 +1,7 @@
+name: METSIS map test
+type: module
+description: Isolated empty search backend for map browser tests.
+package: Testing
+core_version_requirement: ^11
+dependencies:
+  - metsis_drupal:metsis_drupal

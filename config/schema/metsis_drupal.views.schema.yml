@@ -1,3 +1,8 @@
+views.display_extender.metsis_layout:
+  type: views_display_extender
+  label: "METSIS layout"
+  mapping: {}
+
 views.field.leaflet_geometry_field:
   type: views_field
   label: "Location Lat/Lon search field"
@@ -19,6 +24,16 @@ views.area.metsis_map:
     map_app_settings:
       type: string
       label: "Map App Settings"
+    map_height:
+      type: integer
+      label: "Map height in pixels"
+      constraints:
+        Range:
+          min: 150
+          max: 1000
+    show_all_wms:
+      type: boolean
+      label: "Show all WMS products control"
 
 views.filter.metsis_filter_date_range:
   type: views_filter
@@ -125,7 +140,12 @@ views.row.metsis_search_row:
           choices:
             - default
             - custom
-          message: 'The style must be either "default" or "custom".'
+            - compact
+            - detailed
+            - nbs
+    custom_style_name:
+      type: string
+      label: 'Custom row style machine name'
     datacenter_name_fallback:
       type: string
       label: 'Datacenter Name Fallback'

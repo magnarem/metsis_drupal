@@ -5,8 +5,7 @@ const TooltipHover = ({ mapInstance }) => {
     if (!mapInstance) return;
     // Create a tooltip element
     const tooltipElement = document.createElement("div");
-    tooltipElement.id = "#info";
-    tooltipElement.className = ".ol-control";
+    tooltipElement.className = "metsis-map-tooltip ol-control";
     tooltipElement.style.position = "absolute";
     tooltipElement.style.visibility = "hidden";
     tooltipElement.style.pointerEvents = "none";
@@ -49,7 +48,7 @@ const TooltipHover = ({ mapInstance }) => {
     };
 
     // Add pointermove event listener to the map
-    mapInstance.on("pointermove", (evt) => {
+    const onPointerMove = (evt) => {
       if (evt.dragging) {
         tooltipElement.style.visibility = "hidden";
         tooltipElement.innerText = "";
@@ -57,25 +56,29 @@ const TooltipHover = ({ mapInstance }) => {
         return;
       }
       displayFeatureInfo(evt.pixel, evt.originalEvent.target);
-    });
+    };
+    mapInstance.on("pointermove", onPointerMove);
 
     // Add click event listener to display feature info
-    mapInstance.on("click", (evt) => {
+    const onClick = (evt) => {
       displayFeatureInfo(evt.pixel, evt.originalEvent.target);
-    });
+    };
+    mapInstance.on("click", onClick);
 
     // Hide tooltip when the mouse leaves the map
-    mapContainer.addEventListener("pointerleave", () => {
+    const onPointerLeave = () => {
       currentFeature = undefined;
       tooltipElement.style.visibility = "hidden";
       tooltipElement.innerText = "";
-    });
+    };
+    mapContainer.addEventListener("pointerleave", onPointerLeave);
 
     // Cleanup on component unmount
     return () => {
-      mapContainer.removeChild(tooltipElement);
-      mapInstance.un("pointermove");
-      mapInstance.un("click");
+      tooltipElement.remove();
+      mapContainer.removeEventListener("pointerleave", onPointerLeave);
+      mapInstance.un("pointermove", onPointerMove);
+      mapInstance.un("click", onClick);
     };
   }, [mapInstance]);
 

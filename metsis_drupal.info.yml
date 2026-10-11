@@ -6,15 +6,22 @@ package: METNO
 core_version_requirement: ^11.4 || ^12
 configure: metsis_drupal.settings
 dependencies:
+  - drupal:editor
   - drupal:views
-  - search_api_solr_autocomplete:search_api_solr_autocomplete
+  - search_api_autocomplete:search_api_autocomplete
+  - search_api_solr:search_api_solr_autocomplete
   - search_api_solr:search_api_solr
   - search_api:search_api
   - facets:facets
   - facets:facets_exposed_filters
+  - facets:facets_searchbox_widget
   - better_exposed_filters:better_exposed_filters
   - leaflet:leaflet
   - vite:vite
   - views_filters_summary:views_filters_summary
+  - views_filters_summary:views_filters_summary_a11y
+  - views_filters_summary:views_filters_summary_bef
+  - views_filters_summary:views_filters_summary_search_api
   - views_ajax_history:views_ajax_history
-  - tagify_facets:tagify_facets
+  - tagify:tagify
+  - tagify:tagify_facets

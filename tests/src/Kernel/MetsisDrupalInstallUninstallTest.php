@@ -21,6 +21,7 @@ class MetsisDrupalInstallUninstallTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'user',
+    'views',
     'search_api',
     'search_api_solr',
     'leaflet',
@@ -62,6 +63,7 @@ class MetsisDrupalInstallUninstallTest extends KernelTestBase {
 
     // Confirm the module is uninstalled.
     $this->assertFalse(\Drupal::moduleHandler()->moduleExists('metsis_drupal'), 'metsis_drupal module is uninstalled.');
+    $this->assertNotContains('metsis_layout', $this->config('views.settings')->get('display_extenders'));
 
     // Confirm the config is deleted.
     $this->assertNull($config_factory->get('search_api.server.metsis_solr')->get('backend'), 'Solr server config is deleted on uninstall.');

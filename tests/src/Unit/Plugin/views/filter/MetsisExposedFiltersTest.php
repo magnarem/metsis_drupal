@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\metsis_drupal\Unit\Plugin\views\filter;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Render\Element\Number;
 use Drupal\metsis_drupal\Plugin\views\filter\MetsisSolrBboxFilter;
 use Drupal\metsis_drupal\Plugin\views\filter\MetsisSolrDateRangeFilter;
 use Drupal\Tests\UnitTestCase;
@@ -73,6 +74,68 @@ final class MetsisExposedFiltersTest extends UnitTestCase {
       'bbox' => [MetsisSolrBboxFilter::class, ['minX' => '', 'maxX' => '', 'minY' => '', 'maxY' => '']],
       'dates' => [MetsisSolrDateRangeFilter::class, ['min' => '', 'max' => '']],
     ];
+  }
+
+  /**
+   * Tests a submitted height survives Views option unpacking and rendering.
+   */
+  public function testConfiguredBboxHeight(): void {
+    $filter = $this->getMockBuilder(MetsisSolrBboxFilter::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods([])
+      ->getMock();
+    $filter->setStringTranslation($this->getStringTranslationStub());
+    $filter->options = [
+      'exposed' => TRUE,
+      'is_grouped' => FALSE,
+      'expose' => [
+        'identifier' => 'bounds',
+        'operator_id' => 'bounds_op',
+        'use_operator' => TRUE,
+        'label' => 'Bounds',
+        'description' => '',
+        'map_input' => TRUE,
+        'user_input' => TRUE,
+        'tabs_component' => TRUE,
+        'map_height' => 250,
+      ],
+    ];
+    $filter->value = ['minX' => '', 'maxX' => '', 'minY' => '', 'maxY' => ''];
+    $filter->operator = 'intersects';
+    foreach (['150', '333', '1000'] as $height) {
+      $state = new FormState();
+      $element = [
+        '#value' => $height,
+        '#parents' => ['options', 'expose', 'map_height'],
+        '#min' => MetsisSolrBboxFilter::MIN_MAP_HEIGHT,
+        '#max' => MetsisSolrBboxFilter::MAX_MAP_HEIGHT,
+        '#step' => 1,
+      ];
+      $complete_form = [];
+      Number::validateNumber($element, $state, $complete_form);
+      self::assertSame([], $state->getErrors());
+      $submitted = $filter->options['expose'];
+      $submitted['map_height'] = $height;
+      $options = $filter->submitFormCalculateOptions($filter->options, [
+        'expose' => $submitted,
+      ]);
+      $filter->unpackOptions($filter->options, $options, NULL, FALSE);
+      self::assertSame((int) $height, $filter->getExposedMapHeight());
+      $form = [];
+      $filter->buildExposedForm($form, new FormState());
+      self::assertSame(
+        "--metsis-bbox-map-height: {$height}px;",
+        $form['bounds_wrapper']['bbox_map_filter']['map']['#attributes']['style'],
+      );
+      $filter->setExposedMapHeight($form['bounds_wrapper'], 261);
+      self::assertSame((int) $height, $filter->getExposedMapHeight());
+      $view_form = [];
+      $filter->buildExposedForm($view_form, new FormState());
+      self::assertSame(
+        "--metsis-bbox-map-height: {$height}px;",
+        $view_form['bounds_wrapper']['bbox_map_filter']['map']['#attributes']['style'],
+      );
+    }
   }
 
   /**

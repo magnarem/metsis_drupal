@@ -6,20 +6,47 @@ namespace Drupal\Tests\nbs_extensions\Unit;
 
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\GeneratedUrl;
+use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\nbs_extensions\Service\NetCDFOnDemandButtonBuilder;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Drupal\Tests\UnitTestCase;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Tests the NetCDF on-demand button builder.
  */
 #[CoversClass(NetCDFOnDemandButtonBuilder::class)]
 #[Group('nbs_extensions')]
-final class NetCDFOnDemandButtonBuilderTest extends TestCase {
+final class NetCDFOnDemandButtonBuilderTest extends UnitTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    $generator = $this->createMock(UrlGeneratorInterface::class);
+    $generator->method('generateFromRoute')->willReturnCallback(
+      static fn(string $route, array $parameters): GeneratedUrl =>
+        (new GeneratedUrl())->setGeneratedUrl('/modal/' . $parameters['datasetId']),
+    );
+    $container = new ContainerBuilder();
+    $container->set('url_generator', $generator);
+    $container->set('string_translation', $this->getStringTranslationStub());
+    \Drupal::setContainer($container);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+    \Drupal::unsetContainer();
+    parent::tearDown();
+  }
 
   /**
    * Builds an instance configured with supported product types.
@@ -66,6 +93,10 @@ final class NetCDFOnDemandButtonBuilderTest extends TestCase {
       $button['#url']->getRouteParameters(),
     );
     self::assertContains('nbs-netcdf-on-demand', $button['#attributes']['class']);
+    self::assertSame('/modal/doi-10-1594-PANGAEA-995890', $button['#attributes']['data-hx-get']);
+    self::assertSame('#metsis-metadata-modal-root', $button['#attributes']['data-hx-target']);
+    self::assertSame('innerHTML ignoreTitle:true', $button['#attributes']['data-hx-swap']);
+    self::assertContains('nbs_extensions/netcdf_modal', $button['#attached']['library']);
   }
 
   /**

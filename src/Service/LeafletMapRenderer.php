@@ -34,11 +34,9 @@ final class LeafletMapRenderer {
    *   A render array for the Leaflet map.
    */
   public function buildLeafletMap(string $geometry, string $height, string $id = ''): array {
-    if (!empty($id)) {
-      $id = 'geometry-map-' . uniqid();
-      $map['id'] = $id;
-    }
     $map = $this->leaflet->leafletMapGetInfo('openstreetmap');
+    // HTMX fragments have separate render contexts but share the same document.
+    $map['id'] = 'geometry-map-' . bin2hex(random_bytes(8));
     $map['settings']['leaflet_markercluster'] = ['control' => FALSE];
     $map['settings']['zoomControl'] = FALSE;
     $map['settings']['zoom'] = 10;

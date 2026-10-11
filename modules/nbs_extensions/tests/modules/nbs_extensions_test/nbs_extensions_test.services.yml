@@ -1,0 +1,7 @@
+services:
+  nbs_extensions_test.backend:
+    class: Drupal\nbs_extensions_test\TestBackend
+    arguments: ["@state"]
+  nbs_extensions_test.http_client:
+    class: GuzzleHttp\Client
+    factory: ["@nbs_extensions_test.backend", client]

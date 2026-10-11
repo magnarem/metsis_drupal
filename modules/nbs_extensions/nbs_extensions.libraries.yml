@@ -1,0 +1,7 @@
+netcdf_modal:
+  js:
+    js/netcdf-modal.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.htmx
+    - metsis_drupal/metsis_metadata_dialog

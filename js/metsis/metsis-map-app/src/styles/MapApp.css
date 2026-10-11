@@ -56,6 +56,26 @@
 
 .metsis-wms-resource-controls {
   margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.metsis-wms-resource-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+.metsis-wms-resource-controls select {
+  max-width: 100%;
+}
+
+.metsis-wms-resource-controls [role="status"] {
+  width: 100%;
+  overflow-wrap: anywhere;
 }
 
 /* ── WMS loading spinner ──────────────────────────────────────────────────── */

@@ -1,4 +1,9 @@
 services:
+  nbs_extensions.netcdf_response_subscriber:
+    class: Drupal\nbs_extensions\EventSubscriber\NetCDFResponseSubscriber
+    tags:
+      - { name: event_subscriber }
+
   logger.channel.nbs_extensions:
     parent: logger.channel_base
     arguments: ["nbs_extensions"]

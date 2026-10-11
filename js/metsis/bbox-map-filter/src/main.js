@@ -5,33 +5,33 @@ import "./style.css";
 // const mapContainerSelector = "#bbox-map-filter-container";
 
 // Define variables for map and layers
-let map;
-let bboxFilterSource;
-let bboxFilterVectorLayer;
 let olModulesPromise;
+const instances = new Map();
 
 const MAP_PROJECTION = "EPSG:3857";
 const WEB_MERCATOR_MIN_X = -20037508.342789244;
 const WEB_MERCATOR_MAX_X = 20037508.342789244;
 
 function ensureAttributionContainer(mapContainer) {
-  const existing = document.getElementById("bbox-map-filter-attribution");
+  const existing = mapContainer.parentElement.querySelector(
+    ".bbox-map-filter-attribution",
+  );
   if (existing) {
     return existing;
   }
 
   const container = document.createElement("div");
-  container.id = "bbox-map-filter-attribution";
+  container.className = "bbox-map-filter-attribution";
   mapContainer.insertAdjacentElement("afterend", container);
 
   return container;
 }
 
 function getBboxInputs(root = document) {
-  const minX = root.querySelector('input[name="bbox[minX]"]');
-  const maxX = root.querySelector('input[name="bbox[maxX]"]');
-  const minY = root.querySelector('input[name="bbox[minY]"]');
-  const maxY = root.querySelector('input[name="bbox[maxY]"]');
+  const minX = root.querySelector('[data-metsis-bbox-coordinate="minX"]');
+  const maxX = root.querySelector('[data-metsis-bbox-coordinate="maxX"]');
+  const minY = root.querySelector('[data-metsis-bbox-coordinate="minY"]');
+  const maxY = root.querySelector('[data-metsis-bbox-coordinate="maxY"]');
 
   if (minX && maxX && minY && maxY) {
     return [minX, maxX, minY, maxY];
@@ -93,7 +93,7 @@ function loadOlModules() {
 }
 
 // Function to initialize the map
-async function initializeMap() {
+async function initializeMap(mapContainer, instance) {
   const {
     Map,
     View,
@@ -114,8 +114,7 @@ async function initializeMap() {
 
   console.log("Initializing BBOX Filter map...");
 
-  const mapContainer = document.getElementById("bbox-map-filter-container");
-  if (!mapContainer) {
+  if (!mapContainer.isConnected || instances.get(mapContainer) !== instance) {
     return;
   }
   const attributionContainer = ensureAttributionContainer(mapContainer);
@@ -135,10 +134,10 @@ async function initializeMap() {
   });
 
   // Add a vector source for holding the bbox draw filter
-  bboxFilterSource = new VectorSource({ wrapX: true });
+  const bboxFilterSource = new VectorSource({ wrapX: true });
 
   // Add the bbox source to a bbox Layer
-  bboxFilterVectorLayer = new VectorLayer({
+  const bboxFilterVectorLayer = new VectorLayer({
     source: bboxFilterSource,
   });
 
@@ -151,7 +150,7 @@ async function initializeMap() {
   });
 
   // Initialize the map
-  map = new Map({
+  const map = new Map({
     target: mapContainer,
     layers: [baseLayer, bboxFilterVectorLayer],
     view: new View({
@@ -161,6 +160,12 @@ async function initializeMap() {
     }),
     controls: defaultControls({ attribution: false }).extend([attribution]),
   });
+  instance.map = map;
+  instance.resizeObserver = new ResizeObserver(() => map.updateSize());
+  instance.resizeObserver.observe(mapContainer);
+  map.updateSize();
+  map.renderSync();
+  mapContainer.dataset.metsisBboxReady = "true";
 
   const mapProjectionCode = map.getView().getProjection().getCode();
 
@@ -176,7 +181,7 @@ async function initializeMap() {
     const lon = coords[0].toFixed(6);
     const locTxt = "lon: " + lon + " lat: " + lat;
 
-    let coords_wrapper = document.getElementById("coords");
+    let coords_wrapper = mapContainer.querySelector(".bbox-map-coordinates");
     if (coords_wrapper) {
       let coords_element = coords_wrapper.querySelector(".coords");
       coords_element.innerHTML = locTxt;
@@ -192,10 +197,21 @@ async function initializeMap() {
     mapProjectionCode,
     toLonLat,
     transformExtent,
+    map,
+    bboxFilterSource,
+    instance,
   );
 
   // Draw existing bbox if present in input fields
-  drawBoundingBoxFromInputs(Polygon, Feature, mapProjectionCode, fromLonLat);
+  drawBoundingBoxFromInputs(
+    Polygon,
+    Feature,
+    mapProjectionCode,
+    fromLonLat,
+    bboxInputs,
+    map,
+    bboxFilterSource,
+  );
 }
 
 // Add draw interaction to the map
@@ -207,6 +223,9 @@ function addBboxDrawFilterInteraction(
   mapProjectionCode,
   toLonLat,
   transformExtent,
+  map,
+  bboxFilterSource,
+  instance,
 ) {
   // const bboxGeometryFunction = createRegularPolygon(4);
   const bboxGeometryFunction = createBox();
@@ -266,7 +285,7 @@ function addBboxDrawFilterInteraction(
     });
 
     // Submit the form after 500ms
-    setTimeout(() => {
+    instance.submitTimer = setTimeout(() => {
       if (!form) {
         return;
       }
@@ -350,8 +369,10 @@ function drawBoundingBoxFromInputs(
   Feature,
   mapProjectionCode,
   fromLonLat,
+  bboxInputs,
+  map,
+  bboxFilterSource,
 ) {
-  const bboxInputs = getBboxInputs(document);
   const minXInput = bboxInputs[0] ?? null;
   const maxXInput = bboxInputs[1] ?? null;
   const minYInput = bboxInputs[2] ?? null;
@@ -434,22 +455,26 @@ function drawBoundingBoxFromInputs(
           "handle-bbox-map-filter-update",
           ".bbox-map-filter-container",
           context,
-        ).forEach(() => {
+        ).forEach((container) => {
           console.log("Bbox drupal Behaviour...initialize bbox map filter");
-          const container = document.getElementById(
-            "bbox-map-filter-container",
-          );
-          if (!container) {
-            return;
-          }
-
+          const instance = {};
+          instances.set(container, instance);
           let initialized = false;
           const start = () => {
             if (initialized) {
               return;
             }
             initialized = true;
-            initializeMap();
+            initializeMap(container, instance).catch((error) => {
+              console.error(
+                "Unable to initialize METSIS bounding-box map",
+                error,
+              );
+              container.textContent = Drupal.t(
+                "Unable to load the bounding-box map.",
+              );
+              container.setAttribute("role", "alert");
+            });
           };
 
           if ("IntersectionObserver" in window) {
@@ -463,6 +488,7 @@ function drawBoundingBoxFromInputs(
               { rootMargin: "200px" },
             );
             observer.observe(container);
+            instance.intersectionObserver = observer;
           }
 
           ["pointerenter", "click", "focusin"].forEach((eventName) => {
@@ -471,9 +497,28 @@ function drawBoundingBoxFromInputs(
               passive: true,
             });
           });
+          instance.start = start;
+        });
+      },
+      detach(context, settings, trigger) {
+        if (trigger !== "unload") return;
+        instances.forEach((instance, container) => {
+          if (context !== container && !context.contains?.(container)) return;
+          instance.intersectionObserver?.disconnect();
+          instance.resizeObserver?.disconnect();
+          clearTimeout(instance.submitTimer);
+          instance.map?.setTarget(null);
+          instance.map?.dispose();
+          ["pointerenter", "click", "focusin"].forEach((eventName) =>
+            container.removeEventListener(eventName, instance.start),
+          );
+          delete container.dataset.metsisBboxReady;
+          once.remove("handle-bbox-map-filter-update", container);
+          instances.delete(container);
         });
       },
     };
+    Drupal.behaviors.BboxFilter.attach(document);
     //};
   }
 )(Drupal, once);

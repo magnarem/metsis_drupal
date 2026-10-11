@@ -7,6 +7,8 @@ nbs_extensions.netcdf_on_demand:
     _permission: "access content"
     _user_is_logged_in: "TRUE"
     datasetId: "[A-Za-z0-9_.:-]+"
+  options:
+    no_cache: TRUE
 
 nbs_extensions.settings:
   path: "/admin/config/metno/nbs-extensions"
@@ -15,3 +17,39 @@ nbs_extensions.settings:
     _title: "NBS Extensions settings"
   requirements:
     _permission: "administer site configuration"
+
+nbs_extensions.netcdf_modal:
+  path: "/metsis/netcdf-on-demand/modal/{datasetId}"
+  defaults:
+    _title: "NetCDF OnDemand"
+    _controller: '\Drupal\nbs_extensions\Controller\NetCDFOnDemandController::modal'
+  requirements:
+    _permission: "access content"
+    datasetId: "[A-Za-z0-9_.:-]+"
+  methods: [GET]
+  options:
+    no_cache: TRUE
+
+nbs_extensions.netcdf_modal_login:
+  path: "/metsis/netcdf-on-demand/modal-login/{datasetId}"
+  defaults:
+    _title: "Log in to request a NetCDF file"
+    _controller: '\Drupal\nbs_extensions\Controller\NetCDFOnDemandController::login'
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "FALSE"
+    datasetId: "[A-Za-z0-9_.:-]+"
+  options:
+    no_cache: TRUE
+
+nbs_extensions.netcdf_modal_request:
+  path: "/metsis/netcdf-on-demand/modal-request/{datasetId}"
+  defaults:
+    _title: "NetCDF OnDemand"
+    _controller: '\Drupal\nbs_extensions\Controller\NetCDFOnDemandController::request'
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+    datasetId: "[A-Za-z0-9_.:-]+"
+  options:
+    no_cache: TRUE

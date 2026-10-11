@@ -15,6 +15,7 @@ use Drupal\metsis_drupal\MetsisConstants;
 function metsis_drupal_install(): void {
   module_set_weight('metsis_drupal', 1);
   user_role_grant_permissions('anonymous', ['access metsis metadata export']);
+  metsis_drupal_update_11003();
 }
 
 /**
@@ -23,6 +24,13 @@ function metsis_drupal_install(): void {
  * Deletes Search API server and index configurations created by this module.
  */
 function metsis_drupal_uninstall() {
+
+  $settings = \Drupal::configFactory()->getEditable('views.settings');
+  $extenders = $settings->get('display_extenders') ?? [];
+  $settings->set('display_extenders', array_filter(
+    $extenders,
+    static fn ($extender): bool => $extender !== 'metsis_layout',
+  ))->save();
 
   // Delete the metsis solr index configuration.
   $config_factory = \Drupal::configFactory();
@@ -55,5 +63,59 @@ function metsis_drupal_update_11001(): void {
       $block->set('settings', $block->getPlugin()->getConfiguration());
       $block->save();
     }
+  }
+}
+
+/**
+ * Adds the managed search map area without replacing customized headers.
+ */
+function metsis_drupal_update_11002(): void {
+  $view = \Drupal::entityTypeManager()->getStorage('view')->load('metsis_search');
+  if ($view === NULL) {
+    return;
+  }
+
+  $displays = $view->get('display');
+  foreach ($displays as &$display) {
+    if (($display['id'] ?? '') !== 'default' && ($display['display_options']['defaults']['header'] ?? TRUE)) {
+      continue;
+    }
+    $header = &$display['display_options']['header'];
+    $has_map = FALSE;
+    foreach ($header ?? [] as $area) {
+      if (($area['plugin_id'] ?? '') === 'metsis_map') {
+        $has_map = TRUE;
+        break;
+      }
+    }
+    if (!$has_map) {
+      $header['metsis_map'] = [
+        'id' => 'metsis_map',
+        'table' => 'views',
+        'field' => 'metsis_map',
+        'relationship' => 'none',
+        'group_type' => 'group',
+        'plugin_id' => 'metsis_map',
+        'empty' => FALSE,
+        'map_app_settings' => '{}',
+        'map_height' => 400,
+        'show_all_wms' => TRUE,
+      ];
+    }
+    unset($header);
+  }
+  unset($display);
+  $view->set('display', $displays)->save();
+}
+
+/**
+ * Enables METSIS layout options without replacing other display extenders.
+ */
+function metsis_drupal_update_11003(): void {
+  $config = \Drupal::configFactory()->getEditable('views.settings');
+  $extenders = $config->get('display_extenders') ?? [];
+  if (!in_array('metsis_layout', $extenders, TRUE)) {
+    $extenders[] = 'metsis_layout';
+    $config->set('display_extenders', $extenders)->save();
   }
 }

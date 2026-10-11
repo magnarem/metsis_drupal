@@ -193,7 +193,13 @@ final class ResultRowRenderer {
       $fields['parent'] = $this->getCollectionIconMarkup(
         $solr_doc['metadata_identifier']
       );
-      $fields['children_count'] = $this->getChildDatasetCountMarkup($solr_doc);
+      if (isset($solr_doc['found_children'], $solr_doc['total_children'])) {
+        $fields['children_count'] = $this->getChildDatasetCountMarkup($solr_doc);
+      }
+    }
+    $parent = $solr_doc['parent']['docs'][0] ?? NULL;
+    if (is_array($parent)) {
+      $fields['parent_metadata'] = $parent;
     }
 
     if (!empty($solr_doc['dataset_citation_doi'])) {

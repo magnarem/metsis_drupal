@@ -223,7 +223,7 @@ final class SdcComponentsTest extends UnitTestCase {
     $citations[0]['fields'][] = ['label' => 'Version', 'value' => '0'];
     $citations[0]['fields'][] = ['label' => 'Empty', 'value' => ''];
     $templates = [
-      'templates/metsis-metadata-document.html.twig',
+      'templates/metadata/metsis-metadata-document.html.twig',
       'modules/dynamic_landing_pages/templates/dynamic-landing-page.html.twig',
     ];
     foreach ($templates as $template) {

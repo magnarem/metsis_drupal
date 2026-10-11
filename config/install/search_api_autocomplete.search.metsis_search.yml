@@ -1,4 +1,3 @@
-uuid: f48a7118-cd14-488d-8757-c5312b9af910
 langcode: en
 status: true
 dependencies:
@@ -22,7 +21,6 @@ suggester_settings:
   search_api_solr_terms:
     fields:
       - abstract_en
-      - phrase_suggester
       - text_keywords_stemmed
       - title_en
 suggester_weights:

@@ -14,6 +14,7 @@ use Drupal\metsis_drupal\Service\SolrDocumentLoader;
 use Drupal\nbs_extensions\Service\NetCDFOnDemandService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -53,7 +54,10 @@ final class NetCDFOnDemandForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?string $datasetId = NULL): array {
+  public function buildForm(array $form, FormStateInterface $form_state, ?string $datasetId = NULL, bool $modal = FALSE): array {
+    if (!$this->currentUser->isAuthenticated() || !$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
     if ($datasetId === NULL || $datasetId === '') {
       throw new BadRequestHttpException('A dataset identifier is required.');
     }
@@ -72,8 +76,17 @@ final class NetCDFOnDemandForm extends FormBase {
       : ($this->firstStringValue($document['metadata_identifier'] ?? NULL) ?: $datasetId);
     $form_state->set('product_id', $productId);
 
+    $form['#cache'] = ['max-age' => 0, 'contexts' => ['user', 'url.path']];
     $form['#attributes']['id'] = 'nbs-netcdf-on-demand-form';
+    $route = $modal ? 'nbs_extensions.netcdf_modal_request' : 'nbs_extensions.netcdf_on_demand';
+    $form['#action'] = Url::fromRoute($route, ['datasetId' => $datasetId])->toString();
     $form['#attached']['library'][] = 'core/drupal.states';
+    if (!$modal) {
+      $form['messages'] = [
+        '#type' => 'status_messages',
+        '#weight' => -100,
+      ];
+    }
     $form['message'] = [
       '#type' => 'item',
       '#markup' => $this->t(
@@ -121,12 +134,15 @@ final class NetCDFOnDemandForm extends FormBase {
       ];
     }
 
-    (new Htmx())
-      ->post(Url::fromRoute('<current>'))
-      ->target('#nbs-netcdf-on-demand-form')
-      ->swap('outerHTML')
-      ->onlyMainContent()
-      ->applyTo($form);
+    $htmx = (new Htmx())
+      ->post(Url::fromRoute($route, ['datasetId' => $datasetId]))
+      ->target($modal ? 'closest .metsis-metadata-dialog__body' : '#nbs-netcdf-on-demand-form')
+      ->swap($modal ? 'innerHTML' : 'outerHTML')
+      ->onlyMainContent();
+    if (!$modal) {
+      $htmx->select('#nbs-netcdf-on-demand-form');
+    }
+    $htmx->applyTo($form);
 
     return $form;
   }
@@ -135,6 +151,13 @@ final class NetCDFOnDemandForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
+    if (!$this->currentUser->isAuthenticated() || !$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+    $result = $form_state->get('request_result');
+    if (is_array($result) && ($result['success'] ?? FALSE)) {
+      return;
+    }
     $email = $this->currentUser->getEmail();
     if ($email === NULL || trim($email) === '') {
       $form_state->set('request_result', [
@@ -152,6 +175,7 @@ final class NetCDFOnDemandForm extends FormBase {
       );
     }
 
+    $form_state->setRebuild();
     if ($this->isHtmxRequest()) {
       $form_state->disableRedirect();
     }

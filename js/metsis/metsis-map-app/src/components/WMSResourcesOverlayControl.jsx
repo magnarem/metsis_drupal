@@ -4,83 +4,14 @@ import TileWMS from "ol/source/TileWMS.js";
 import WMSCapabilities from "ol/format/WMSCapabilities.js";
 import {
   buildBlacklistedLayerSet,
-  buildCapabilitiesUrl,
-  collectNamedLayers,
   selectInitialLayer,
 } from "@utils/wmsLayerUtils";
-
-function normalizeWmsResources(geojsonFeatures) {
-  if (!geojsonFeatures || !Array.isArray(geojsonFeatures.features)) {
-    return [];
-  }
-
-  const dedup = new Map();
-
-  geojsonFeatures.features.forEach((feature) => {
-    const resources = feature?.properties?.wms_resources;
-    if (!Array.isArray(resources)) {
-      return;
-    }
-
-    resources.forEach((resource) => {
-      const url = typeof resource?.url === "string" ? resource.url.trim() : "";
-      if (!url) {
-        return;
-      }
-
-      const explicitLayers = Array.isArray(resource?.layers)
-        ? resource.layers
-            .map((layer) => (typeof layer === "string" ? layer.trim() : ""))
-            .filter(Boolean)
-        : [];
-
-      const urlLayerParam =
-        getQueryParam(url, "LAYERS") || getQueryParam(url, "layers");
-      const urlLayers = urlLayerParam
-        ? urlLayerParam
-            .split(",")
-            .map((layer) => layer.trim())
-            .filter(Boolean)
-        : [];
-      const layers = explicitLayers.length > 0 ? explicitLayers : urlLayers;
-
-      const baseUrl = stripQuery(url);
-      if (!baseUrl) {
-        return;
-      }
-
-      const key = `${baseUrl}|${layers.join(",")}`;
-      if (!dedup.has(key)) {
-        dedup.set(key, { url: baseUrl, layers });
-      }
-    });
-  });
-
-  return Array.from(dedup.values());
-}
-
-function stripQuery(url) {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return url.split("?")[0] || "";
-  }
-}
-
-function getQueryParam(url, key) {
-  try {
-    const parsed = new URL(url);
-    return parsed.searchParams.get(key);
-  } catch {
-    const [, query] = url.split("?");
-    if (!query) {
-      return null;
-    }
-    const params = new URLSearchParams(query);
-    return params.get(key);
-  }
-}
+import {
+  getSharedLayerNames,
+  normalizeWmsResources,
+  resolveWmsResource,
+  updateOverlayLayerNames,
+} from "@utils/wmsResources";
 
 const WMSResourcesOverlayControl = ({
   mapInstance,
@@ -88,156 +19,160 @@ const WMSResourcesOverlayControl = ({
   wmsConfig,
 }) => {
   const [isActive, setIsActive] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [failures, setFailures] = useState([]);
+  const [sharedNames, setSharedNames] = useState([]);
+  const [selectedName, setSelectedName] = useState("");
   const overlayLayersRef = useRef([]);
-  const blacklistedLayersSet = useMemo(
+  const blacklistedLayers = useMemo(
     () => buildBlacklistedLayerSet(wmsConfig?.blacklistedLayers),
     [wmsConfig?.blacklistedLayers],
   );
   const preferredLayers = useMemo(
-    () =>
-      Array.isArray(wmsConfig?.preferredLayers)
-        ? wmsConfig.preferredLayers
-        : [],
+    () => wmsConfig?.preferredLayers ?? [],
     [wmsConfig?.preferredLayers],
   );
-
   const wmsResources = useMemo(
     () => normalizeWmsResources(geojsonFeatures),
     [geojsonFeatures],
   );
 
   useEffect(() => {
-    if (!mapInstance) {
-      return;
-    }
+    setFailures([]);
+    setSharedNames([]);
+    setSelectedName("");
+    setLoading(false);
+    if (!mapInstance || !isActive || !wmsResources.length) return;
 
-    let isCancelled = false;
-    overlayLayersRef.current.forEach((layer) => mapInstance.removeLayer(layer));
-    overlayLayersRef.current = [];
-
-    if (!isActive || wmsResources.length === 0) {
-      return;
-    }
-
-    const capabilitiesFormat = new WMSCapabilities();
-
-    const resolveResourceLayer = async (resource) => {
-      let layerCandidates = resource.layers;
-
-      if (layerCandidates.length === 0) {
-        try {
-          const response = await fetch(buildCapabilitiesUrl(resource.url));
-          if (!response.ok) {
-            return null;
-          }
-
-          const xml = await response.text();
-          const parsed = capabilitiesFormat.read(xml);
-          const capabilityLayers =
-            parsed?.Capability?.Layer?.Layer &&
-            Array.isArray(parsed.Capability.Layer.Layer)
-              ? parsed.Capability.Layer.Layer
-              : [];
-          const namedLayers = capabilityLayers.flatMap((layer) =>
-            collectNamedLayers(layer, []),
-          );
-          layerCandidates = namedLayers.map((layer) => layer.name);
-        } catch {
-          return null;
-        }
-      }
-
-      const filtered = layerCandidates.filter(
-        (layerName) => !blacklistedLayersSet.has(layerName.toLowerCase()),
-      );
-      if (filtered.length === 0) {
-        return null;
-      }
-
-      const selected = selectInitialLayer(
-        filtered.map((name) => ({ name })),
-        preferredLayers,
-      );
-      if (!selected) {
-        return null;
-      }
-
-      return {
-        url: resource.url,
-        layerName: selected,
-      };
+    const controller = new AbortController();
+    const overlays = [];
+    const format = new WMSCapabilities();
+    setLoading(true);
+    const fetchCapabilities = async (url, signal) => {
+      const response = await fetch(url, { signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return format.read(await response.text());
     };
 
     const attachLayers = async () => {
-      const resolvedLayers = await Promise.all(
-        wmsResources.map((resource) => resolveResourceLayer(resource)),
-      );
-
-      if (isCancelled) {
-        return;
+      try {
+        const resolved = await Promise.all(
+          wmsResources.map((resource) =>
+            resolveWmsResource(resource, {
+              blacklistedLayers,
+              preferredLayers,
+              signal: controller.signal,
+              fetchCapabilities,
+            }),
+          ),
+        );
+        if (controller.signal.aborted) return;
+        const names = getSharedLayerNames(resolved);
+        const initialName = selectInitialLayer(
+          names.map((name) => ({ name })),
+          preferredLayers,
+        );
+        resolved
+          .filter((resource) => !resource.error)
+          .forEach((resource) => {
+            const layer = new TileLayer({
+              source: new TileWMS({
+                url: resource.url,
+                params: {
+                  TILED: true,
+                  VERSION: resource.version,
+                  LAYERS: initialName || resource.layerName,
+                },
+              }),
+              opacity: 1,
+              zIndex: 30,
+            });
+            mapInstance.addLayer(layer);
+            overlays.push(layer);
+          });
+        overlayLayersRef.current = overlays;
+        setFailures(resolved.filter((resource) => resource.error));
+        setSharedNames(names);
+        setSelectedName(initialName);
+        setLoading(false);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setFailures([{ url: "", error: error.message }]);
+          setLoading(false);
+        }
       }
-
-      const overlayLayers = resolvedLayers.filter(Boolean).map((resource) => {
-        const params = {
-          TILED: true,
-          VERSION: "1.3.0",
-          LAYERS: resource.layerName,
-        };
-
-        const layer = new TileLayer({
-          source: new TileWMS({
-            url: resource.url,
-            params,
-          }),
-          opacity: 1,
-          zIndex: 30,
-        });
-
-        mapInstance.addLayer(layer);
-        return layer;
-      });
-
-      overlayLayersRef.current = overlayLayers;
     };
-
     attachLayers();
 
     return () => {
-      isCancelled = true;
-      overlayLayersRef.current.forEach((layer) =>
-        mapInstance.removeLayer(layer),
-      );
+      controller.abort();
+      overlays.forEach((layer) => {
+        mapInstance.removeLayer(layer);
+        layer.getSource()?.dispose();
+        layer.dispose();
+      });
       overlayLayersRef.current = [];
     };
-  }, [
-    mapInstance,
-    isActive,
-    wmsResources,
-    blacklistedLayersSet,
-    preferredLayers,
-  ]);
+  }, [mapInstance, isActive, wmsResources, blacklistedLayers, preferredLayers]);
 
   useEffect(() => {
-    if (wmsResources.length === 0) {
-      setIsActive(false);
-    }
+    if (!wmsResources.length) setIsActive(false);
   }, [wmsResources.length]);
 
-  if (!mapInstance || wmsResources.length === 0) {
-    return null;
-  }
-
+  if (!mapInstance || !wmsResources.length) return null;
   return (
     <div className="metsis-wms-resource-controls">
       <button
         type="button"
         className="metsis-wms-resource-toggle"
+        aria-pressed={isActive}
         onClick={() => setIsActive((previous) => !previous)}
       >
         {isActive
-          ? "Hide all WMS resources"
-          : `Visualise all WMS resources (${wmsResources.length})`}
+          ? Drupal.t("Hide all WMS resources")
+          : Drupal.t("Visualise all WMS resources (@count)", {
+              "@count": wmsResources.length,
+            })}
       </button>
+      {isActive && loading && (
+        <p role="status">{Drupal.t("Loading WMS capabilities…")}</p>
+      )}
+      {isActive && !loading && sharedNames.length > 0 && (
+        <label>
+          {Drupal.t("Layer for all WMS resources")}
+          <select
+            value={selectedName}
+            onChange={(event) => {
+              const name = event.currentTarget.value;
+              if (!sharedNames.includes(name)) return;
+              updateOverlayLayerNames(overlayLayersRef.current, name);
+              setSelectedName(name);
+            }}
+          >
+            {sharedNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {isActive && failures.length > 0 && (
+        <div role="status">
+          <p>
+            {Drupal.t(
+              "Some WMS resources could not be loaded. A shared layer selector is unavailable.",
+            )}
+          </p>
+          <ul>
+            {failures.map((failure) => (
+              <li key={failure.url}>
+                {failure.url}: {failure.error}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

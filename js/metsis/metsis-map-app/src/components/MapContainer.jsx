@@ -13,14 +13,13 @@ import Attribution from "ol/control/Attribution.js";
 
 const MapContainer = ({ setMap, config, projection, children }) => {
   const mapRef = useRef(null); // Reference to the map container
-
-  const attribution = new Attribution({
-    collapsible: false,
-  });
+  const olMapRef = useRef(null);
+  const height = config.mapOptions.height ?? 600;
 
   // Initialize the map and OL-Cesium
   useEffect(() => {
     if (!mapRef.current || !projection) return;
+    const attribution = new Attribution({ collapsible: false });
 
     // Create OpenLayers map
     console.log("Initializing OpenLayers map...");
@@ -55,12 +54,12 @@ const MapContainer = ({ setMap, config, projection, children }) => {
     });
 
     function checkSize() {
-      const small = olMap.getSize()[0] < 600;
+      const small = (olMap.getSize()?.[0] ?? 0) < 600;
       attribution.setCollapsible(small);
       attribution.setCollapsed(small);
       if (small) {
         olMap.removeControl(scaleControl);
-      } else {
+      } else if (!olMap.getControls().getArray().includes(scaleControl)) {
         olMap.addControl(scaleControl);
       }
     }
@@ -70,18 +69,29 @@ const MapContainer = ({ setMap, config, projection, children }) => {
     console.log("Map initialized.");
 
     setMap(olMap);
+    olMapRef.current = olMap;
+    const observer = new ResizeObserver(() => olMap.updateSize());
+    observer.observe(mapRef.current);
 
     return () => {
+      observer.disconnect();
+      olMap.un("change:size", checkSize);
       olMap.setTarget(null);
+      olMap.dispose();
+      olMapRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    olMapRef.current?.updateSize();
+  }, [height]);
 
   // Pass projection as prop to children
   return (
     <div
       class="map-container"
       ref={mapRef}
-      style={{ width: "100%", height: "600px", position: "relative" }}
+      style={{ width: "100%", height: `${height}px`, position: "relative" }}
     >
       {children && typeof children === "function"
         ? children({ projection })

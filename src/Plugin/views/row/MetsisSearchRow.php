@@ -141,6 +141,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $options['temporal_extent_icon_id'] = ['default' => 'date-time'];
     // default, compact, detailed, custom.
     $options['style'] = ['default' => 'default'];
+    $options['custom_style_name'] = ['default' => ''];
     $options['view_modes'] = ['default' => []];
     return $options;
   }
@@ -168,6 +169,17 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       ],
       '#default_value' => $this->options['style'],
       '#description' => $this->t('Choose which row template/style to use for rendering results.'),
+    ];
+    $form['custom_style_name'] = [
+      '#type' => 'machine_name',
+      '#title' => $this->t('Custom row style machine name'),
+      '#default_value' => $this->options['custom_style_name'] ?? '',
+      '#machine_name' => ['exists' => [self::class, 'styleNameExists']],
+      '#required' => FALSE,
+      '#description' => $this->t('Used in metsis-search-row-custom--MACHINE-NAME.html.twig, replacing underscores with hyphens in the filename. Missing templates fall back to the Default row.'),
+      '#states' => [
+        'visible' => [':input[name="style"]' => ['value' => 'custom']],
+      ],
     ];
 
     $form['component_settings'] = [
@@ -274,6 +286,7 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
   public function submitOptionsForm(&$form, FormStateInterface $form_state) {
     $this->options['show_operations'] = $form_state->getValue('show_operations');
     $this->options['style'] = $form_state->getValue('style');
+    $this->options['custom_style_name'] = (string) $form_state->getValue('custom_style_name', '');
     $component_settings = (array) $form_state->getValue('component_settings', []);
     $shared_icons = (array) ($component_settings['shared_icons'] ?? []);
     $doi_component = (array) ($component_settings['doi_component'] ?? []);
@@ -298,6 +311,9 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     // Determine style and theme name.
     $style = $this->options['style'] ?? 'default';
     $theme_hook = 'metsis_search_row_' . $style;
+    if ($style === 'custom' && !empty($this->options['custom_style_name'])) {
+      $theme_hook .= '__' . $this->options['custom_style_name'];
+    }
 
     /** @var \Drupal\search_api\Plugin\views\ResultRow $row */
     $solr_doc = $row->_item->getExtraData('search_api_solr_document')->getFields();
@@ -326,6 +342,26 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
       '#fields' => $fields,
       '#operations' => $operations,
     ];
+  }
+
+  /**
+   * Custom template names are local configuration, not unique entities.
+   */
+  public static function styleNameExists(string $name): bool {
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
+    parent::validateOptionsForm($form, $form_state);
+    if ($form_state->getValue('style') === 'custom') {
+      $name = (string) $form_state->getValue('custom_style_name');
+      if ($name === '' || preg_match('/^[a-z0-9_]+$/', $name) !== 1) {
+        $form_state->setError($form['custom_style_name'], $this->t('Enter a machine name using lowercase letters, numbers, and underscores.'));
+      }
+    }
   }
 
   /**
@@ -514,10 +550,10 @@ class MetsisSearchRow extends SearchApiRow implements ContainerFactoryPluginInte
     $total_children = (int) ($solr_doc['total_children']['numFound'] ?? 0);
     $collection_button = [
       '#type' => 'button',
-      '#value' => (string) $this->t('@found of @total children found', [
+      '#value' => isset($solr_doc['found_children'], $solr_doc['total_children']) ? (string) $this->t('@found of @total children found', [
         '@found' => $found_children,
         '@total' => $total_children,
-      ]),
+      ]) : (string) $this->t('Open this collection'),
       '#attributes' => [
         'class' => ['metsis-collection-button', 'button'],
         'data-collection-id' => $dataset_identifier,

@@ -77,21 +77,20 @@ const ProjectionSwitcher = ({
 
   return (
     <div className="projection-switcher">
-      <label htmlFor="projection-select" style={{ marginRight: "10px" }}>
+      <label style={{ marginRight: "10px" }}>
         Projection:
+        <select
+          value={selectedProjection}
+          onChange={handleProjectionChange}
+          style={{ padding: "5px", fontSize: "14px" }}
+        >
+          {Object.entries(supportedProjections).map(([code, name]) => (
+            <option key={code} value={code}>
+              {name} ({code})
+            </option>
+          ))}
+        </select>
       </label>
-      <select
-        id="projection-select"
-        value={selectedProjection}
-        onChange={handleProjectionChange}
-        style={{ padding: "5px", fontSize: "14px" }}
-      >
-        {Object.entries(supportedProjections).map(([code, name]) => (
-          <option key={code} value={code}>
-            {name} ({code})
-          </option>
-        ))}
-      </select>
     </div>
   );
 };

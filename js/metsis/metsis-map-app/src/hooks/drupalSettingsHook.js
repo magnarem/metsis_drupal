@@ -1,17 +1,22 @@
 import { useSyncExternalStore } from "preact/compat";
+import {
+  getSearchGeojson,
+  mergeSearchSettings,
+} from "../utils/searchSettings.js";
 
-export function useReactiveDrupalSettings() {
-  // Subscribe to AJAX complete events
+let currentSettings = window.drupalSettings ?? {};
+const listeners = new Set();
+
+export function publishDrupalSettings(settings) {
+  currentSettings = mergeSearchSettings(currentSettings, settings);
+  listeners.forEach((listener) => listener());
+}
+
+export function useReactiveDrupalSettings(searchViewKey) {
   const subscribe = (callback) => {
-    if (window.jQuery) {
-      window.jQuery(document).on("ajaxComplete", callback);
-      return () => window.jQuery(document).off("ajaxComplete", callback);
-    }
-    return () => {};
+    listeners.add(callback);
+    return () => listeners.delete(callback);
   };
-  // Always return the latest value from window
-  const getSnapshot = () =>
-    window.drupalSettings?.metsis_drupal?.search?.results
-      ?.geojson_feature_collection || null;
+  const getSnapshot = () => getSearchGeojson(currentSettings, searchViewKey);
   return useSyncExternalStore(subscribe, getSnapshot);
 }

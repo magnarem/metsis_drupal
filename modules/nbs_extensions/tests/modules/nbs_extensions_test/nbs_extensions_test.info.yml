@@ -1,0 +1,6 @@
+name: NBS Extensions tests
+type: module
+package: Testing
+core_version_requirement: ^11.4 || ^12
+dependencies:
+  - nbs_extensions:nbs_extensions

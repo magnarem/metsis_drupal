@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\nbs_extensions\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Htmx\Htmx;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\metsis_drupal\Utility\MetsisSolrUtilities;
@@ -52,7 +53,7 @@ final class NetCDFOnDemandButtonBuilder {
     foreach ($product_types as $product_type) {
       if (is_scalar($product_type) && in_array((string) $product_type, $supported_products, TRUE)) {
         $title = new TranslatableMarkup('Request "CF-NetCDF file"');
-        return [
+        $build = [
           '#type' => 'link',
           '#title' => $title,
           '#url' => Url::fromRoute('nbs_extensions.netcdf_on_demand', [
@@ -63,6 +64,15 @@ final class NetCDFOnDemandButtonBuilder {
             'title' => $title,
           ],
         ];
+        (new Htmx())
+          ->get(Url::fromRoute('nbs_extensions.netcdf_modal', ['datasetId' => $solr_id]))
+          ->target('#metsis-metadata-modal-root')
+          ->swap('innerHTML')
+          ->onlyMainContent()
+          ->on('::after-swap', 'Drupal.metsis.metadataDialog.afterSwap(this, event)')
+          ->applyTo($build);
+        $build['#attached']['library'][] = 'nbs_extensions/netcdf_modal';
+        return $build;
       }
     }
 

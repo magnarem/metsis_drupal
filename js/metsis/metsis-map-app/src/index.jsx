@@ -13,6 +13,7 @@ if (import.meta.env.MODE === "development") {
 
 import MapApp from "@components/MapApp.jsx";
 import { render } from "preact";
+import { publishDrupalSettings } from "./hooks/drupalSettingsHook.js";
 
 import "@styles/main.css";
 import "./projections";
@@ -30,6 +31,7 @@ const baseMapAppSettings = {
   },
   features: {
     geojson: true,
+    showAllWms: true,
     boundingBox: false,
     wms: false,
     wmsUrl: null,
@@ -64,11 +66,14 @@ function getMountSelectors(settings) {
     settings?.metsis_drupal?.map_app?.mount_selectors ??
     settings?.mapApp?.mountSelectors;
 
+  const instanceSelectors = Object.keys(
+    settings?.metsis_drupal?.map_app?.instances ?? {},
+  );
   if (Array.isArray(configuredSelectors)) {
     const selectors = configuredSelectors.filter(
       (selector) => typeof selector === "string" && selector.trim() !== "",
     );
-    return selectors.length > 0 ? selectors : [DEFAULT_MOUNT_SELECTOR];
+    return [...new Set([...selectors, ...instanceSelectors])];
   }
 
   if (typeof configuredSelectors === "string") {
@@ -76,10 +81,10 @@ function getMountSelectors(settings) {
       .split(",")
       .map((selector) => selector.trim())
       .filter(Boolean);
-    return selectors.length > 0 ? selectors : [DEFAULT_MOUNT_SELECTOR];
+    return [...new Set([...selectors, ...instanceSelectors])];
   }
 
-  return [DEFAULT_MOUNT_SELECTOR];
+  return [...new Set([DEFAULT_MOUNT_SELECTOR, ...instanceSelectors])];
 }
 
 function buildMapAppSettings(settings, selector) {
@@ -123,10 +128,6 @@ function buildMapAppSettings(settings, selector) {
   return mergedSettings;
 }
 
-function selectorToOnceKey(selector) {
-  return selector.replace(/[^a-zA-Z0-9_-]/g, "_");
-}
-
 /**
  * Initialize the MapApp component on a DOM element.
  *
@@ -152,29 +153,73 @@ export function initMapApp(elem, config) {
  * @prop {Drupal~behaviorAttach} attach
  *   Attaches the map to the map container.
  */
-(
-  function (Drupal, once) {
-    Drupal.behaviors.metsisMapApp = {
-      attach: function (context, settings) {
-        const selectors = getMountSelectors(settings);
+const mounts = new Map();
+let latestSettings = window.drupalSettings ?? {};
 
-        selectors.forEach((selector) => {
-          const mapAppSettings = buildMapAppSettings(settings, selector);
+function unmount(elem) {
+  render(null, elem);
+  mounts.delete(elem);
+}
 
-          once(
-            `initialize-metsis-map-app-${selectorToOnceKey(selector)}`,
-            selector,
-            context,
-          ).forEach((elem) => {
-            console.log(
-              "METSIS MapApp Behaviour...initialize map app",
-              selector,
-              elem,
-            );
-            initMapApp(elem, mapAppSettings);
-          });
-        });
+Drupal.behaviors.metsisMapApp = {
+  attach(context, settings = window.drupalSettings ?? {}) {
+    const previousInstances =
+      latestSettings?.metsis_drupal?.map_app?.instances ?? {};
+    latestSettings = {
+      ...latestSettings,
+      ...settings,
+      metsis_drupal: {
+        ...latestSettings.metsis_drupal,
+        ...settings.metsis_drupal,
+        map_app: {
+          ...latestSettings?.metsis_drupal?.map_app,
+          ...settings?.metsis_drupal?.map_app,
+          instances: {
+            ...previousInstances,
+            ...settings?.metsis_drupal?.map_app?.instances,
+          },
+        },
       },
     };
-  }
-)(Drupal, once);
+    publishDrupalSettings(settings);
+    mounts.forEach((config, elem) => {
+      if (!elem.isConnected) unmount(elem);
+    });
+
+    // AJAX can replace results while retaining a map outside the replaced fragment.
+    getMountSelectors(latestSettings).forEach((selector) => {
+      const config = buildMapAppSettings(latestSettings, selector);
+      document.querySelectorAll(selector).forEach((elem) => {
+        const signature = JSON.stringify(config);
+        if (mounts.get(elem) !== signature) {
+          initMapApp(elem, config);
+          mounts.set(elem, signature);
+        }
+      });
+    });
+  },
+  detach(context, settings, trigger) {
+    if (trigger !== "unload") return;
+    mounts.forEach((config, elem) => {
+      if (context === elem || context.contains?.(elem)) unmount(elem);
+    });
+  },
+};
+
+document.addEventListener("htmx:beforeCleanupElement", (event) => {
+  Drupal.behaviors.metsisMapApp.detach(event.detail.elt, {}, "unload");
+});
+document.addEventListener("htmx:afterSwap", (event) => {
+  Drupal.behaviors.metsisMapApp.attach(
+    event.detail.target,
+    window.drupalSettings,
+  );
+});
+if (window.jQuery) {
+  window.jQuery(document).on("ajaxComplete.metsisMapApp", () => {
+    Drupal.behaviors.metsisMapApp.attach(document, window.drupalSettings);
+  });
+}
+
+// The library may itself arrive in an AJAX/HTMX fragment after Drupal's attach.
+Drupal.behaviors.metsisMapApp.attach(document, window.drupalSettings);

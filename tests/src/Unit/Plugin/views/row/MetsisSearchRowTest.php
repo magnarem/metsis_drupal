@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Tests\metsis_drupal\Unit\Plugin\views\row;
 
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\Form\FormState;
+use Drupal\metsis_drupal\Hook\MetsisThemeHooks;
+use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
 use Drupal\metsis_drupal\Plugin\views\row\MetsisSearchRow;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -17,6 +20,37 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetsisSearchRow::class)]
 #[Group('metsis_drupal')]
 final class MetsisSearchRowTest extends TestCase {
+
+  /**
+   * Tests named custom row validation and compatibility template fallback.
+   */
+  public function testCustomStyleValidationAndFallback(): void {
+    $row = (new \ReflectionClass(MetsisSearchRow::class))->newInstanceWithoutConstructor();
+    $translation = $this->createMock(TranslationInterface::class);
+    $translation->method('translateString')->willReturnCallback(static fn ($markup): string => $markup->getUntranslatedString());
+    $row->setStringTranslation($translation);
+    $form = [
+      'custom_style_name' => ['#parents' => ['custom_style_name']],
+      'view_modes' => ['#parents' => ['view_modes']],
+    ];
+    $state = (new FormState())->setValues([
+      'style' => 'custom',
+      'custom_style_name' => '../invalid',
+      'view_modes' => [],
+    ]);
+    $row->validateOptionsForm($form, $state);
+    self::assertArrayHasKey('custom_style_name', $state->getErrors());
+    $state = (new FormState())->setValues([
+      'style' => 'custom',
+      'custom_style_name' => 'my_dataset',
+      'view_modes' => [],
+    ]);
+    $row->validateOptionsForm($form, $state);
+    self::assertSame([], $state->getErrors());
+    $hooks = new MetsisThemeHooks($this->createMock(MetVocabServiceInterface::class));
+    self::assertSame('rows/metsis-search-row-default', $hooks->themeHook()['metsis_search_row_custom']['template']);
+    self::assertFalse($row::styleNameExists('my_dataset'));
+  }
 
   /**
    * Tests data-access links use theme button styling and announce file details.

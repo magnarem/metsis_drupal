@@ -100,11 +100,13 @@ const MapApp = ({ config }) => {
   );
 
   // The geojson data of the current search from drupal settings
-  const geojsonResultData = useReactiveDrupalSettings();
+  const geojsonResultData = useReactiveDrupalSettings(
+    config.features.searchViewKey,
+  );
   // Render the MapApp component
   return (
     /* Add the ProjectionSwitcher Component if enabled */
-    <div id="map-app-components-wrapper">
+    <div className="map-app-components-wrapper">
       {config.features.projectionSwitcher && olMap && (
         <ProjectionSwitcher
           mapInstance={olMap}
@@ -116,16 +118,18 @@ const MapApp = ({ config }) => {
 
       {/* Add layer switcher if enabled */}
       {config.features.layerSwitcher && <LayerSwitcher mapInstance={olMap} />}
-      {config.features.geojson && olMap && (
-        <WMSResourcesOverlayControl
-          mapInstance={olMap}
-          geojsonFeatures={geojsonResultData}
-          wmsConfig={{
-            preferredLayers: config.features.wmsPreferredLayers,
-            blacklistedLayers: config.features.wmsBlacklistedLayers,
-          }}
-        />
-      )}
+      {config.features.geojson &&
+        config.features.showAllWms !== false &&
+        olMap && (
+          <WMSResourcesOverlayControl
+            mapInstance={olMap}
+            geojsonFeatures={geojsonResultData}
+            wmsConfig={{
+              preferredLayers: config.features.wmsPreferredLayers,
+              blacklistedLayers: config.features.wmsBlacklistedLayers,
+            }}
+          />
+        )}
 
       <div className="metsis-wms-map-and-legend">
         <div className="metsis-wms-map-wrapper">

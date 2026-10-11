@@ -9,6 +9,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\metsis_drupal\MetsisConstants;
 use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
+use Drupal\metsis_drupal\Utility\MetsisViewContext;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hooks related to the METSIS search form.
@@ -33,7 +35,22 @@ class MetsisSearchFormHooks {
    */
   #[Hook('form_views_exposed_form_alter')]
   public function metsisExposedFormAlter(&$form, FormStateInterface $form_state, $form_id) {
-    if ($form_id === 'views_exposed_form' && $form['#id'] === 'views-exposed-form-' . MetsisConstants::METSIS_SEARCH_VIEW_NAME . '-results') {
+    $view = $form_state->get('view');
+    $original = ($form['#id'] ?? '') === 'views-exposed-form-' . MetsisConstants::METSIS_SEARCH_VIEW_NAME . '-results';
+    if ($form_id === 'views_exposed_form' && ($original || ($view instanceof ViewExecutable && MetsisViewContext::isView($view)))) {
+      if ($view instanceof ViewExecutable) {
+        $form['#metsis_search_view_id'] = $view->id();
+        $form['#metsis_search_display_id'] = $view->current_display;
+      }
+      $text_identifier = isset($form['text']) ? 'text' : NULL;
+      if ($view instanceof ViewExecutable) {
+        foreach ($view->filter as $filter) {
+          if ($filter->getPluginId() === 'search_api_fulltext' && !empty($filter->options['exposed'])) {
+            $text_identifier = $filter->options['expose']['identifier'] ?? NULL;
+            break;
+          }
+        }
+      }
       if (!isset($form['#after_build']) || !is_array($form['#after_build'])) {
         $form['#after_build'] = [];
       }
@@ -46,6 +63,9 @@ class MetsisSearchFormHooks {
       $form['#attached']['library'][] = 'metsis_drupal/metsis_vocab_popover';
       $form['#attached']['library'][] = 'metsis_drupal/metsis_icon_sync';
       $form = self::markMetsisFieldsetsAfterBuild($form, $form_state);
+      if ($text_identifier === NULL || !isset($form[$text_identifier], $form['actions']['submit'])) {
+        return;
+      }
       // Convert the search input to a button.
       $form['actions']['submit']['#attributes']['data-twig-suggestion'] = 'search_results_submit';
       $form['actions']['submit']['#attributes']['class'][] = 'metsis-search-box__button';
@@ -53,7 +73,9 @@ class MetsisSearchFormHooks {
 
       // Set weights to reorder elements. submit button after text input.
       $form['actions']['#weight'] = -99;
-      $form['text']['#weight'] = -98;
+      if (isset($form[$text_identifier])) {
+        $form[$text_identifier]['#weight'] = -98;
+      }
 
       $form['search-box-container'] = [
         '#type' => 'container',
@@ -65,11 +87,11 @@ class MetsisSearchFormHooks {
       ];
 
       // Move the text search input and submit button into the container.
-      if (isset($form['text'])) {
-        $form['text']['#attributes']['class'][] = 'metsis-search-text__input';
-        $form['text']['#title_display'] = 'invisible';
-        $form['search-box-container']['text'] = $form['text'];
-        unset($form['text']);
+      if (isset($form[$text_identifier])) {
+        $form[$text_identifier]['#attributes']['class'][] = 'metsis-search-text__input';
+        $form[$text_identifier]['#title_display'] = 'invisible';
+        $form['search-box-container'][$text_identifier] = $form[$text_identifier];
+        unset($form[$text_identifier]);
       }
       if (isset($form['actions']['submit'])) {
         $form['actions']['#attributes']['class'][] = 'metsis-search-box__actions';

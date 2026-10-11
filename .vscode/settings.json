@@ -108,5 +108,12 @@
   	"GitHub.copilot-chat": [
     		"ui"
   	]
+    },
+    "chat.agent.sandbox.network.allowLocalNetwork": true,
+    "chat.agent.sandbox.fileSystem.userConfiguredPaths": {
+      "readwritePaths": [
+        "/var/www/html",
+        "/home/magnarem"
+      ]
     }
 }

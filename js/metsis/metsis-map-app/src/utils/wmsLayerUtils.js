@@ -1,5 +1,5 @@
-import { extractLayerGeographicExtent } from "@utils/mapProjection";
-import { parseDimensionValues } from "@utils/wmsDimensions";
+import { extractLayerGeographicExtent } from "./mapProjection.js";
+import { parseDimensionValues } from "./wmsDimensions.js";
 
 /**
  * Extract and normalise dimension definitions from a raw OL-parsed WMS capabilities layer.

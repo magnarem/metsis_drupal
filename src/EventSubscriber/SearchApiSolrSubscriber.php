@@ -18,6 +18,7 @@ use Drupal\search_api_solr\Event\PostFieldMappingEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\metsis_drupal\Service\ConfigProvider;
 use Drupal\metsis_drupal\Utility\MetsisHelper;
+use Drupal\metsis_drupal\Utility\MetsisViewContext;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -94,9 +95,6 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     'data_access_url_http',
     'data_access_url_ogc_wms',
     'data_access_wms_layers',
-    'total_children:[subquery]',
-    'found_children:[subquery]',
-    'parent:[subquery]',
     'thumbnail_url',
     'personnel_json:[json]',
     'data_access_json:[json]',
@@ -165,7 +163,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
       $query = $event->getSearchApiQuery();
 
       // Add custom solr queries when we have a metsis tag.
-      if ($query->hasTag('metsis')) {
+      if (MetsisViewContext::isQuery($query)) {
 
         // Retrieve geojson and wkt fields from solr.
         $solarium_query->addField('geometry_geojson');
@@ -183,12 +181,12 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // Only show return documents with metadata_status:Active.
         $solarium_query->addFilterQuery([
           'key' => 'active_filter',
-          'query' => 'metadata_status:Active',
+          'query' => 'metadata_status:' . ($query->hasTag('inactive') ? 'Inactive' : 'Active'),
         ]);
         // Add collection filter if collections are selected.
         if ($selected_collections = $this->configProvider->getSettingsConfig()->get('selected_collections')) {
           $solarium_query->createFilterQuery('collection')
-            ->setQuery('collection:(' . implode(" ", array_keys($selected_collections)) . ')');
+            ->setQuery('collection:(' . implode(' ', array_map($solarium_query->getHelper()->escapePhrase(...), array_keys($selected_collections))) . ')');
         }
 
         // Add parent/child filter.
@@ -264,7 +262,13 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
       $parse_mode_id = $parse_mode->getPluginId();
 
       /* Search within children if we have a metsis search */
-      if ($query->hasTag('metsis')) {
+      if (MetsisViewContext::isQuery($query)) {
+        $status_filter = 'metadata_status:' . ($query->hasTag('inactive') ? 'Inactive' : 'Active');
+        $scope_filters = [$status_filter];
+        if ($collections = $solarium_query->getFilterQuery('collection')) {
+          $scope_filters[] = $collections->getQuery();
+        }
+        $scope = implode(' AND ', $scope_filters);
         // Join tuning defaults for production: skip score aggregation and use
         // the join implementation that performed best in profiling.
         $join_localparams = ' method=dvWithScore score=none';
@@ -342,7 +346,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           $child_join_param   = 'metsis_child_join_q';
 
           $solarium_query->addParam($parent_query_param, $normalized_main_query);
-          $solarium_query->addParam($child_query_param, $normalized_main_query);
+          $solarium_query->addParam($child_query_param, '(' . $normalized_main_query . ') AND ' . $scope);
 
           // Parents that have at least one matching child.
           $solarium_query->addParam(
@@ -372,17 +376,20 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
 
         // In child-browse mode we extract info about the parent of the child.
         $parent_id = $query->getOption('metsis_parent_id');
-        if ($parent_id !== NULL && $parent_id !== '' && !$query->hasTag('flat_search')) {
+        if (($parent_id !== NULL && $parent_id !== '') || $query->hasTag('flat_search')) {
+          $solarium_query->addField('parent:[subquery]');
           $solarium_query->addParam('parent.defType', 'lucene');
           $solarium_query->addParam('parent.q', '{!term f=id v=$row.related_dataset_id}');
-          $solarium_query->addParam('parent.fq', 'isParent:"true"');
+          $solarium_query->addParam('parent.fq', ['isParent:"true"', ...$scope_filters]);
           $solarium_query->addParam('parent.rows', '1');
           $solarium_query->addParam('parent.fl', 'id,metadata_identifier,title,abstract,related_url_landing*,temporal*date*');
         }
 
         // Rewrite facet-generated filter queries so parents are kept when a
         // matching child carries the selected facet value.
-        $this->expandFacetFiltersToChildren($solarium_query);
+        if (!$query->hasTag('flat_search')) {
+          $this->expandFacetFiltersToChildren($solarium_query, $scope);
+        }
 
         // Exclude the parent_child_filter from all facet field domains so that
         // children matching the query also contribute to facet counts. Without
@@ -402,7 +409,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
             }
             // Keep facet domain broad enough for child-doc values by excluding
             // parent_child_filter from the facet domain.
-            if (!in_array('parent_child_filter', $facet->getExcludes(), TRUE)) {
+            if (!$query->hasTag('flat_search') && !in_array('parent_child_filter', $facet->getExcludes(), TRUE)) {
               $facet->addExclude('parent_child_filter');
             }
           }
@@ -414,6 +421,8 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
         // These params must live in the found_children.* namespace to be
         // visible inside the [subquery] request context.
         if (!$query->hasTag('flat_search')) {
+          $solarium_query->addField('found_children:[subquery]');
+          $solarium_query->addField('total_children:[subquery]');
           $solarium_query->addParam('found_children.defType', 'lucene');
 
           $solarium_query->addParam('found_children.child_text_q', $normalized_main_query);
@@ -443,8 +452,7 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
           $solarium_query->addParam('total_children.q', 'id:*');
           $solarium_query->addParam('total_children.fl', ['id']);
           $solarium_query->addParam('total_children.fq', [
-            '+metadata_status:"Active"',
-            'collection:(' . implode(' ', array_keys((array) $this->configProvider->getSettingsConfig()->get('selected_collections'))) . ')',
+            ...$scope_filters,
             'isChild:true',
             '{!term f=related_dataset_id v=$row.id}',
           ]);
@@ -639,8 +647,10 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
    *
    * @param \Solarium\QueryType\Select\Query\Query $solarium_query
    *   The Solarium select query.
+   * @param string $scope
+   *   Status and collection restrictions for child matches.
    */
-  protected function expandFacetFiltersToChildren(Query $solarium_query): void {
+  protected function expandFacetFiltersToChildren(Query $solarium_query, string $scope): void {
     $join_localparams = ' method=dvWithScore score=none';
 
     // Collect facet filters to rewrite. Solarium stores the {!tag=facet:...}
@@ -667,12 +677,14 @@ class SearchApiSolrSubscriber implements EventSubscriberInterface {
     foreach ($rewrites as $filter_key => $parts) {
       $body_param = $this->buildSolrParamName('metsis_facet_body', (string) $filter_key);
       $join_param = $this->buildSolrParamName('metsis_facet_join', (string) $filter_key);
+      $child_param = $this->buildSolrParamName('metsis_facet_child', (string) $filter_key);
 
       $solarium_query->addParam($body_param, $parts['query_body']);
+      $solarium_query->addParam($child_param, '(' . $parts['query_body'] . ') AND ' . $scope);
       $solarium_query->addParam(
       $join_param,
       '{!join from=related_dataset_id to=id' . $join_localparams .
-      ' v=$' . $body_param . '}'
+      ' v=$' . $child_param . '}'
       );
 
       $rewritten_body = '{!bool should=$' . $body_param . ' should=$' . $join_param . '}';

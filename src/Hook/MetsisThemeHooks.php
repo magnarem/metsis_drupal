@@ -7,11 +7,29 @@ namespace Drupal\metsis_drupal\Hook;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\views\ViewExecutable;
 use Drupal\metsis_drupal\Service\MetVocabServiceInterface;
+use Drupal\metsis_drupal\Utility\MetsisViewContext;
+use Drupal\metsis_drupal\Plugin\views\display_extender\MetsisLayout;
 
 /**
  * Custom theme related hooks.
  */
 class MetsisThemeHooks {
+
+  /**
+   * Applies the inherited sidebar width independently of the exposed block.
+   */
+  #[Hook('preprocess_views_view')]
+  public function preprocessViewsView(array &$variables): void {
+    $view = $variables['view'] ?? NULL;
+    if (!$view instanceof ViewExecutable || !MetsisViewContext::isView($view) || !MetsisViewContext::usesLayout($view)) {
+      return;
+    }
+    $width = $view->getDisplay()->getOption('metsis_sidebar_width') ?? MetsisLayout::DEFAULT_WIDTH;
+    if (!is_string($width) || !MetsisLayout::isValidWidth($width)) {
+      throw new \UnexpectedValueException('Invalid METSIS filter sidebar width.');
+    }
+    $variables['attributes']['style'] = ($variables['attributes']['style'] ?? '') . '--metsis-sidebar-width: ' . $width . ';';
+  }
 
   /**
    * Constructor.
@@ -38,13 +56,14 @@ class MetsisThemeHooks {
           'raw' => [],
           'parent_child' => NULL,
         ],
-        'template' => 'metsis-metadata-document',
+        'template' => 'metadata/metsis-metadata-document',
       ],
       'metsis_metadata_document_dialog' => [
         'variables' => [
           'content' => [],
+          'title' => NULL,
         ],
-        'template' => 'metsis-metadata-document-dialog',
+        'template' => 'metadata/metsis-metadata-document-dialog',
       ],
       'metsis_wms_document' => [
         'variables' => [
@@ -56,7 +75,7 @@ class MetsisThemeHooks {
           'inline_mode' => FALSE,
           'app_config' => NULL,
         ],
-        'template' => 'metsis-wms-document',
+        'template' => 'metadata/metsis-wms-document',
       ],
       'metsis_search_row_compact' => [
         'variables' => [
@@ -70,7 +89,7 @@ class MetsisThemeHooks {
           'highlighted' => NULL,
           'operations' => [],
         ],
-        'template' => 'metsis-search-row-compact',
+        'template' => 'rows/metsis-search-row-compact',
       ],
       'metsis_search_row_default' => [
         'variables' => [
@@ -84,7 +103,7 @@ class MetsisThemeHooks {
           'highlighted' => NULL,
           'operations' => [],
         ],
-        'template' => 'metsis-search-row-default',
+        'template' => 'rows/metsis-search-row-default',
       ],
       'metsis_search_row_detailed' => [
         'variables' => [
@@ -98,7 +117,7 @@ class MetsisThemeHooks {
           'highlighted' => NULL,
           'operations' => [],
         ],
-        'template' => 'metsis-search-row-detailed',
+        'template' => 'rows/metsis-search-row-default',
       ],
       'metsis_search_row_nbs' => [
         'variables' => [
@@ -112,7 +131,7 @@ class MetsisThemeHooks {
           'highlighted' => NULL,
           'operations' => [],
         ],
-        'template' => 'metsis-search-row-nbs',
+        'template' => 'rows/metsis-search-row-nbs',
       ],
       'metsis_search_row_custom' => [
         'variables' => [
@@ -126,10 +145,10 @@ class MetsisThemeHooks {
           'highlighted' => NULL,
           'operations' => [],
         ],
-        'template' => 'metsis-search-row-custom',
+        'template' => 'rows/metsis-search-row-default',
       ],
       'views_view__metsis_search_results' => [
-        'template' => 'views-view--metsis-search--results',
+        'template' => 'views/views-view--metsis-search--results',
         'base hook' => 'views view',
       ],
       'input__submit__search_results_submit' => [
@@ -139,22 +158,22 @@ class MetsisThemeHooks {
       'container__metsis_search_box' => [
         'render element' => 'element',
         'base hook' => 'container',
-        'template' => 'container--metsis-search-box',
+        'template' => 'forms/container--metsis-search-box',
       ],
       'fieldset__metsis_search' => [
         'render element' => 'element',
         'base hook' => 'fieldset',
-        'template' => 'fieldset--metsis-search',
+        'template' => 'forms/fieldset--metsis-search',
       ],
       'fieldset__metsis_bbox_filter' => [
         'render element' => 'element',
         'base hook' => 'fieldset',
-        'template' => 'fieldset--metsis-bbox-filter',
+        'template' => 'forms/fieldset--metsis-bbox-filter',
       ],
       'form_element_label__metsis_search' => [
         'render element' => 'element',
         'base hook' => 'form_element_label',
-        'template' => 'form-element-label--metsis-search',
+        'template' => 'forms/form-element-label--metsis-search',
       ],
       'metsis_facet_vocab_popover_button' => [
         'variables' => [
@@ -164,7 +183,7 @@ class MetsisThemeHooks {
           'uri' => '',
           'title' => '',
         ],
-        'template' => 'metsis-facet-vocab-popover-button',
+        'template' => 'forms/metsis-facet-vocab-popover-button',
       ],
 
       // Add more theme hooks here if needed.
@@ -209,6 +228,10 @@ class MetsisThemeHooks {
   #[Hook('theme_suggestions_views_exposed_form_alter')]
   public function themeHookSuggestion(&$suggestions, array $variables) {
     $form = $variables['form'] ?? [];
+    if (!empty($form['#metsis_search_view_id']) && empty($form['#metsis_search_exposed_form_block'])) {
+      $suggestions[] = 'views_exposed_form__metsis';
+      $suggestions[] = 'views_exposed_form__metsis_' . $form['#metsis_search_view_id'] . '__' . $form['#metsis_search_display_id'];
+    }
     if (empty($form['#metsis_search_exposed_form_block'])) {
       return;
     }
@@ -438,31 +461,16 @@ class MetsisThemeHooks {
   #[Hook('theme_suggestions_views_view_alter')]
   public function themeSuggestionsViewsViewAlter(array &$suggestions, array $variables): void {
     $view = $variables['view'] ?? NULL;
-    if (!$view instanceof ViewExecutable || !$this->isMetsisTaggedView($view)) {
+    if (!$view instanceof ViewExecutable || !MetsisViewContext::isView($view)) {
       return;
     }
 
-    $suggestions[] = 'views_view__metsis_search_results';
-    // Optionally keep per-display granularity while still being dynamic:
-    $suggestions[] = 'views_view__metsis_search_results__' . $view->current_display;
-    $suggestions[] = 'views_view__metsis_' . $view->id() . '__' . $view->current_display;
-  }
-
-  /**
-   * Handle the "metsis" query tag.
-   *
-   * Determine whether a view is built on the metsis Search API index and
-   * uses the "metsis" query tag, independent of its machine name.
-   */
-  private function isMetsisTaggedView(ViewExecutable $view): bool {
-    if ($view->storage->get('base_table') !== 'search_api_index_metsis') {
-      return FALSE;
+    if (MetsisViewContext::usesLayout($view)) {
+      $suggestions[] = 'views_view__metsis_search_results';
+      $suggestions[] = 'views_view__metsis_search_results__' . $view->current_display;
     }
-
-    $query_options = $view->getDisplay()->getOption('query')['options'] ?? [];
-    $tags = $query_options['query_tags'] ?? [];
-
-    return in_array('metsis', $tags, TRUE);
+    $suggestions[] = 'views_view__metsis_' . $view->id();
+    $suggestions[] = 'views_view__metsis_' . $view->id() . '__' . $view->current_display;
   }
 
 }

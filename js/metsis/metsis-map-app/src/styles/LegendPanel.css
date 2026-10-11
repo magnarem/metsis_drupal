@@ -80,6 +80,10 @@
     gap: 1rem;
   }
 
+  .metsis-wms-map-wrapper {
+    width: 100%;
+  }
+
   .metsis-wms-legend-wrapper {
     width: 100%;
     min-width: unset;

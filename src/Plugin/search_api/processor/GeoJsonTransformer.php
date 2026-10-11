@@ -47,7 +47,7 @@ class GeoJsonTransformer extends ProcessorPluginBase {
     $query = $results->getQuery();
 
     // Ensure we have results to process.
-    if (!$results->getResultCount() || $query->getProcessingLevel() !== QueryInterface::PROCESSING_FULL) {
+    if ($query->getProcessingLevel() !== QueryInterface::PROCESSING_FULL) {
       return;
     }
 
@@ -56,28 +56,17 @@ class GeoJsonTransformer extends ProcessorPluginBase {
     // Iterate over the result items.
     foreach ($results->getResultItems() as $result_item) {
       // Get the field value for the GeoJSON field.
-      $geofield = $result_item->getField('geometry_geojson');
-      if ($geofield) {
-        $values = $geofield->getValues();
-        if (is_array($values) && count($values) == 1) {
-          $values = $values[0];
-        }
-        if (empty($values)) {
+      $raw_document = $result_item->getExtraData('search_api_solr_document');
+      $raw_fields = is_object($raw_document) && method_exists($raw_document, 'getFields') ? (array) $raw_document->getFields() : (is_array($raw_document) ? $raw_document : []);
+      $values = $this->getFieldValues($result_item, $raw_fields, 'geometry_geojson');
+      if ($values !== []) {
+        if (count($values) !== 1) {
           continue;
         }
-        $geojsonString = (string) $values;
+        $geojsonString = $values[0];
         $geoJsonArray = json_decode($geojsonString, TRUE);
         // Check if the value is an GeoJsonArray.
         if (is_array($geoJsonArray) && array_key_exists('type', $geoJsonArray) && array_key_exists('coordinates', $geoJsonArray)) {
-          $raw_document = $result_item->getExtraData('search_api_solr_document');
-          $raw_fields = [];
-          if (is_object($raw_document) && method_exists($raw_document, 'getFields')) {
-            $raw_fields = (array) $raw_document->getFields();
-          }
-          elseif (is_array($raw_document)) {
-            $raw_fields = $raw_document;
-          }
-
           $landing_page = $this->getFirstFieldValue($result_item, $raw_fields, 'related_url_landing_page');
           $metadata_identifier = $this->getFirstFieldValue($result_item, $raw_fields, 'metadata_identifier');
           $wms_resources = $this->buildWmsResources($result_item, $raw_fields);
@@ -91,7 +80,7 @@ class GeoJsonTransformer extends ProcessorPluginBase {
             ],
             'properties' => [
               'id' => $result_item->getId(),
-              'title' => $result_item->getField('title')->getValues()[0] ?? '',
+              'title' => $this->getFirstFieldValue($result_item, $raw_fields, 'title'),
               'metadata_identifier' => $metadata_identifier,
               'landing_page' => $landing_page,
               'wms_resources' => $wms_resources,
@@ -113,6 +102,7 @@ class GeoJsonTransformer extends ProcessorPluginBase {
     if ($view = $results->getQuery()->getOption('search_api_view')) {
       /** @var \Drupal\views\ViewExecutable $view */
       $view->element['#attached']['drupalSettings']['metsis_drupal']['search']['results']['geojson_feature_collection'] = $feature_collection;
+      $view->element['#attached']['drupalSettings']['metsis_drupal']['search']['instances'][$view->dom_id]['geojson_feature_collection'] = $feature_collection;
     }
   }
 

@@ -1,6 +1,9 @@
 .metsis-search-layout {
   display: grid;
-  grid-template-columns: 2fr 10fr;
+  grid-template-columns: minmax(0, var(--metsis-sidebar-width, 24rem)) minmax(
+      0,
+      1fr
+    );
   grid-template-rows: auto auto;
   gap: 20px;
   padding: 20px;
@@ -12,6 +15,7 @@
 }
 
 .metsis-search-layout .metsis-filters {
+  min-width: 0;
   grid-column: 1;
   grid-row: 2;
   padding: 10px;
@@ -20,6 +24,7 @@
 }
 
 .metsis-search-layout .metsis-search-main-content {
+  min-width: 0;
   grid-column: 2;
   grid-row: 2;
   padding: 10px;
