@@ -979,6 +979,42 @@ Run `date` first. Add new entries at top. Include file paths, module names, conf
 ```
 [Add entries here - newest first]
 
+2026-10-11 | TASK: Reorganized module README and extracted detailed documentation
+           | FILES: README.md, docs/{installation,search-and-views,maps,metadata,architecture}.md, docs/development/{README,vscode-history}.md, DISCUSSIONS_LOG.md
+           | NOTE: Numbered README sections and TOC; linked installation and feature guides, corrected runtime to match info.yml, and moved DDEV-specific setup/history into development docs
+
+2026-10-11 | PROBLEM/SOLUTION: Provisioned browser test services for GitHub Actions PHPUnit
+           | FILES: .github/workflows/quality.yml, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Matching Chrome/ChromeDriver, localhost ports 4444/8888, headless software WebGL, multi-worker PHP, readiness checks, process cleanup, and diagnostic artifacts. Static workflow checks passed; next Actions run must confirm end-to-end behavior. No local installs or browser suite runs
+
+2026-10-11 | TASK: Completed search UI runtime dependencies and checked installed autocomplete configuration
+           | FILES: metsis_drupal.info.yml, config/install/search_api_autocomplete.search.metsis_search.yml, tests/src/Unit/MetsisInstallConfigurationTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Added enabled facet/search-summary integrations and explicit Autocomplete/Tagify/editor dependencies; corrected project prefixes. Autocomplete already ships on install; removed invalid phrase_suggester field and fixed install UUID. Optional Solr admin/devel and Search API DB remain nonrequired; live config is preserved
+
+2026-10-11 | NOTE: Confirmed independent block, Views bbox, and result Leaflet map heights
+           | FILES: tests/src/Unit/Plugin/views/filter/MetsisExposedFiltersTest.php, tests/src/Unit/LeafletMapRendererTest.php, DISCUSSIONS_LOG.md
+           | NOTE: Live heights were 261px, 240px, and 250px respectively. Added number validation and Views submission/unpacking/rendering regression coverage without changing active configuration
+
+2026-10-11 | PROBLEM/SOLUTION: Fixed valid map heights failing Views area configuration validation
+           | FILES: src/Plugin/views/area/MetsisMapArea.php, tests/src/Unit/Plugin/views/area/MetsisMapAreaTest.php, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Reads nested options values, validates before casting, stores integer heights, and restores nested JSON validation; tests cover numeric strings, range boundaries, fractions, and saved option types
+
+2026-10-11 | PROBLEM/SOLUTION: Added configurable Views filter-sidebar widths and restored bbox map sizing and independent lifecycle
+           | FILES: src/Plugin/views/display_extender/MetsisLayout.php, src/Hook/{MetsisViewsHooks,MetsisThemeHooks}.php, src/Plugin/views/filter/MetsisSolrBboxFilter.php, metsis_drupal.install, metsis_drupal.libraries.yml, config/schema/metsis_drupal.views.schema.yml, css/metsis_search_layout.css, js/metsis/bbox-map-filter, tests, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Positive rem/em/px widths default to 24rem with normal display inheritance; update 11003 preserves other extenders. Ordinary bbox CSS avoids Vite 404s. FunctionalJavascript regressions are added but deferred until driver setup; apt installations require user permission
+
+2026-10-11 | TASK: Implemented METSIS Views query modes, isolated configurable maps, named row overrides, shared targets, template organization, and NBS modal login
+           | FILES: src/{EventSubscriber,Hook,Utility,Plugin,Service}, templates/{views,rows,metadata,forms}, js/metsis/metsis-map-app, modules/nbs_extensions, metsis_drupal.install, config/schema/metsis_drupal.views.schema.yml, tests, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Untagged METSIS Views retain normal layouts; inactive selects Inactive only; flat searches omit child joins/counts; map height is 150-1000px; WMS shared selection requires identical layer sets; core login continues inside the shared modal; unique Leaflet IDs prevent fragment collisions
+
+2026-10-10 | PROBLEM/SOLUTION: Fixed local DDEV VS Code Git trust handling and added persistent chat storage with guarded host migration
+           | FILES: .ddev/commands/host/{code,vscode-history}, .ddev/config.{assistant-copilot,vscode-history}.yaml, .ddev/docker-compose.vscode-history.yaml, .ddev/vscode-history/storage.sh, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Preserves multi-value safe.directory entries and adds only the attached project; protects Copilot transcripts/index from seed synchronization; migrates VS Code data and Copilot state to private project-specific host bind mounts. Host migration and restart verification are required before claiming live persistence; no restart from the active chat
+
+2026-10-10 | PROBLEM/SOLUTION: Corrected left-sidebar search block whitespace and narrowed main content
+           | FILES: css/metsis_search_exposed_form_block.css, config-sync/solo.settings.yml, README.md, DISCUSSIONS_LOG.md
+           | NOTE: Solo main_2col now uses solo-col-1-2 (sidebar:content = 1:2); block grid explicitly fills its available width instead of inheriting theme auto sizing
+
 2026-10-10 | TASK: Added positive quick-search block selections, conditional configuration controls, predicate visibility, compact layout, and bbox map-height overrides
            | FILES: src/Plugin/Block/MetsisSearchExposedFormBlock.php, src/Plugin/views/filter/MetsisSolrBboxFilter.php, src/Plugin/views/filter/MetsisSolrDateRangeFilter.php, config/schema/metsis_drupal{,.views}.schema.yml, metsis_drupal.install, metsis_drupal.libraries.yml, css/metsis_{bbox_map_filter,search_exposed_form_block}.css, components/bbox_form_tabs/bbox_form_tabs.css, tests/src/Unit/Plugin/Block/MetsisSearchExposedFormBlockTest.php, tests/src/Unit/Plugin/views/filter/MetsisExposedFiltersTest.php, README.md, DISCUSSIONS_LOG.md
            | NOTE: Update 11001 preserves existing visibility; Form API states gate applicable controls, hidden exposed predicates submit Intersects without overriding fixed View operators, custom operator IDs and nested BEF wrappers are supported, map height inherits from Views unless overridden, and mobile maps/tabs fit their parent containers

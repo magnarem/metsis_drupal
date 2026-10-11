@@ -1,0 +1,11 @@
+name: ddev-playwright-mcp
+repository: trebormc/ddev-playwright-mcp
+version: v1.0.58
+install_date: "2026-10-09T12:00:46+02:00"
+project_files:
+    - docker-compose.playwright-mcp.yaml
+global_files: []
+removal_actions:
+    - |
+      #ddev-description:Cleaning up Playwright MCP
+      echo "Playwright MCP add-on removed."

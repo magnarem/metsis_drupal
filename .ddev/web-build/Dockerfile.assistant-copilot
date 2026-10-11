@@ -1,0 +1,27 @@
+#ddev-generated
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+
+# Install GitHub CLI from the official apt repository so `gh` is on PATH for every
+# shell type (login, interactive `ddev ssh`, and non-interactive `ddev exec`) in
+# the image layer — outside the web user's home, which DDEV recreates on every restart.
+RUN (type -p wget >/dev/null || (apt-get update && apt-get install -y --no-install-recommends wget ca-certificates)) \
+    && mkdir -p -m 755 /etc/apt/keyrings \
+    && wget -nv -O- https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+       | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+       > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Non-interactive shells (`ddev exec`) read BASH_ENV; the post-start hook appends PATH and token there.
+#ENV BASH_ENV=/etc/bash.env
+#RUN touch /etc/bash.env
+# Non-interactive shells (`ddev exec`) source DDEV's own BASH_ENV target
+# (/etc/bash.nointeractive.bashrc), which loops over /etc/bashrc/*.bashrc. The
+# post-start hook drops its PATH/token exports into that directory instead of
+# overriding BASH_ENV, so DDEV's own setup there (e.g. prepending vendor/bin to
+# PATH in /etc/bashrc/00-path-setup.bashrc) still runs for every exec shell.
+RUN mkdir -p /etc/bashrc && touch /etc/bashrc/99-assistant-copilot.bashrc

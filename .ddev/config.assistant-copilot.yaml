@@ -1,0 +1,146 @@
+# Project-owned customization of e0ipso/ddev-assistant-copilot.
+web_environment:
+  - DDEV_ASSISTANT_COPILOT_GH_HOSTNAME=github.com
+  # Uncomment to select a specific GitHub account for the hostname above.
+  # - DDEV_ASSISTANT_COPILOT_GH_USER=your-github-username
+  # Uncomment so no token is ever stored at rest. `ddev copilot` then resolves a
+  # token per invocation and removes it on exit; plain `copilot` inside
+  # `ddev ssh` is left unauthenticated.
+  # - DDEV_ASSISTANT_COPILOT_EPHEMERAL_TOKEN=true
+hooks:
+  pre-start:
+    # Ensure host-side GitHub CLI and Copilot config dirs exist before Docker bind-mounts them.
+    - exec-host: "mkdir -p ~/.config/gh ~/.copilot ~/.ddev-assistant-copilot"
+    # Resolve the GitHub token on the host, where the OS keychain lives, and stage
+    # it on the read-only bind mount. The container cannot reach the host keychain,
+    # so an in-container `gh auth token` only works on hosts that fell back to
+    # plaintext storage in hosts.yml. Never fails the start.
+    - exec-host: "bash .ddev/assistant-copilot/host-gh-token.sh --seed"
+  post-start:
+    # DDEV can create the home directory or restored subdirectories with ownership
+    # that prevents the web user from creating new dot-directories. Prepare only
+    # the runtime paths this add-on writes before mirroring config or running npm.
+    - exec: |
+        set -eu
+        sudo mkdir -p \
+          "${HOME}/.config" \
+          "${HOME}/.copilot" \
+          "${HOME}/.local/bin" \
+          "${HOME}/.cache" \
+          "${HOME}/.npm"
+        sudo chown -R "$(id -u):$(id -g)" \
+          "${HOME}/.config" \
+          "${HOME}/.copilot" \
+          "${HOME}/.local" \
+          "${HOME}/.cache" \
+          "${HOME}/.npm"
+    # Mirror the read-only host gh seed into the writable runtime config directory on
+    # every start. Host config is authoritative, so stale container-only files are
+    # removed before copying.
+    - exec: |
+        set -eu
+        seed_dir="${HOME}/.cred-seed/gh"
+        target_dir="${HOME}/.config/gh"
+        if [ -d "${seed_dir}" ]; then
+          sudo rm -rf "${target_dir}"
+          mkdir -p "${target_dir}"
+          cp -R -P "${seed_dir}/." "${target_dir}/"
+          sudo chown -R "$(id -u):$(id -g)" "${target_dir}"
+          chmod 700 "${target_dir}"
+          [ ! -f "${target_dir}/hosts.yml" ] || chmod 600 "${target_dir}/hosts.yml"
+        fi
+    # Mirror configuration, but never replace container-created history or its index.
+    - exec: |
+        set -eu
+        seed_dir="${HOME}/.cred-seed/copilot"
+        target_dir="${HOME}/.copilot"
+        if [ -d "${seed_dir}" ]; then
+          mkdir -p "${target_dir}"
+          rsync -rltc --delete \
+            --exclude='/session-state/' \
+            --exclude='/session-store.db*' \
+            "${seed_dir}/" "${target_dir}/"
+          sudo chown -R "$(id -u):$(id -g)" "${target_dir}"
+          chmod 700 "${target_dir}"
+        fi
+    # Install GitHub Copilot CLI on every start; warn and continue on failure.
+    - exec: |
+        set -u
+        sudo mkdir -p "${HOME}/.local/bin" "${HOME}/.cache/ms-playwright" "${HOME}/.npm"
+        sudo chown -R "$(id -u):$(id -g)" "${HOME}/.local" "${HOME}/.cache" "${HOME}/.npm"
+        if ! XDG_CACHE_HOME="${HOME}/.cache" npm_config_ignore_scripts=false NPM_CONFIG_PREFIX="${HOME}/.local" npm install -g @github/copilot; then
+          echo "ddev-assistant-copilot: warning: failed to install @github/copilot CLI" >&2
+        fi
+    # Export COPILOT_GITHUB_TOKEN and wire PATH/token into interactive and non-interactive shells.
+    - exec: |
+        set -eu
+        marker="# ddev-assistant-copilot"
+
+        write_exports() {
+          printf '%s\n' "${marker} begin"
+          printf '%s\n' 'export PATH="${HOME}/.local/bin:${PATH}"'
+          printf '%s\n' 'if [ -z "${COPILOT_GITHUB_TOKEN:-}" ]; then'
+          # Preferred source: the token the host staged on the read-only mount.
+          # The host is the only place with keychain access, so this is the only
+          # path that works on macOS, Windows, and Linux desktops alike.
+          printf '%s\n' '  SEEDED_TOKEN_FILE="${HOME}/.cred-seed/auth/${DDEV_SITENAME:-${DDEV_PROJECT:-}}/token"'
+          printf '%s\n' '  if [ -r "${SEEDED_TOKEN_FILE}" ]; then'
+          printf '%s\n' '    FRESH_TOKEN="$(tr -d "\\r\\n" < "${SEEDED_TOKEN_FILE}" 2>/dev/null || true)"'
+          printf '%s\n' '  else'
+          printf '%s\n' '    FRESH_TOKEN=""'
+          printf '%s\n' '  fi'
+          # Fallback: hosts that store the token as plaintext in hosts.yml have a
+          # usable token in the mirrored config, so ask the in-container gh.
+          printf '%s\n' '  if [ -z "${FRESH_TOKEN}" ]; then'
+          printf '%s\n' '    if [ -n "${DDEV_ASSISTANT_COPILOT_GH_HOSTNAME:-}" ] && [ -n "${DDEV_ASSISTANT_COPILOT_GH_USER:-}" ]; then'
+          printf '%s\n' '      FRESH_TOKEN="$(gh auth token --hostname "${DDEV_ASSISTANT_COPILOT_GH_HOSTNAME}" --user "${DDEV_ASSISTANT_COPILOT_GH_USER}" 2>/dev/null || true)"'
+          printf '%s\n' '    elif [ -n "${DDEV_ASSISTANT_COPILOT_GH_HOSTNAME:-}" ]; then'
+          printf '%s\n' '      FRESH_TOKEN="$(gh auth token --hostname "${DDEV_ASSISTANT_COPILOT_GH_HOSTNAME}" 2>/dev/null || true)"'
+          printf '%s\n' '    elif [ -n "${DDEV_ASSISTANT_COPILOT_GH_USER:-}" ]; then'
+          printf '%s\n' '      FRESH_TOKEN="$(gh auth token --user "${DDEV_ASSISTANT_COPILOT_GH_USER}" 2>/dev/null || true)"'
+          printf '%s\n' '    else'
+          printf '%s\n' '      FRESH_TOKEN="$(gh auth token 2>/dev/null || true)"'
+          printf '%s\n' '    fi'
+          printf '%s\n' '  fi'
+          printf '%s\n' '  if [ -n "${FRESH_TOKEN}" ]; then'
+          printf '%s\n' '    COPILOT_GITHUB_TOKEN="${FRESH_TOKEN}"'
+          printf '%s\n' '  fi'
+          printf '%s\n' '  unset FRESH_TOKEN SEEDED_TOKEN_FILE'
+          printf '%s\n' 'fi'
+          # Only export a token that actually exists: an empty COPILOT_GITHUB_TOKEN
+          # would stop Copilot CLI from falling back to its own login flow.
+          printf '%s\n' 'if [ -n "${COPILOT_GITHUB_TOKEN:-}" ]; then'
+          printf '%s\n' '  export COPILOT_GITHUB_TOKEN'
+          # Authenticate the in-container gh too. Without this, gh works only on
+          # hosts that stored the token as plaintext.
+          printf '%s\n' '  export GH_TOKEN="${GH_TOKEN:-${COPILOT_GITHUB_TOKEN}}"'
+          printf '%s\n' 'fi'
+          printf '%s\n' "${marker} end"
+        }
+
+        update_shell_file() {
+          local file="$1"
+          [ -f "${file}" ] || return 0
+          if grep -q "${marker} begin" "${file}" 2>/dev/null; then
+            sed -i "/${marker} begin/,/${marker} end/d" "${file}"
+          fi
+          write_exports >> "${file}"
+        }
+
+        touch "${HOME}/.bashrc"
+        update_shell_file "${HOME}/.bashrc"
+        update_shell_file "${HOME}/.profile"
+
+        #sudo touch /etc/bash.env
+        #if sudo grep -q "${marker} begin" /etc/bash.env 2>/dev/null; then
+        #  sudo sed -i "/${marker} begin/,/${marker} end/d" /etc/bash.env
+        #fi
+        #write_exports | sudo tee -a /etc/bash.env >/dev/null
+        # Non-interactive shells (`ddev exec`, including the `ddev drush` global
+        # command) source DDEV's own BASH_ENV target, /etc/bash.nointeractive.bashrc,
+        # which loops over /etc/bashrc/*.bashrc. Writing here (rather than
+        # overriding BASH_ENV to a standalone file) keeps DDEV's own setup in that
+        # directory intact, notably 00-path-setup.bashrc prepending vendor/bin to
+        # PATH — without which `command -v drush` fails for non-interactive shells.
+        sudo mkdir -p /etc/bashrc
+        write_exports | sudo tee /etc/bashrc/99-assistant-copilot.bashrc >/dev/null

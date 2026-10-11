@@ -1,0 +1,12 @@
+name: assistant-copilot
+repository: e0ipso/ddev-assistant-copilot
+version: v1.1.1
+install_date: "2026-10-05T14:07:34+02:00"
+project_files:
+    - web-build/Dockerfile.assistant-copilot
+    - docker-compose.assistant-copilot.yaml
+    - config.assistant-copilot.yaml
+    - assistant-copilot/host-gh-token.sh
+    - commands/host/copilot
+global_files: []
+removal_actions: []

@@ -135,9 +135,54 @@ jobs:
           sed "s|/var/www/html|$GITHUB_WORKSPACE|g" "$GITHUB_WORKSPACE/phpunit.xml" > "$GITHUB_WORKSPACE/phpunit.ci.xml"
           cd $GITHUB_WORKSPACE
 
+      - name: Setup Chrome and ChromeDriver
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
       - name: Run PHPUnit
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          CHROMEDRIVER_PATH: ${{ steps.chrome.outputs.chromedriver-path }}
+          SIMPLETEST_BASE_URL: http://127.0.0.1:8888
         run: |
           set -euo pipefail
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p .artifacts web/sites/default/files web/sites/simpletest/browser_output
           export SIMPLETEST_DB="sqlite://localhost/$GITHUB_WORKSPACE/web/sites/default/files/simpletest.sqlite"
+          export MINK_DRIVER_ARGS_WEBDRIVER="$(jq -cn --arg binary "$CHROME_PATH" \
+            '["chrome", {"goog:chromeOptions": {"w3c": true, "binary": $binary, "args": ["--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--window-size=1440,1200", "--enable-unsafe-swiftshader"]}}, "http://127.0.0.1:4444"]')"
+
+          PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8888 -t web web/.ht.router.php > .artifacts/php-server.log 2>&1 &
+          server_pid=$!
+          "$CHROMEDRIVER_PATH" --port=4444 --allowed-ips=127.0.0.1 > .artifacts/chromedriver.log 2>&1 &
+          driver_pid=$!
+          trap 'kill "$driver_pid" "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --max-time 2 http://127.0.0.1:4444/status | jq -e '.value.ready == true' >/dev/null \
+              && curl --fail --silent --max-time 2 http://127.0.0.1:8888/core/misc/drupal.js >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 0.5
+          done
+          if [ "$ready" != true ]; then
+            cat .artifacts/chromedriver.log .artifacts/php-server.log
+            echo "::error::ChromeDriver or Drupal HTTP server failed to become ready."
+            exit 1
+          fi
+
           vendor/bin/phpunit --configuration="$GITHUB_WORKSPACE/phpunit.ci.xml" tests/
+
+      - name: Upload browser test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-browser-diagnostics
+          path: |
+            .artifacts/
+            web/sites/simpletest/browser_output/

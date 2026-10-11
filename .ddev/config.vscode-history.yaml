@@ -1,0 +1,10 @@
+hooks:
+  pre-start:
+    # Refuse recreation until existing container history has been migrated.
+    - exec-host: 'bash .ddev/vscode-history/storage.sh --prepare'
+  post-start:
+    - exec: |
+        set -eu
+        sudo mkdir -p "${HOME}/.vscode-server/data"
+        sudo chown -R "$(id -u):$(id -g)" "${HOME}/.vscode-server/data"
+        chmod 700 "${HOME}/.vscode-server/data"
